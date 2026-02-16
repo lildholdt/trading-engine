@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/TradingEngine/">
+    <Project Path="src/TradingEngine/TradingEngine.csproj" />
+  </Folder>
+</Solution>
