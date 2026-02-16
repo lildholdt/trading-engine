@@ -5,7 +5,7 @@ namespace TradingEngine.Clients.PolyMarket;
 
 public class PolyMarketApiClient(HttpClient httpClient) : IPolyMarketApiClient
 {
-    private static readonly string BaseUrl = "https://gamma-api.polymarket.com";
+    private const string BaseUrl = "https://gamma-api.polymarket.com";
 
     public async Task<IEnumerable<SportEntry>> GetSports()
     {

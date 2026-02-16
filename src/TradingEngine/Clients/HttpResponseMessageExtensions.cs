@@ -4,7 +4,7 @@ namespace TradingEngine.Clients;
 
 public static class HttpResponseMessageExtensions
 {
-    private static readonly JsonSerializerOptions DefaultOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions DefaultOptions = new()
     {
         PropertyNameCaseInsensitive = true
     };

@@ -2,10 +2,7 @@
 
 namespace TradingEngine.Infrastructure.Hub;
 
-public class GenericEventHub : Microsoft.AspNetCore.SignalR.Hub
-{
-    // You can add methods here if you need server-to-client communication directly.
-}
+public class GenericEventHub : Microsoft.AspNetCore.SignalR.Hub;
 
 public class HubPublisher<TEvent>(IHubContext<GenericEventHub> context) : IHubPublisher<TEvent> where TEvent : class
 {

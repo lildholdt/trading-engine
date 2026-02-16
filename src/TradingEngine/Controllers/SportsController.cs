@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
 using TradingEngine.Infrastructure.Dispatcher;

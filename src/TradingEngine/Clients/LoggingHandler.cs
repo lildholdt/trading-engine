@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace TradingEngine.Clients;
 
-public class LoggingHandler(ILogger<LoggingHandler> logger, IHostEnvironment hostEnvironment, IOptions<ApplicationSettings> options) : NamedDelegatingHandler
+public class LoggingHandler(ILogger<LoggingHandler> logger, IOptions<ApplicationSettings> options) : NamedDelegatingHandler
 {
     private readonly ApplicationSettings _settings =  options.Value;
 

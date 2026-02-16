@@ -1,6 +1,4 @@
-﻿using TradingEngine.Infrastructure.EventBus;
-
-namespace TradingEngine.Infrastructure.Dispatcher;
+﻿namespace TradingEngine.Infrastructure.Dispatcher;
 
 /// <summary>
 /// Represents a dispatcher that is responsible for queueing and dispatching events to their respective handlers.

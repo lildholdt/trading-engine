@@ -74,9 +74,9 @@ public static class Application
         // Add CORS services and configure the allowed origins
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll", builder =>
+            options.AddPolicy("AllowAll", corsPolicyBuilder =>
             {
-                builder
+                corsPolicyBuilder
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .SetIsOriginAllowed(origin => string.IsNullOrEmpty(origin) || origin == "null" || true) // Allow null origins
