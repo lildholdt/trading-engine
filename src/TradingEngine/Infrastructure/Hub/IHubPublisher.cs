@@ -7,5 +7,5 @@ public interface IHubPublisher<in TEvent> where TEvent : class
     // Asynchronous method to publish the specified event.
     // Parameters:
     // - @event: The event to be published.
-    Task PublishAsync(TEvent @event);
+    Task PublishAsync(TEvent @event, CancellationToken cancellationToken = default);
 }

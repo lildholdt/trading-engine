@@ -15,10 +15,22 @@ public class PolyMarketSyncService(
         {
             try
             {
+                // TODO: how to pick series id?
                 await httpClient.StreamEvents(10188, @event =>
                 {
-                    var eventCandidate = new NewSportEventDataAvailable(@event.Title, @event.StartTime);
-                    dispatcher.Enqueue(eventCandidate, stoppingToken);
+                    var teams = @event.Title.Split(" vs. ");
+                    if (teams.Length != 2) return;
+                    var eventData = new SportEventDataAvailable
+                    {
+                        Id = @event.Id,
+                        DateTime = @event.StartTime,
+                        League = @event.Series.First().Title,
+                        Sport = @event.Tags.Last().Label,
+                        Team1 = teams[0],
+                        Team2 = teams[1],
+                    };
+
+                    dispatcher.Enqueue(eventData, stoppingToken);
                 });
             }
             catch (Exception ex)
@@ -27,7 +39,7 @@ public class PolyMarketSyncService(
             }
 
             // Wait before polling again
-            await Task.Delay(TimeSpan.FromSeconds(200), stoppingToken); // Adjust polling interval as needed
+            await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken); // Adjust polling interval as needed
         }
     }
 }

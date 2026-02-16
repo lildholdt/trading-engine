@@ -2,7 +2,7 @@
 
 namespace TradingEngine.Domain;
 
-public class SportEvent(int id) : Entity<int>(id)
+public class SportEvent(string id) : Entity<string>(id)
 {
     public required DateTime DateTime { get; init; }
     public required string Sport  { get; init; }

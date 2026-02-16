@@ -42,15 +42,24 @@ public class SportsController(
     [HttpGet("dispatch")]
     public IActionResult Dispatch()
     {
-        var order = new NewSportEventDataAvailable("Test", DateTime.Now);
-        dispatcher.Enqueue(order);
+        var eventData = new SportEventDataAvailable
+        {
+            Id = "TestId",
+            DateTime = DateTime.Now,
+            League = "TestLeague",
+            Sport = "TestSport",
+            Team1 = "Team1",
+            Team2 = "Team2",
+        };
+       
+        dispatcher.Enqueue(eventData);
         return Ok();
     }
     
     [HttpGet("publish")]
     public async Task<IActionResult> Publish()
     {
-        var sport = new SportEvent(1)
+        var sport = new SportEvent("1")
         {
             DateTime = DateTime.Now,
             Sport = "soccer",
@@ -68,8 +77,6 @@ public class SportsController(
         };
         
         await hub.PublishAsync(sport);
-        
-        //await hub.Clients.All.SendAsync("SportEvent", "Team 1 vs Team 2", DateTime.Now);
         return Ok();
     }
 }

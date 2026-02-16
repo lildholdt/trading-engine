@@ -29,7 +29,7 @@ public static class Application
         builder.Services.AddSingleton<Dispatcher>();
         
         // Register dispatcher handlers
-        builder.Services.AddScoped<IDispatchableEventHandler<NewSportEventDataAvailable>, NewSportEventDataAvailableHandler>();
+        builder.Services.AddScoped<IDispatchableEventHandler<SportEventDataAvailable>, SportEventDataAvailableHandler>();
         
         // Register event bus
         builder.Services.AddSingleton<IEventBus, EventBus>();
@@ -58,7 +58,6 @@ public static class Application
             .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Error) // Disable Microsoft logs
             .MinimumLevel.Override("Microsoft.Hosting", Serilog.Events.LogEventLevel.Information) // Enable Microsoft.Hosting information logs
             .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Error) // Disable System logs
-            .MinimumLevel.Override("Microsoft.AspNetCore.Cors", Serilog.Events.LogEventLevel.Debug) // Disable System logs
             .CreateLogger();
         
         builder.Services.AddSwaggerGen(c =>

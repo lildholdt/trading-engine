@@ -9,7 +9,7 @@ public class HubPublisher<TEvent>(IHubContext<GenericEventHub> context) : IHubPu
     private readonly IHubContext<GenericEventHub> _hubContext = context ?? throw new ArgumentNullException(nameof(context));
 
     // Publish an event to all connected clients.
-    public async Task PublishAsync(TEvent @event)
+    public async Task PublishAsync(TEvent @event, CancellationToken cancellationToken)
     {
         if (@event == null)
         {
