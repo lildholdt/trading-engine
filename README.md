@@ -5,7 +5,8 @@ This repository contains a minimal ASP.NET Core application that fetches sports 
 ## Architecture Overview
 
 - **Startup**: Uses `Application.Bootstrap` and `Application.Configure` extension methods to register services, configure logging, Swagger, CORS, controllers and SignalR.
-- **Services**: `PolyMarketSyncService` polls the external API and pushes events to a dispatcher. `DispatcherService` drives the in-process dispatcher.
+- **Services**: `PolyMarketSyncService` polls the external API and pushes events to a dispatcher. `DispatcherService` drives the in-process dispatcher.  
+    Additionally, `OddsAPIService` runs in the same host and subscribes to `SportEvent` messages via the in‑process `EventBus`, calling a configurable internal API for downstream processing.
 - **Dispatcher**: Partitions events by key, resolves a single handler per event type via DI, and invokes it asynchronously.
 - **Domain**: `SportEventDataAvailable` events are handled by `SportEventDataAvailableHandler`, which saves `SportEvent` entities and broadcasts them.
 - **Repository**: An `InMemoryRepository` provides thread-safe storage for entities.

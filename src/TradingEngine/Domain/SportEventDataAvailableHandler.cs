@@ -1,5 +1,6 @@
 ﻿using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.Dispatcher;
+using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
 
 namespace TradingEngine.Domain;
@@ -7,7 +8,8 @@ namespace TradingEngine.Domain;
 public class SportEventDataAvailableHandler(
     ILogger<SportEventDataAvailableHandler> logger,
     IRepository<SportEvent, string> repository,
-    IHubPublisher<SportEvent> hubPublisher) : IDispatchableEventHandler<SportEventDataAvailable>
+    IHubPublisher<SportEvent> hubPublisher,
+    IEventBus eventBus) : IDispatchableEventHandler<SportEventDataAvailable>
 {
     public async Task HandleAsync(SportEventDataAvailable @event, CancellationToken cancellationToken = default)
     {
@@ -32,5 +34,9 @@ public class SportEventDataAvailableHandler(
         await repository.SaveAsync(sportEvent, cancellationToken);
         logger.LogInformation("Match found {EventTeam1} vs {EventTeam2}", @event.Team1, @event.Team2);
         await hubPublisher.PublishAsync(sportEvent, cancellationToken);
+
+        // Publish to in‑process event bus so other internal services can react
+        // (e.g. ApiCallerService). EventBus handlers run concurrently.
+        await eventBus.PublishAsync(sportEvent);
     }
 }

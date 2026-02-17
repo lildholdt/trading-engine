@@ -42,6 +42,7 @@ public static class Application
         
         // Register services
         builder.Services.AddHostedService<PolyMarketSyncService>();
+        builder.Services.AddHostedService<OddsAPIService>(); // internal API caller subscribed to EventBus
         
         // Register clients
         builder.Services.AddHttpClient();
