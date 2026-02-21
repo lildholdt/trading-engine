@@ -3,4 +3,7 @@
   <Folder Name="/src/TradingEngine/">
     <Project Path="src/TradingEngine/TradingEngine.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TradingEngine.UnitTests/TradingEngine.UnitTests.csproj" />
+  </Folder>
 </Solution>

@@ -8,6 +8,7 @@ using TradingEngine.Infrastructure.Dispatcher;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
 using TradingEngine.Services;
+using TradingEngine.Utils;
 
 namespace TradingEngine;
 
@@ -37,11 +38,14 @@ public static class Application
         // Register in-memory repository for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
         
-        
+        // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
         
         // Register services
         builder.Services.AddHostedService<PolyMarketSyncService>();
+        
+        // Register utils
+        builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
         
         // Register clients
         builder.Services.AddHttpClient();
