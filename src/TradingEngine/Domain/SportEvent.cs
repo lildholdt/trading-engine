@@ -4,17 +4,32 @@ namespace TradingEngine.Domain;
 
 public class SportEvent(string id) : Entity<string>(id)
 {
-    public required DateTime DateTime { get; init; }
+    public required DateTime StartDate { get; init; }
     public required string Sport  { get; init; }
     public required string League { get; init; }
     public required string Team1 { get; init; }
     public required string Team2 { get; init; }
-    public required string Market { get; init; }
-    public required decimal MarketDetail { get; init; }
-    public required decimal Outcome1 { get; init; }
-    public required decimal Outcome2 { get; init; }
-    public required decimal OutcomeX { get; init; }
-    public required decimal Odds1 { get; init; }
-    public required decimal Odds2 { get; init; }
-    public required decimal OddsX { get; init; }
+    
+    public IEnumerable<Market> Markets { get; init; } = new List<Market>();
+}
+
+public class Market : ValueObject
+{
+    public required int Id { get; init; }
+    public required DateTime StartDate { get; init; }
+    public required IEnumerable<MarketOutcome> Outcomes { get; init; } = new List<MarketOutcome>();
+}
+
+public class MarketOutcome : ValueObject
+{
+    public OutcomeType Type { get; init; }
+    public decimal Odds { get; init; }
+}
+
+public enum OutcomeType
+{
+    Yes,
+    No,
+    Over,
+    Under
 }

@@ -14,19 +14,11 @@ public class SportEventDataAvailableHandler(
         var sportEvent = new SportEvent(@event.Id)
         {
             Id = @event.Id,
-            DateTime = @event.DateTime,
+            StartDate = @event.DateTime,
             League = @event.League,
             Sport = @event.Sport,
             Team1 = @event.Team1,
-            Team2 = @event.Team2,
-            Market = null,
-            MarketDetail = 0,
-            Outcome1 = 0,
-            Outcome2 = 0,
-            OutcomeX = 0,
-            Odds1 = 0,
-            Odds2 = 0,
-            OddsX = 0
+            Team2 = @event.Team2
         };
         
         await repository.SaveAsync(sportEvent, cancellationToken);

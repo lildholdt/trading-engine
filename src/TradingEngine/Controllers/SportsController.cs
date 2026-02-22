@@ -61,19 +61,11 @@ public class SportsController(
     {
         var sport = new SportEvent("1")
         {
-            DateTime = DateTime.Now,
+            StartDate = DateTime.Now,
             Sport = "soccer",
             League = "test",
             Team1 = "team1",
-            Team2 = "team2",
-            Market = "market",
-            MarketDetail = 0,
-            Outcome1 = 0,
-            Outcome2 = 0,
-            OutcomeX = 0,
-            Odds1 = 0,
-            Odds2 = 0,
-            OddsX = 0
+            Team2 = "team2"
         };
         
         await hub.PublishAsync(sport);
