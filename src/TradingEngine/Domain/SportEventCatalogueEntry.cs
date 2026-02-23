@@ -2,9 +2,9 @@
 
 namespace TradingEngine.Domain;
 
-public class SportEvent(string id) : Entity<string>(id)
+public class SportEventCatalogueEntry(string id) : Entity<string>(id)
 {
-    public required DateTime StartDate { get; init; }
+    public required DateTime StartTime { get; init; }
     public required string Sport  { get; init; }
     public required string League { get; init; }
     public required string Team1 { get; init; }

@@ -3,8 +3,10 @@ using Serilog;
 using TradingEngine.Clients;
 using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
+using TradingEngine.Domain.PlaceOrder;
+using TradingEngine.Domain.SportEventCatalogueEntryAdded;
 using TradingEngine.Infrastructure;
-using TradingEngine.Infrastructure.Dispatcher;
+using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
 using TradingEngine.Services;
@@ -25,24 +27,35 @@ public static class Application
         builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"));
         
         // Register dispatcher
-        builder.Services.AddHostedService<DispatcherService>();
-        builder.Services.AddSingleton<IDispatcher>(sp => sp.GetRequiredService<Dispatcher>());
-        builder.Services.AddSingleton<Dispatcher>();
-        
-        // Register dispatcher handlers
-        builder.Services.AddScoped<IDispatchableEventHandler<SportEventDataAvailable>, SportEventDataAvailableHandler>();
+        // builder.Services.AddSingleton<IDispatcher>(sp => sp.GetRequiredService<Dispatcher>());
+        // builder.Services.AddSingleton<Dispatcher>();
+        // builder.Services.AddHostedService<DispatcherService>();
         
         // Register event bus
-        builder.Services.AddSingleton<IEventBus, EventBus>();
+        builder.Services.AddHostedService<EventBusWorker>();
+        builder.Services.AddSingleton<EventBus>();
+        builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
+        builder.Services.AddSingleton<IEventHandler<SportEventCatalogueEntryAdded>, SportEventCatalogueEntryAddedHandler>();
         
-        // Register in-memory repository for entities
+        // Register command bus
+        builder.Services.AddHostedService<CommandBusWorker>();
+        builder.Services.AddSingleton<CommandBus>();
+        builder.Services.AddSingleton<ICommandBus>(sp => sp.GetRequiredService<CommandBus>());
+        builder.Services.AddSingleton<ICommandHandler<PlaceOrderCommand>,  PlaceOrderCommandHandler>();
+        
+        // Register actor system
+        builder.Services.AddSingleton<ISportEventActorSystem,  SportEventActorSystem>();
+        
+        // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
+        builder.Services.AddSingleton<ISportEventCatalogue, SportEventCatalogue>();
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
         
         // Register services
-        builder.Services.AddHostedService<PolyMarketSyncService>();
+        // builder.Services.AddHostedService<PolyMarketSyncService>();
+        
         
         // Register utils
         builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();

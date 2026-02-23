@@ -1,12 +1,14 @@
 ﻿using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
-using TradingEngine.Infrastructure.Dispatcher;
+using TradingEngine.Domain.SportEventCatalogueEntryAdded;
+using TradingEngine.Infrastructure.EventBus;
 
 namespace TradingEngine.Services;
 
 public class PolyMarketSyncService(
     IPolyMarketApiClient httpClient,
-    IDispatcher dispatcher, 
+    IEventBus eventBus,
+    ISportEventCatalogue catalogue,
     ILogger<PolyMarketSyncService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -20,17 +22,20 @@ public class PolyMarketSyncService(
                 {
                     var teams = @event.Title.Split(" vs. ");
                     if (teams.Length != 2) return;
-                    var eventData = new SportEventDataAvailable
+                    var catalogueEntry = new SportEventCatalogueEntry(@event.Id)
                     {
-                        Id = @event.Id,
-                        DateTime = @event.StartTime,
+                        StartTime = @event.StartTime,
                         League = @event.Series.First().Title,
                         Sport = @event.Tags.Last().Label,
                         Team1 = teams[0],
                         Team2 = teams[1],
                     };
-
-                    dispatcher.Enqueue(eventData, stoppingToken);
+                        
+                    // Save to the catalogue
+                    _ = catalogue.SaveAsync(catalogueEntry, stoppingToken);
+                    
+                    // Publish sport event catalogue entry added event 
+                    eventBus.PublishAsync(new SportEventCatalogueEntryAdded { SportEvent = catalogueEntry }, stoppingToken);
                 });
             }
             catch (Exception ex)
