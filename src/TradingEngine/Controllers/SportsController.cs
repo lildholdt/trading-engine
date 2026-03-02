@@ -2,8 +2,6 @@
 using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
 using TradingEngine.Domain.MarketUpdate;
-using TradingEngine.Domain.SportEventCatalogueEntryAdded;
-using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
 
 namespace TradingEngine.Controllers;
@@ -11,7 +9,7 @@ namespace TradingEngine.Controllers;
 [ApiController]
 [Route("api")]
 public class SportsController(
-    IEventBus eventBus,
+    ISportEventCatalogue sportEventCatalogue,
     ISportEventActorSystem actorSystem,
     IPolyMarketApiClient client,
     IHubPublisher<SportEventCatalogueEntry> hub) : ControllerBase
@@ -57,9 +55,9 @@ public class SportsController(
     }
     
     [HttpPost("sport-event")]
-    public async Task<IActionResult> CreateSportEvent()
+    public async Task<IActionResult> CreateSportCatalogueEntry()
     {
-        var eventData = new SportEventCatalogueEntry("TestId")
+        var catalogueEntry = new SportEventCatalogueEntry("TestId")
         {
             StartTime = DateTime.Now,
             League = "TestLeague",
@@ -67,8 +65,9 @@ public class SportsController(
             Team1 = "Team1",
             Team2 = "Team2",
         };
-       
-        await eventBus.PublishAsync(new SportEventCatalogueEntryAdded {SportEvent =  eventData});
+                        
+        // Save to the catalogue
+        await sportEventCatalogue.SaveAsync(catalogueEntry);
         return Ok();
     }
     

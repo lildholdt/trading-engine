@@ -1,19 +1,16 @@
 ﻿using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
-using TradingEngine.Domain.SportEventCatalogueEntryAdded;
-using TradingEngine.Infrastructure.EventBus;
 
 namespace TradingEngine.Services;
 
 public class PolyMarketSyncService(
     IPolyMarketApiClient httpClient,
-    IEventBus eventBus,
     ISportEventCatalogue catalogue,
     ILogger<PolyMarketSyncService> logger) : BackgroundService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
@@ -32,10 +29,7 @@ public class PolyMarketSyncService(
                     };
                         
                     // Save to the catalogue
-                    _ = catalogue.SaveAsync(catalogueEntry, stoppingToken);
-                    
-                    // Publish sport event catalogue entry added event 
-                    eventBus.PublishAsync(new SportEventCatalogueEntryAdded { SportEvent = catalogueEntry }, stoppingToken);
+                    _ = catalogue.SaveAsync(catalogueEntry, cancellationToken);
                 });
             }
             catch (Exception ex)
@@ -44,7 +38,7 @@ public class PolyMarketSyncService(
             }
 
             // Wait before polling again
-            await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken); // Adjust polling interval as needed
+            await Task.Delay(TimeSpan.FromSeconds(20), cancellationToken); // Adjust polling interval as needed
         }
     }
 }

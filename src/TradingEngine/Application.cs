@@ -9,7 +9,6 @@ using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
-using TradingEngine.Services;
 using TradingEngine.Utils;
 
 namespace TradingEngine;
@@ -35,7 +34,7 @@ public static class Application
         builder.Services.AddHostedService<EventBusWorker>();
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
-        builder.Services.AddSingleton<IEventHandler<SportEventCatalogueEntryAdded>, SportEventCatalogueEntryAddedHandler>();
+        builder.Services.AddSingleton<IEventHandler<SportEventCatalogueEntryAddedEvent>, SportEventCatalogueEntryAddedEventHandler>();
         
         // Register command bus
         builder.Services.AddHostedService<CommandBusWorker>();

@@ -2,7 +2,7 @@
 
 namespace TradingEngine.Domain.SportEventCatalogueEntryAdded;
 
-public class SportEventCatalogueEntryAdded : IEvent
+public class SportEventCatalogueEntryAddedEvent : IEvent
 {
     public required SportEventCatalogueEntry SportEvent { get; init; }
 }

@@ -4,7 +4,10 @@ using TradingEngine.Infrastructure.EventBus;
 
 namespace TradingEngine.Domain;
 
-public sealed class SportEventActorSystem(ICommandBus commandBus, IEventBus eventBus) : ISportEventActorSystem
+public sealed class SportEventActorSystem(
+    ICommandBus commandBus, 
+    IEventBus eventBus,
+    ILogger<SportEventActorSystem> logger) : ISportEventActorSystem
 {
     private readonly ConcurrentDictionary<string, SportEventActor> _actors = new();
 
@@ -24,6 +27,9 @@ public sealed class SportEventActorSystem(ICommandBus commandBus, IEventBus even
             Team1 = entry.Team1,
             Team2 = entry.Team2,
         });
+        
+        logger.LogInformation("SportEventActor created for {EntryTeam1} vs {EntryTeam2}", entry.Team1, entry.Team2);
+        
         return ValueTask.CompletedTask;
     }
 
