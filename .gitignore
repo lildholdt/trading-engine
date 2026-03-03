@@ -1,0 +1,6 @@
+# Build folders
+bin/
+obj/
+
+# Solution file
+*.sln

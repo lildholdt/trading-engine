@@ -1,6 +1,7 @@
 ﻿using Microsoft.OpenApi;
 using Serilog;
 using TradingEngine.Clients;
+using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
 using TradingEngine.Domain.PlaceOrder;
@@ -9,6 +10,7 @@ using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
+using TradingEngine.Services;
 using TradingEngine.Utils;
 
 namespace TradingEngine;
@@ -30,6 +32,9 @@ public static class Application
         // builder.Services.AddSingleton<Dispatcher>();
         // builder.Services.AddHostedService<DispatcherService>();
         
+        // Register utils
+        builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
+
         // Register event bus
         builder.Services.AddHostedService<EventBusWorker>();
         builder.Services.AddSingleton<EventBus>();
@@ -48,25 +53,26 @@ public static class Application
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
         builder.Services.AddSingleton<ISportEventCatalogue, SportEventCatalogue>();
+        builder.Services.AddSingleton<IOddsEventCatalogue, OddsEventCatalogue>();
+
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
-        
-        // Register services
-        // builder.Services.AddHostedService<PolyMarketSyncService>();
-        
-        
-        // Register utils
-        builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
         
         // Register clients
         builder.Services.AddHttpClient();
         builder.Services.AddTransient<LoggingHandler>();
         builder.Services.AddHttpClient<IPolyMarketApiClient, PolyMarketApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
-        
+        builder.Services.AddHttpClient<IOddsApiApiClient, OddsApiApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
+                
         builder.Services.AddControllers();
         builder.Services.AddSignalR();
         
+        // Register services
+        builder.Services.AddHostedService<PolyMarketSyncService>();
+        builder.Services.AddHostedService<TeamMatchService>();
+        builder.Services.AddHostedService<OddsApiSyncService>();
+
         // Configure Serilog
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()   

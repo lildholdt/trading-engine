@@ -38,7 +38,7 @@ public class PolyMarketSyncService(
             }
 
             // Wait before polling again
-            await Task.Delay(TimeSpan.FromSeconds(20), cancellationToken); // Adjust polling interval as needed
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken); // Adjust polling interval as needed
         }
     }
 }

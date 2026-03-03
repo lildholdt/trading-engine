@@ -7,6 +7,8 @@ namespace TradingEngine.Domain;
 public interface ISportEventCatalogue
 {
     Task SaveAsync(SportEventCatalogueEntry entry, CancellationToken cancellationToken = default);
+    Task<IEnumerable<SportEventCatalogueEntry>> GetAllAsync(CancellationToken cancellationToken = default);
+
 }
 
 public class SportEventCatalogue(
@@ -23,5 +25,10 @@ public class SportEventCatalogue(
         {
             SportEvent = entry
         }, cancellationToken);
+    }
+
+        public async Task<IEnumerable<SportEventCatalogueEntry>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await repository.GetAllAsync(cancellationToken);
     }
 }
