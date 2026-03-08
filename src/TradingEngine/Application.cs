@@ -27,11 +27,6 @@ public static class Application
         // Bind the ApplicationSettings section to the ApplicationSettings class
         builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"));
         
-        // Register dispatcher
-        // builder.Services.AddSingleton<IDispatcher>(sp => sp.GetRequiredService<Dispatcher>());
-        // builder.Services.AddSingleton<Dispatcher>();
-        // builder.Services.AddHostedService<DispatcherService>();
-        
         // Register utils
         builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
 
@@ -54,7 +49,6 @@ public static class Application
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
         builder.Services.AddSingleton<ISportEventCatalogue, SportEventCatalogue>();
         builder.Services.AddSingleton<IOddsEventCatalogue, OddsEventCatalogue>();
-
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
@@ -127,7 +121,6 @@ public static class Application
         
         // Use CORS middleware
         app.UseCors("AllowAll");
-        
         
         app.UseRouting();
         app.UseAuthorization();
