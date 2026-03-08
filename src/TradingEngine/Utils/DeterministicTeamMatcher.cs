@@ -14,7 +14,7 @@ public class DeterministicTeamMatcher(IOptions<ApplicationSettings> options) : I
     // These are common elements found in football team names, such as "fc", "club", or "u21".
     private static readonly HashSet<string> NoiseWords = new(StringComparer.OrdinalIgnoreCase)
     {
-        "fc", "cf", "sc", "afc", "bk", "fk", "if", // Common abbreviations in football team names
+        "fc", "cf", "sc", "afc", "bk", "fk", "if", "sv", // Common abbreviations in football team names
         "football", "club", "women", "w", "u19", "u21" // Additional descriptive words or age groups
     };
 
@@ -84,10 +84,11 @@ public class DeterministicTeamMatcher(IOptions<ApplicationSettings> options) : I
         var setB = b.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToHashSet();
 
         // Calculate the size of the intersection between the two sets.
-        var intersection = setA.Intersect(setB).Count();
+        var intersection = setA.Count(tokenA => 
+            setB.Any(tokenB => Fuzz.PartialRatio(tokenA, tokenB) > 80)); // Partial match threshold
 
         // Calculate the size of the union between the two sets.
-        var union = setA.Union(setB).Count();
+        var union = setA.Count + setB.Count - intersection;
 
         // If the union is zero (e.g., both strings are empty or contain no valid tokens),
         // return a similarity of 0, as there is no meaningful comparison to be made.
@@ -106,6 +107,16 @@ public class DeterministicTeamMatcher(IOptions<ApplicationSettings> options) : I
         return Fuzz.TokenSetRatio(a, b) / 100.0;
     }
     
+    private static double NoSpaceSimilarity(string a, string b)
+    {
+        // Remove spaces from both strings
+        var noSpaceA = a.Replace(" ", string.Empty);
+        var noSpaceB = b.Replace(" ", string.Empty);
+
+        // Use FuzzySharp's TokenSetRatio to compute similarity of the no-space strings
+        return Fuzz.TokenSetRatio(noSpaceA, noSpaceB) / 100.0; // Normalise to 0-1 range
+    }
+    
     public double MatchScore(string nameA, string nameB)
     {
         // Step 1: Normalize both team names to remove noise words, punctuation, diacritics, etc.
@@ -115,23 +126,30 @@ public class DeterministicTeamMatcher(IOptions<ApplicationSettings> options) : I
         // Step 2: If either name is empty after normalization, return a score of 0 (no meaningful comparison).
         if (string.IsNullOrWhiteSpace(normA) || string.IsNullOrWhiteSpace(normB))
             return 0;
+        
+        // Step 3: Perform substring matching
+        if (normA.Contains(normB) || normB.Contains(normA))
+            return 1;
 
-        // Step 3: Calculate token-based similarity using the Jaccard coefficient.
+        // Step 4: Calculate token-based similarity using the Jaccard coefficient.
         var tokenScore = Jaccard(normA, normB);
 
-        // Step 4: Calculate fuzzy similarity using the Jaro-Winkler algorithm.
+        // Step 5: Calculate fuzzy similarity using the Jaro-Winkler algorithm.
         var fuzzyScore = JaroWinkler(normA, normB);
+        
+        var noSpaceScore = NoSpaceSimilarity(normA, normB); // No-space similarity
 
-        // Step 5: Compute a weighted composite score by combining the token-based and fuzzy similarity scores.
+        // Step 6: Compute a weighted composite score by combining the token-based and fuzzy similarity scores.
         // The token-based score is weighted at 60%, and the fuzzy score is weighted at 40%.
         var finalScore =
-            _options.TokenWeight * tokenScore + // Token similarity has more weight in the composite score.
-            _options.FuzzyWeight * fuzzyScore;  // Fuzzy similarity contributes less but accounts for subtle differences.
+            _options.TeamMatching.TokenWeight * tokenScore + 
+            _options.TeamMatching.FuzzyWeight * fuzzyScore +  
+            _options.TeamMatching.NoSpaceWeight * noSpaceScore;
 
-        // Step 6: Return the final composite similarity score as a value between 0.0 and 1.0.
+        // Step 7: Return the final composite similarity score as a value between 0.0 and 1.0.
         return finalScore;
     }
 
     public bool IsMatch(string nameA, string nameB)
-        => MatchScore(nameA, nameB) >= _options.Threshold; // Return true if the match score meets or exceeds the threshold.
+        => MatchScore(nameA, nameB) >= _options.TeamMatching.Threshold; // Return true if the match score meets or exceeds the threshold.
 }

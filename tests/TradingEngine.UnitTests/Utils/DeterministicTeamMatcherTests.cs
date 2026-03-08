@@ -13,12 +13,14 @@ namespace TradingEngine.UnitTests.Utils
         {
             // Mock configuration settings
             var mockOptions = new Mock<IOptions<ApplicationSettings>>();
-            mockOptions.Setup(o => o.Value).Returns(new ApplicationSettings
+            var teamMatching = new TeamMatching
             {
-                TokenWeight = 0.6, // Token similarity weight
+                Threshold = 0.8, // Matching threshold
+                TokenWeight = 0.4, // Token similarity weight
                 FuzzyWeight = 0.4, // Fuzzy similarity weight
-                Threshold = 0.9    // Matching threshold
-            });
+                NoSpaceWeight = 0.2, // Fuzzy similarity weight
+            };
+            mockOptions.Setup(o => o.Value).Returns(new ApplicationSettings { TeamMatching = teamMatching });
 
             // Initialize the DeterministicTeamMatcher with the mocked options
             _teamMatcher = new DeterministicTeamMatcher(mockOptions.Object);
@@ -113,7 +115,12 @@ namespace TradingEngine.UnitTests.Utils
         [InlineData("Juventus FC", "Juventus", true)] // Similar names, should match
         [InlineData("Paris Saint Germain", "PSG", false)] // Different abbreviations, may not match
         [InlineData("AC Milan", "Inter Milan", false)] // Different teams, should not match
-        [InlineData(" Borussia Dortmund", "Borussia", false)] // Noise word removed, should match
+        [InlineData("Man City", "Manchester City", true)] 
+        [InlineData("Nottingham Fc Forest", "Nottingham Forest FC", true)] 
+        [InlineData("Hamburg SV", "Hamburger SV", true)] 
+        [InlineData("FC Phoenix 1976", "1976 FC Phoenix", true)] 
+        [InlineData("Robert Morris Colonials", "Robert Morris", true)]
+        [InlineData("Youngstown State Penguins", "Youngs town State Penguins", true)]
         public void IsMatch_ShouldReturnExpectedResult(string nameA, string nameB, bool expected)
         {
             // Act
