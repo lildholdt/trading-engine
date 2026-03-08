@@ -1,17 +1,16 @@
 ﻿using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
-using TradingEngine.Infrastructure.Dispatcher;
 
 namespace TradingEngine.Services;
 
 public class PolyMarketSyncService(
     IPolyMarketApiClient httpClient,
-    IDispatcher dispatcher, 
+    ISportEventCatalogue catalogue,
     ILogger<PolyMarketSyncService> logger) : BackgroundService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
@@ -20,17 +19,17 @@ public class PolyMarketSyncService(
                 {
                     var teams = @event.Title.Split(" vs. ");
                     if (teams.Length != 2) return;
-                    var eventData = new SportEventDataAvailable
+                    var catalogueEntry = new SportEventCatalogueEntry(@event.Id)
                     {
-                        Id = @event.Id,
-                        DateTime = @event.StartTime,
+                        StartTime = @event.StartTime,
                         League = @event.Series.First().Title,
                         Sport = @event.Tags.Last().Label,
                         Team1 = teams[0],
                         Team2 = teams[1],
                     };
-
-                    dispatcher.Enqueue(eventData, stoppingToken);
+                        
+                    // Save to the catalogue
+                    _ = catalogue.SaveAsync(catalogueEntry, cancellationToken);
                 });
             }
             catch (Exception ex)
@@ -39,7 +38,7 @@ public class PolyMarketSyncService(
             }
 
             // Wait before polling again
-            await Task.Delay(TimeSpan.FromSeconds(20), stoppingToken); // Adjust polling interval as needed
+            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken); // Adjust polling interval as needed
         }
     }
 }

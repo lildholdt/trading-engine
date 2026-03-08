@@ -6,6 +6,12 @@ public interface IRepository<TEntity, in TId>
     where TId : notnull          // Constraint: TId must be a non-nullable type.
 {
     /// <summary>
+    /// Asynchronously retrieves all entities in the repository.
+    /// </summary>
+    /// <param name="cancellationToken">Optional cancellation token to cancel the operation.</param>
+    /// <returns>An enumerable collection of all entities.</returns>
+    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default);
+    /// <summary>
     /// Asynchronously retrieves an entity by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the entity.</param>

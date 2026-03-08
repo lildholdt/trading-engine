@@ -5,5 +5,5 @@
 public interface IEventHandler<in TEvent> where TEvent : IEvent
 {
     // Handles the event of type TEvent asynchronously.
-    Task HandleAsync(TEvent @event);
+    Task HandleAsync(TEvent @event, CancellationToken cancellationToken);
 }

@@ -9,6 +9,12 @@ public class InMemoryRepository<TEntity, TId> : IRepository<TEntity, TId>
     // Internal storage for entities, implemented as a thread-safe dictionary.
     private readonly ConcurrentDictionary<TId, TEntity> _store = new();
 
+    public async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return await Task.FromResult(_store.Values);
+    }
+
     public async Task<TEntity?> GetByIdAsync(TId id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested(); // Check for cancellation.

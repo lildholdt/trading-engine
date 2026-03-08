@@ -1,0 +1,125 @@
+# Logs
+*.log
+logs/
+**/*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE/project files
+.vscode/
+.idea/
+*.code-workspace
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build output
+dist/
+build/
+out/
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+
+# macOS specific files
+.AppleDouble
+.Latexmk
+
+# Windows specific files
+Desktop.ini
+
+# Python files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Java files
+*.class
+
+# Miscellaneous files
+*.lock
+*.gz
+*.tar
+*.zip
+
+# Coverage reports
+coverage/
+*.cover
+*.lcov
+
+# Generated files
+*.min.js
+*.map
+
+# Git-specific files
+.gitignore
+.gitconfig
+
+# Ignore package-lock.json/yarn.lock if not needed
+package-lock.json
+yarn.lock
+
+# .NET files
+*.dll
+*.pdb
+*.exe
+*.app
+*.ipa
+*.so
+*.dylib
+*.class
+*.jar
+*.war
+*.nar
+*.swf
+*.xap
+*.sql
+*.sqlite
+*.mdf
+*.ldf
+*.log
+
+# Visual Studio / .NET build directories
+obj/
+bin/
+TestResults/
+
+# Visual Studio specific files
+.vs/
+*.user
+*.suo
+*.sln.docstates
+*.vcxproj.user
+*.builds
+*.pidb
+*.opendb
+*.VC.db
+
+# Rider IDE files
+.idea/
+*.sln.iml
+
+# ASP.NET
+wwwroot/
+appsettings.json
+appsettings.*.json
+
+# NuGet files
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+
+# Azure Web Apps
+azds/
+
+# JetBrains Rider
+_ReSharper.*

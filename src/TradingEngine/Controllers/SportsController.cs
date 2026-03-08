@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
-using TradingEngine.Infrastructure.Dispatcher;
-using TradingEngine.Infrastructure.EventBus;
+using TradingEngine.Domain.MarketUpdate;
 using TradingEngine.Infrastructure.Hub;
 
 namespace TradingEngine.Controllers;
@@ -10,10 +9,10 @@ namespace TradingEngine.Controllers;
 [ApiController]
 [Route("api")]
 public class SportsController(
-    IDispatcher dispatcher, 
-    IEventBus eventBus,
+    ISportEventCatalogue sportEventCatalogue,
+    ISportEventActorSystem actorSystem,
     IPolyMarketApiClient client,
-    IHubPublisher<SportEvent> hub) : ControllerBase
+    IHubPublisher<SportEventCatalogueEntry> hub) : ControllerBase
 {
     [HttpGet("sports")]
     public async Task<IActionResult> GetSports()
@@ -39,44 +38,44 @@ public class SportsController(
         return Ok();
     }
     
-    [HttpGet("dispatch")]
-    public IActionResult Dispatch()
+    [HttpGet("publish")]
+    public async Task<IActionResult> Publish()
     {
-        var eventData = new SportEventDataAvailable
+        var sport = new SportEventCatalogueEntry("1")
         {
-            Id = "TestId",
-            DateTime = DateTime.Now,
+            StartTime = DateTime.Now,
+            Sport = "soccer",
+            League = "test",
+            Team1 = "team1",
+            Team2 = "team2"
+        };
+        
+        await hub.PublishAsync(sport);
+        return Ok();
+    }
+    
+    [HttpPost("sport-event")]
+    public async Task<IActionResult> CreateSportCatalogueEntry()
+    {
+        var catalogueEntry = new SportEventCatalogueEntry("TestId")
+        {
+            StartTime = DateTime.Now,
             League = "TestLeague",
             Sport = "TestSport",
             Team1 = "Team1",
             Team2 = "Team2",
         };
-       
-        dispatcher.Enqueue(eventData);
+                        
+        // Save to the catalogue
+        await sportEventCatalogue.SaveAsync(catalogueEntry);
         return Ok();
     }
     
-    [HttpGet("publish")]
-    public async Task<IActionResult> Publish()
+    [HttpPost("market-update")]
+    public async Task<IActionResult> CreateMarketUpdate()
     {
-        var sport = new SportEvent("1")
-        {
-            DateTime = DateTime.Now,
-            Sport = "soccer",
-            League = "test",
-            Team1 = "team1",
-            Team2 = "team2",
-            Market = "market",
-            MarketDetail = 0,
-            Outcome1 = 0,
-            Outcome2 = 0,
-            OutcomeX = 0,
-            Odds1 = 0,
-            Odds2 = 0,
-            OddsX = 0
-        };
-        
-        await hub.PublishAsync(sport);
+        var marketUpdateMessage = new MarketUpdateMessage("TestId") { HomeOdds = 2 };
+        await actorSystem.SendAsync(marketUpdateMessage);
         return Ok();
     }
 }

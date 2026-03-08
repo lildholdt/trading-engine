@@ -1,10 +1,13 @@
 ﻿using Microsoft.OpenApi;
 using Serilog;
 using TradingEngine.Clients;
+using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
+using TradingEngine.Domain.PlaceOrder;
+using TradingEngine.Domain.SportEventCatalogueEntryAdded;
 using TradingEngine.Infrastructure;
-using TradingEngine.Infrastructure.Dispatcher;
+using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
 using TradingEngine.Services;
@@ -24,37 +27,46 @@ public static class Application
         // Bind the ApplicationSettings section to the ApplicationSettings class
         builder.Services.Configure<ApplicationSettings>(builder.Configuration.GetSection("ApplicationSettings"));
         
-        // Register dispatcher
-        builder.Services.AddHostedService<DispatcherService>();
-        builder.Services.AddSingleton<IDispatcher>(sp => sp.GetRequiredService<Dispatcher>());
-        builder.Services.AddSingleton<Dispatcher>();
-        
-        // Register dispatcher handlers
-        builder.Services.AddScoped<IDispatchableEventHandler<SportEventDataAvailable>, SportEventDataAvailableHandler>();
-        
+        // Register utils
+        builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
+
         // Register event bus
-        builder.Services.AddSingleton<IEventBus, EventBus>();
+        builder.Services.AddHostedService<EventBusWorker>();
+        builder.Services.AddSingleton<EventBus>();
+        builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
+        builder.Services.AddSingleton<IEventHandler<SportEventCatalogueEntryAddedEvent>, SportEventCatalogueEntryAddedEventHandler>();
         
-        // Register in-memory repository for entities
+        // Register command bus
+        builder.Services.AddHostedService<CommandBusWorker>();
+        builder.Services.AddSingleton<CommandBus>();
+        builder.Services.AddSingleton<ICommandBus>(sp => sp.GetRequiredService<CommandBus>());
+        builder.Services.AddSingleton<ICommandHandler<PlaceOrderCommand>,  PlaceOrderCommandHandler>();
+        
+        // Register actor system
+        builder.Services.AddSingleton<ISportEventActorSystem,  SportEventActorSystem>();
+        
+        // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
+        builder.Services.AddSingleton<ISportEventCatalogue, SportEventCatalogue>();
+        builder.Services.AddSingleton<IOddsEventCatalogue, OddsEventCatalogue>();
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
-        
-        // Register services
-        builder.Services.AddHostedService<PolyMarketSyncService>();
-        
-        // Register utils
-        builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
         
         // Register clients
         builder.Services.AddHttpClient();
         builder.Services.AddTransient<LoggingHandler>();
         builder.Services.AddHttpClient<IPolyMarketApiClient, PolyMarketApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
-        
+        builder.Services.AddHttpClient<IOddsApiApiClient, OddsApiApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
+                
         builder.Services.AddControllers();
         builder.Services.AddSignalR();
         
+        // Register services
+        builder.Services.AddHostedService<PolyMarketSyncService>();
+        builder.Services.AddHostedService<TeamMatchService>();
+        builder.Services.AddHostedService<OddsApiSyncService>();
+
         // Configure Serilog
         Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()   
@@ -109,7 +121,6 @@ public static class Application
         
         // Use CORS middleware
         app.UseCors("AllowAll");
-        
         
         app.UseRouting();
         app.UseAuthorization();
