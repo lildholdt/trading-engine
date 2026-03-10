@@ -1,9 +1,8 @@
-﻿using System.Text.Json;
-using TradingEngine.Clients.OddsApi.Models;
+﻿using TradingEngine.Clients.OddsApi.Models;
 
 namespace TradingEngine.Clients.OddsApi;
 
-public class OddsApiApiClient(HttpClient httpClient) : IOddsApiApiClient
+public class OddsApiClient(HttpClient httpClient) : IOddsApiApiClient
 {
     private const string BaseUrl = "https://api.the-odds-api.com/v4";
 

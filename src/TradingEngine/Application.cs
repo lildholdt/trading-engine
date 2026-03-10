@@ -5,12 +5,13 @@ using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.PolyMarket;
 using TradingEngine.Domain;
 using TradingEngine.Domain.PlaceOrder;
-using TradingEngine.Domain.SportEventCatalogueEntryAdded;
 using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
 using TradingEngine.Services;
+using TradingEngine.Services.OddsApi;
+using TradingEngine.Services.PolyMarket;
 using TradingEngine.Utils;
 
 namespace TradingEngine;
@@ -34,7 +35,8 @@ public static class Application
         builder.Services.AddHostedService<EventBusWorker>();
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
-        builder.Services.AddSingleton<IEventHandler<SportEventCatalogueEntryAddedEvent>, SportEventCatalogueEntryAddedEventHandler>();
+        builder.Services.AddSingleton<IEventHandler<PolymarketEventCatalogueEntryAdded>,  EventCorrelationService>();
+        builder.Services.AddSingleton<IEventHandler<OddsApiEventCatalogueEntryAdded>,  EventCorrelationService>();
         
         // Register command bus
         builder.Services.AddHostedService<CommandBusWorker>();
@@ -47,8 +49,8 @@ public static class Application
         
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
-        builder.Services.AddSingleton<ISportEventCatalogue, SportEventCatalogue>();
-        builder.Services.AddSingleton<IOddsEventCatalogue, OddsEventCatalogue>();
+        builder.Services.AddSingleton<IPolymarketEventCatalogue, PolymarketEventCatalogue>();
+        builder.Services.AddSingleton<IOddsApiEventCatalogue, OddsApiEventCatalogue>();
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
@@ -56,15 +58,17 @@ public static class Application
         // Register clients
         builder.Services.AddHttpClient();
         builder.Services.AddTransient<LoggingHandler>();
-        builder.Services.AddHttpClient<IPolyMarketApiClient, PolyMarketApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
-        builder.Services.AddHttpClient<IOddsApiApiClient, OddsApiApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
+        //builder.Services.AddHttpClient<IPolyMarketApiClient, PolyMarketApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
+        builder.Services.AddHttpClient<IOddsApiApiClient, OddsApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
+        
+        builder.Services.AddSingleton<IPolymarketApiClient>(_ => new PolymarketApiClientStub("Clients/polymarket/polymarket-events.json"));
+        builder.Services.AddSingleton<IOddsApiApiClient>(_ => new OddsApiClientStub("Clients/oddsapi/oddsapi-events.json"));
                 
         builder.Services.AddControllers();
         builder.Services.AddSignalR();
         
         // Register services
-        builder.Services.AddHostedService<PolyMarketSyncService>();
-        builder.Services.AddHostedService<TeamMatchService>();
+        builder.Services.AddHostedService<PolymarketSyncService>();
         builder.Services.AddHostedService<OddsApiSyncService>();
 
         // Configure Serilog

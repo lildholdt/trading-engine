@@ -4,7 +4,7 @@ using TradingEngine.Infrastructure.CommandBus;
 namespace TradingEngine.Domain.PlaceOrder;
 
 public class PlaceOrderCommandHandler(
-    IPolyMarketApiClient polyMarketApiClient, 
+    IPolymarketApiClient polymarketApiClient, 
     ILogger<PlaceOrderCommandHandler> logger) 
     : ICommandHandler<PlaceOrderCommand> 
 {

@@ -1,14 +1,10 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using TradingEngine.Clients.OddsApi;
-using TradingEngine.Clients.OddsApi.Models;
-using TradingEngine.Domain;
 
-namespace TradingEngine.Services;
+namespace TradingEngine.Services.OddsApi;
 
 public class OddsApiSyncService(
     IOddsApiApiClient oddsApiClient,
-    IOddsEventCatalogue oddsEventCatalogue,
+    IOddsApiEventCatalogue oddsApiEventCatalogue,
     ILogger<OddsApiSyncService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -20,15 +16,7 @@ public class OddsApiSyncService(
                 var matches = await oddsApiClient.GetAllMatches();
                 foreach (var match in matches)
                 {
-                    var entry = new OddsEventCatalogueEntry(match.Id)
-                    {
-                        CommenceTime = match.CommenceTime,
-                        League = match.SportTitle,
-                        Sport = match.SportKey,
-                        Team1 = match.HomeTeam,
-                        Team2 = match.AwayTeam
-                    };
-                    await oddsEventCatalogue.SaveAsync(entry, cancellationToken);
+                    await oddsApiEventCatalogue.Add(match);
                 }
             }
             catch (Exception ex)

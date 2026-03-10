@@ -1,7 +1,9 @@
 ﻿using System.Threading.Channels;
 using TradingEngine.Domain.PlaceOrder;
+using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
+using TradingEngine.Services.PolyMarket;
 
 namespace TradingEngine.Domain;
 
@@ -62,4 +64,26 @@ public sealed class SportEventActor
 
     private bool ShouldPlaceBet()
         => true;
+    
+    
+    public class Market : ValueObject
+    {
+        public required int Id { get; init; }
+        public required DateTime StartDate { get; init; }
+        public required IEnumerable<MarketOutcome> Outcomes { get; init; } = new List<MarketOutcome>();
+    }
+
+    public class MarketOutcome : ValueObject
+    {
+        public OutcomeType Type { get; init; }
+        public decimal Odds { get; init; }
+    }
+
+    public enum OutcomeType
+    {
+        Yes,
+        No,
+        Over,
+        Under
+    }
 }
