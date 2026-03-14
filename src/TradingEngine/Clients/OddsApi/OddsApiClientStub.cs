@@ -1,34 +1,33 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using TradingEngine.Clients.OddsApi.Models;
-using TradingEngine.Clients.PolyMarket.Models;
 
 namespace TradingEngine.Clients.OddsApi;
 
-public class OddsApiClientStub : IOddsApiApiClient
+public class OddsApiClientStub : IOddsApiClient
 {
-    private readonly IEnumerable<Match> _matches;
+    private readonly IEnumerable<Odds> _odds;
     public OddsApiClientStub(string jsonFilePath)
     {
         // Load the JSON file and deserialize it into the appropriate objects
         var jsonData = File.ReadAllText(jsonFilePath);
-        var parsedData = JsonSerializer.Deserialize<IEnumerable<Match>>(jsonData, new JsonSerializerOptions
+        var parsedData = JsonSerializer.Deserialize<IEnumerable<Odds>>(jsonData, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new JsonStringEnumConverter() }
         });
 
         // Simulate events
-        _matches = parsedData ?? new List<Match>();
+        _odds = parsedData ?? new List<Odds>();
     }
-    public Task<IEnumerable<Match>> GetAllMatches()
+    public Task<IEnumerable<Odds>> GetOdds()
     {
-        return Task.FromResult(_matches);
+        return Task.FromResult(_odds);
     }
 
-    public async Task<MatchOdds> GetOddsForMatch(string matchId)
+    public Task<Odds?> GetOdds(string eventId)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(_odds.FirstOrDefault(e => e.Id == eventId));
     }
 }
 

@@ -1,8 +1,8 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace TradingEngine.Clients.OddsApi.Models;
 
-public record Match
+public record Odds
 {
     public required string Id { get; init; }
     
@@ -11,6 +11,8 @@ public record Match
     
     [JsonPropertyName("sport_title")]
     public required string SportTitle { get; init; }
+    
+    [JsonPropertyName("commence_time")]
     public DateTime CommenceTime { get; init; }
     
     [JsonPropertyName("home_team")]
@@ -18,4 +20,6 @@ public record Match
     
     [JsonPropertyName("away_team")]
     public required string AwayTeam { get; init; }
+
+    public List<Bookmaker> Bookmakers { get; init; } = [];
 }

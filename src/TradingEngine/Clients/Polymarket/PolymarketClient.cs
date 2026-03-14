@@ -1,9 +1,9 @@
 ﻿using System.Text.Json;
-using TradingEngine.Clients.PolyMarket.Models;
+using TradingEngine.Clients.Polymarket.Models;
 
-namespace TradingEngine.Clients.PolyMarket;
+namespace TradingEngine.Clients.Polymarket;
 
-public class PolymarketApiClient(HttpClient httpClient) : IPolymarketApiClient
+public class PolymarketClient(HttpClient httpClient) : IPolymarketClient
 {
     private const string BaseUrl = "https://gamma-api.polymarket.com";
 

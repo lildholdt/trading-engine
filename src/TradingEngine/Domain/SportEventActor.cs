@@ -1,36 +1,44 @@
-﻿using System.Threading.Channels;
+﻿using System.Text.Json;
+using System.Threading.Channels;
+using TradingEngine.Clients.OddsApi;
+using TradingEngine.Clients.OddsApi.Models;
 using TradingEngine.Domain.PlaceOrder;
-using TradingEngine.Infrastructure;
+using TradingEngine.Domain.UpdateOdds;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
-using TradingEngine.Services.PolyMarket;
+using TradingEngine.Services.Registry;
 
 namespace TradingEngine.Domain;
 
 public sealed class SportEventActor
 {
-    private readonly string _sportEvent;
+    // Dependencies
     private readonly Channel<ISportEventMessage> _mailbox;
     private readonly ICommandBus _commandBus;
+    private readonly IOddsApiClient _oddsClient;
     private readonly IEventBus _eventBus;
+    private readonly IOrderStrategy _orderStrategy;
 
-    // state
-    public required DateTime StartTime { get; init; }
-    public required string Sport  { get; init; }
-    public required string League { get; init; }
-    public required string Team1 { get; init; }
-    public required string Team2 { get; init; }
-    public IEnumerable<Market> Markets { get; init; } = new List<Market>();
+    // State
+    private RegistryItem RegistryItem { get; set; }
+    private IEnumerable<Market> Markets { get; init; } = new List<Market>();
 
     public SportEventActor(
-        string sportEvent,
+        RegistryItem registryItem,
         ICommandBus commandBus,
-        IEventBus eventBus)
+        IEventBus eventBus,
+        IOrderStrategy orderStrategy,
+        IOddsApiClient oddsClient)
     {
-        _sportEvent = sportEvent;
+        RegistryItem = registryItem ??  throw new ArgumentNullException(nameof(registryItem));;
         _commandBus = commandBus;
         _eventBus = eventBus;
-
+        _orderStrategy = orderStrategy;
+        _oddsClient = oddsClient;
+     
+        if (registryItem.OddsApiEvent == null)
+            throw new ArgumentException($"{nameof(registryItem.OddsApiEvent)} must not be null");
+        
         _mailbox = Channel.CreateUnbounded<ISportEventMessage>(
             new UnboundedChannelOptions
             {
@@ -39,6 +47,7 @@ public sealed class SportEventActor
             });
 
         _ = RunAsync();
+        _ = PollOdds();
     }
 
     public ValueTask SendAsync(ISportEventMessage message)
@@ -51,39 +60,34 @@ public sealed class SportEventActor
             await message.ApplyAsync(this);
         }
     }
-
-    // --- state mutation helpers ---
-
-    public async Task ApplyMarketUpdate(decimal homeOdds)
+    
+    private async Task PollOdds()
     {
-        if (ShouldPlaceBet())
+        while (true)
         {
-            await _commandBus.SendAsync(new PlaceOrderCommand { Id = _sportEvent });
+            var odds = await _oddsClient.GetOdds(RegistryItem.OddsApiEvent!.Id);
+            if (odds == null) continue;
+
+            await SendAsync(new UpdateOddsMessage
+            {
+                SportEventId = RegistryItem.Id,
+                Odds = odds
+            });
+
+            // TODO: Apply dynamic polling which is adjusted when start time approaches
+            await Task.Delay(1000);
         }
     }
 
-    private bool ShouldPlaceBet()
-        => true;
-    
-    
-    public class Market : ValueObject
-    {
-        public required int Id { get; init; }
-        public required DateTime StartDate { get; init; }
-        public required IEnumerable<MarketOutcome> Outcomes { get; init; } = new List<MarketOutcome>();
-    }
+    // --- state mutation helpers ---
 
-    public class MarketOutcome : ValueObject
+    public async Task ApplyOddsUpdate(Odds odds)
     {
-        public OutcomeType Type { get; init; }
-        public decimal Odds { get; init; }
-    }
-
-    public enum OutcomeType
-    {
-        Yes,
-        No,
-        Over,
-        Under
+        var price = _orderStrategy.CalculatePrice(odds);
+        await _commandBus.SendAsync(new PlaceOrderCommand
+        {
+            Id = RegistryItem.Id,
+            Price = price,
+        });
     }
 }

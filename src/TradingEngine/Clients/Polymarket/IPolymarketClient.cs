@@ -1,10 +1,11 @@
 ﻿// Importing the namespace containing the models used in the PolyMarket API client.
-using TradingEngine.Clients.PolyMarket.Models;
 
-namespace TradingEngine.Clients.PolyMarket
+using TradingEngine.Clients.Polymarket.Models;
+
+namespace TradingEngine.Clients.Polymarket
 {
     // Interface definition for the PolyMarket API client.
-    public interface IPolymarketApiClient
+    public interface IPolymarketClient
     {
         // Method to fetch a collection of sports.
         // Returns a task that resolves to an enumerable of SportEntry objects.

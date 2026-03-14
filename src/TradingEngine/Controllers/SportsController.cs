@@ -1,19 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TradingEngine.Clients.PolyMarket;
-using TradingEngine.Clients.PolyMarket.Models;
+using TradingEngine.Clients.Polymarket;
+using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
-using TradingEngine.Domain.MarketUpdate;
 using TradingEngine.Infrastructure.Hub;
-using TradingEngine.Services.PolyMarket;
 
 namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api")]
 public class SportsController(
-    IPolymarketEventCatalogue polymarketEventCatalogue,
     ISportEventActorSystem actorSystem,
-    IPolymarketApiClient client,
+    IPolymarketClient client,
     IHubPublisher<Event> hub) : ControllerBase
 {
     [HttpGet("sports")]
@@ -73,11 +70,11 @@ public class SportsController(
     //     return Ok();
     // }
     
-    [HttpPost("market-update")]
-    public async Task<IActionResult> CreateMarketUpdate()
-    {
-        var marketUpdateMessage = new MarketUpdateMessage("TestId") { HomeOdds = 2 };
-        await actorSystem.SendAsync(marketUpdateMessage);
-        return Ok();
-    }
+    // [HttpPost("market-update")]
+    // public async Task<IActionResult> CreateMarketUpdate()
+    // {
+    //     var marketUpdateMessage = new OddsUpdatedMessage("TestId") { HomeOdds = 2 };
+    //     await actorSystem.SendAsync(marketUpdateMessage);
+    //     return Ok();
+    // }
 }

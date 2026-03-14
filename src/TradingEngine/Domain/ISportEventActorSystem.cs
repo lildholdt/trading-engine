@@ -1,11 +1,11 @@
-﻿using TradingEngine.Clients.PolyMarket.Models;
-using TradingEngine.Services.PolyMarket;
+﻿using TradingEngine.Clients.Polymarket.Models;
+using TradingEngine.Services.Registry;
 
 namespace TradingEngine.Domain;
 
 public interface ISportEventActorSystem
 {
     public ValueTask SendAsync(ISportEventMessage message);
-    ValueTask CreateAsync(Event entry);
-    ValueTask EndAsync(Event entry);
+    void CreateAsync(RegistryItem entry);
+    void EndAsync(SportEventId id);
 }
