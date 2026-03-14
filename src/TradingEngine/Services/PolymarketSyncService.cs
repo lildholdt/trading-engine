@@ -1,10 +1,11 @@
-﻿using TradingEngine.Clients.PolyMarket;
+﻿using TradingEngine.Clients.Polymarket;
+using TradingEngine.Services.Registry;
 
-namespace TradingEngine.Services.PolyMarket;
+namespace TradingEngine.Services;
 
 public class PolymarketSyncService(
-    IPolymarketApiClient httpClient,
-    IPolymarketEventCatalogue catalogue,
+    IPolymarketClient httpClient,
+    IEventRegistry eventRegistry,
     ILogger<PolymarketSyncService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -13,15 +14,8 @@ public class PolymarketSyncService(
         {
             try
             {
-                // TODO: how to pick series id?
-                await httpClient.StreamEvents("213697", @event =>
-                {
-                    var teams = @event.Title.Split(" vs. ");
-                    if (teams.Length != 2) return;
-                        
-                    // Save to the catalogue
-                    catalogue.Add(@event);
-                });
+                // TODO: Identify strategy for selecting and correlation series ids across Polymarket and OddsAPI
+                await httpClient.StreamEvents("213697", eventRegistry.RegisterPolymarket);
             }
             catch (Exception ex)
             {

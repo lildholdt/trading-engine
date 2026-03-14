@@ -1,14 +1,14 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using TradingEngine.Clients.PolyMarket.Models;
+using TradingEngine.Clients.Polymarket.Models;
 
-namespace TradingEngine.Clients.PolyMarket;
+namespace TradingEngine.Clients.Polymarket;
 
-public class PolymarketApiClientStub : IPolymarketApiClient
+public class PolymarketClientStub : IPolymarketClient
 {
     private readonly IEnumerable<Event> _events;
     
-    public PolymarketApiClientStub(string jsonFilePath)
+    public PolymarketClientStub(string jsonFilePath)
     {
         // Load the JSON file and deserialize it into the appropriate objects
         var jsonData = File.ReadAllText(jsonFilePath);
@@ -34,11 +34,8 @@ public class PolymarketApiClientStub : IPolymarketApiClient
 
     public async Task StreamEvents(string seriesId, Action<Event> action)
     {
-        // Filter events by seriesId (if applicable)
-        var filteredEvents = _events.Where(e => e.Id == seriesId);
-
         // Simulate streaming by iterating over events with a delay
-        foreach (var ev in filteredEvents)
+        foreach (var ev in _events)
         {
             await Task.Delay(100); // Simulate streaming delay
             action(ev); // Invoke the callback for each event

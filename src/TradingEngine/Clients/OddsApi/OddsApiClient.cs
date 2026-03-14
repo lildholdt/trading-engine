@@ -1,23 +1,22 @@
-﻿using TradingEngine.Clients.OddsApi.Models;
+﻿using Microsoft.Extensions.Options;
+using TradingEngine.Clients.OddsApi.Models;
 
 namespace TradingEngine.Clients.OddsApi;
 
-public class OddsApiClient(HttpClient httpClient) : IOddsApiApiClient
+public class OddsApiClient(HttpClient httpClient, IOptions<ApplicationSettings> options) : IOddsApiClient
 {
-    private const string BaseUrl = "https://api.the-odds-api.com/v4";
-
-    public async Task<IEnumerable<Match>> GetAllMatches()
+    private ApplicationSettings Settings { get; init; } = options.Value;
+    
+    public async Task<IEnumerable<Odds>> GetOdds()
     {
-        var response = await httpClient.GetAsync($"{BaseUrl}/sports/soccer_epl/odds/?apiKey=96ce8217d3d6ecf433b45a6094a87692&regions=us&,spreads&oddsFormat=american"); 
+        var response = await httpClient.GetAsync($"{Settings.OddsApi.BaseUrl}/sports/soccer_epl/odds/?apiKey={Settings.OddsApi.ApiKey}&regions=eu"); 
         response.EnsureSuccessStatusCode();
-        return await response.DeserializeJsonAsync<IEnumerable<Match>>() ?? [];
+        return await response.DeserializeJsonAsync<IEnumerable<Odds>>() ?? [];
     }
 
-    public async Task<MatchOdds> GetOddsForMatch(string matchId)
+    public Task<Odds?> GetOdds(string eventId)
     {
-        var response = await httpClient.GetAsync($"{BaseUrl}/sports/soccer_epl/odds/?apiKey=96ce8217d3d6ecf433b45a6094a87692&regions=us&eventIds={matchId}&bookmakers=fanduel"); // Example endpoint
-        response.EnsureSuccessStatusCode();
-        return await response.DeserializeJsonAsync<MatchOdds>() ?? new MatchOdds();
+        throw new NotImplementedException();
     }
 }
 

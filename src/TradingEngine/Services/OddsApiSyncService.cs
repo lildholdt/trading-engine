@@ -1,10 +1,11 @@
 using TradingEngine.Clients.OddsApi;
+using TradingEngine.Services.Registry;
 
-namespace TradingEngine.Services.OddsApi;
+namespace TradingEngine.Services;
 
 public class OddsApiSyncService(
-    IOddsApiApiClient oddsApiClient,
-    IOddsApiEventCatalogue oddsApiEventCatalogue,
+    IOddsApiClient oddsApiClient,
+    IEventRegistry eventRegistry,
     ILogger<OddsApiSyncService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -13,10 +14,10 @@ public class OddsApiSyncService(
         {
             try
             {
-                var matches = await oddsApiClient.GetAllMatches();
-                foreach (var match in matches)
-                {
-                    await oddsApiEventCatalogue.Add(match);
+                var events = await oddsApiClient.GetOdds();
+                foreach (var @event in events)
+                {  
+                    eventRegistry.AttachOddsApi(@event);
                 }
             }
             catch (Exception ex)

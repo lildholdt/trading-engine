@@ -1,36 +1,34 @@
 ﻿using System.Threading.Channels;
 using TradingEngine.Domain.PlaceOrder;
-using TradingEngine.Infrastructure;
+using TradingEngine.Domain.UpdateOdds;
 using TradingEngine.Infrastructure.CommandBus;
-using TradingEngine.Infrastructure.EventBus;
-using TradingEngine.Services.PolyMarket;
 
 namespace TradingEngine.Domain;
 
 public sealed class SportEventActor
 {
-    private readonly string _sportEvent;
+    // Dependencies
     private readonly Channel<ISportEventMessage> _mailbox;
     private readonly ICommandBus _commandBus;
-    private readonly IEventBus _eventBus;
+    private readonly IOrderStrategy _orderStrategy;
+    private readonly IOddsProvider _oddsProvider;
 
-    // state
-    public required DateTime StartTime { get; init; }
-    public required string Sport  { get; init; }
-    public required string League { get; init; }
-    public required string Team1 { get; init; }
-    public required string Team2 { get; init; }
-    public IEnumerable<Market> Markets { get; init; } = new List<Market>();
+    // State
+    private SportEventId Id { get; init; }
+    private Dictionary<string, Bookmaker> Bookmakers { get; set; } = new();
+    private decimal LatestPrice { get; set; }
 
     public SportEventActor(
-        string sportEvent,
+        SportEventId id,
         ICommandBus commandBus,
-        IEventBus eventBus)
+        IOrderStrategy orderStrategy,
+        IOddsProvider oddsProvider)
     {
-        _sportEvent = sportEvent;
+        Id = id;
         _commandBus = commandBus;
-        _eventBus = eventBus;
-
+        _orderStrategy = orderStrategy;
+        _oddsProvider = oddsProvider;
+        
         _mailbox = Channel.CreateUnbounded<ISportEventMessage>(
             new UnboundedChannelOptions
             {
@@ -39,8 +37,9 @@ public sealed class SportEventActor
             });
 
         _ = RunAsync();
+        _ = PollOdds();
     }
-
+    
     public ValueTask SendAsync(ISportEventMessage message)
         => _mailbox.Writer.WriteAsync(message);
 
@@ -48,42 +47,49 @@ public sealed class SportEventActor
     {
         await foreach (var message in _mailbox.Reader.ReadAllAsync())
         {
-            await message.ApplyAsync(this);
+            try
+            {
+                await message.ApplyAsync(this);
+            }
+            catch (Exception ex)
+            {
+                // Log and handle the exception to keep the loop running
+                Console.WriteLine($"Error processing message: {ex.Message}");
+            }
+        }
+    }
+    
+    private async Task PollOdds()
+    {
+        while (true)
+        {
+            var odds = await _oddsProvider.GetOdds(Id);
+            if (odds == null) continue;
+
+            await SendAsync(new UpdateOddsMessage
+            {
+                SportEventId = Id,
+                Bookmakers = odds
+            });
+
+            // TODO: Apply dynamic polling which is adjusted when start time approaches
+            await Task.Delay(100000);
         }
     }
 
     // --- state mutation helpers ---
-
-    public async Task ApplyMarketUpdate(decimal homeOdds)
+    
+    public async Task ApplyOddsUpdate(IEnumerable<Bookmaker> odds)
     {
-        if (ShouldPlaceBet())
+        var price = _orderStrategy.CalculatePrice(odds);
+        if (LatestPrice != price)
         {
-            await _commandBus.SendAsync(new PlaceOrderCommand { Id = _sportEvent });
-        }
-    }
-
-    private bool ShouldPlaceBet()
-        => true;
-    
-    
-    public class Market : ValueObject
-    {
-        public required int Id { get; init; }
-        public required DateTime StartDate { get; init; }
-        public required IEnumerable<MarketOutcome> Outcomes { get; init; } = new List<MarketOutcome>();
-    }
-
-    public class MarketOutcome : ValueObject
-    {
-        public OutcomeType Type { get; init; }
-        public decimal Odds { get; init; }
-    }
-
-    public enum OutcomeType
-    {
-        Yes,
-        No,
-        Over,
-        Under
+            LatestPrice = price;
+            await _commandBus.SendAsync(new PlaceOrderCommand
+            {
+                Id = Id,
+                Price = price,
+            });
+        } 
     }
 }

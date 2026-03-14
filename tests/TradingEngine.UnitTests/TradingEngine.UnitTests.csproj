@@ -19,4 +19,10 @@
       <ProjectReference Include="..\..\src\TradingEngine\TradingEngine.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Domain\odds.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>

@@ -1,14 +1,13 @@
 ﻿using System.Collections.Concurrent;
-using TradingEngine.Clients.PolyMarket.Models;
 using TradingEngine.Infrastructure.CommandBus;
-using TradingEngine.Infrastructure.EventBus;
-using TradingEngine.Services.PolyMarket;
+using TradingEngine.Services.Registry;
 
 namespace TradingEngine.Domain;
 
 public sealed class SportEventActorSystem(
     ICommandBus commandBus, 
-    IEventBus eventBus,
+    IOddsProvider oddsProvider,
+    IOrderStrategy orderStrategy,
     ILogger<SportEventActorSystem> logger) : ISportEventActorSystem
 {
     private readonly ConcurrentDictionary<string, SportEventActor> _actors = new();
@@ -19,23 +18,17 @@ public sealed class SportEventActorSystem(
         return actor?.SendAsync(message) ?? ValueTask.CompletedTask;
     }
 
-    public ValueTask CreateAsync(Event entry)
+    public void CreateAsync(EventRegistryItem entry)
     {
-        _actors.GetOrAdd(entry.Id, id => new SportEventActor(id, commandBus, eventBus)
-        {
-            StartTime = entry.StartTime,
-            Sport = "entry.Sport",
-            League = "entry.League",
-            Team1 = "entry.Team1",
-            Team2 = "entry.Team2",
-        });
+        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, commandBus, orderStrategy, oddsProvider));
         
-        logger.LogInformation("SportEventActor created for {EntryTeam1} vs {EntryTeam2}", "entry.Team1", "entry.Team2");
-        
-        return ValueTask.CompletedTask;
+        logger.LogInformation(
+            "SportEventActor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",
+            entry.Id, entry.StartTime, entry.HomeTeam, entry.AwayTeam
+        );
     }
 
-    public ValueTask EndAsync(Event entry)
+    public void EndAsync(SportEventId id)
     {
         throw new NotImplementedException();
     }

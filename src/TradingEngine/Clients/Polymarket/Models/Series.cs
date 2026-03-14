@@ -1,4 +1,4 @@
-﻿namespace TradingEngine.Clients.PolyMarket.Models;
+﻿namespace TradingEngine.Clients.Polymarket.Models;
 
 public record Series
 {
