@@ -1,0 +1,671 @@
+{
+  "id": "07e3e6c1966c98bce260a6608d692f73",
+  "sport_key": "soccer_epl",
+  "sport_title": "EPL",
+  "commence_time": "2026-03-14T15:00:00Z",
+  "home_team": "Burnley",
+  "away_team": "Bournemouth",
+  "bookmakers": [
+    {
+      "key": "winamax_de",
+      "title": "Winamax (DE)",
+      "last_update": "2026-03-14T13:02:45Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:02:45Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.76
+            },
+            {
+              "name": "Burnley",
+              "price": 4.2
+            },
+            {
+              "name": "Draw",
+              "price": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pmu_fr",
+      "title": "PMU (FR)",
+      "last_update": "2026-03-14T13:02:59Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:02:59Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.76
+            },
+            {
+              "name": "Burnley",
+              "price": 4.2
+            },
+            {
+              "name": "Draw",
+              "price": 3.8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "winamax_fr",
+      "title": "Winamax (FR)",
+      "last_update": "2026-03-14T13:03:10Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:10Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.72
+            },
+            {
+              "name": "Burnley",
+              "price": 4.1
+            },
+            {
+              "name": "Draw",
+              "price": 3.95
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "parionssport_fr",
+      "title": "Parions Sport (FR)",
+      "last_update": "2026-03-14T13:03:08Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:08Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.76
+            },
+            {
+              "name": "Burnley",
+              "price": 4.2
+            },
+            {
+              "name": "Draw",
+              "price": 3.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "codere_it",
+      "title": "Codere (IT)",
+      "last_update": "2026-03-14T13:03:16Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:16Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.77
+            },
+            {
+              "name": "Burnley",
+              "price": 4.3
+            },
+            {
+              "name": "Draw",
+              "price": 3.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "mybookieag",
+      "title": "MyBookie.ag",
+      "last_update": "2026-03-14T13:03:26Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:26Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.78
+            },
+            {
+              "name": "Burnley",
+              "price": 4.3
+            },
+            {
+              "name": "Draw",
+              "price": 3.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "onexbet",
+      "title": "1xBet",
+      "last_update": "2026-03-14T13:03:24Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:24Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.83
+            },
+            {
+              "name": "Burnley",
+              "price": 4.52
+            },
+            {
+              "name": "Draw",
+              "price": 4.04
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "nordicbet",
+      "title": "Nordic Bet",
+      "last_update": "2026-03-14T13:03:01Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:01Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.78
+            },
+            {
+              "name": "Burnley",
+              "price": 4.35
+            },
+            {
+              "name": "Draw",
+              "price": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "betsson",
+      "title": "Betsson",
+      "last_update": "2026-03-14T13:02:46Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:02:46Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.78
+            },
+            {
+              "name": "Burnley",
+              "price": 4.35
+            },
+            {
+              "name": "Draw",
+              "price": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "marathonbet",
+      "title": "Marathon Bet",
+      "last_update": "2026-03-14T13:03:01Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:01Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.8
+            },
+            {
+              "name": "Burnley",
+              "price": 4.45
+            },
+            {
+              "name": "Draw",
+              "price": 3.98
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "unibet_fr",
+      "title": "Unibet (FR)",
+      "last_update": "2026-03-14T13:02:51Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:02:51Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.74
+            },
+            {
+              "name": "Burnley",
+              "price": 4.35
+            },
+            {
+              "name": "Draw",
+              "price": 3.92
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sport888",
+      "title": "888sport",
+      "last_update": "2026-03-14T13:02:46Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:02:45Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.75
+            },
+            {
+              "name": "Burnley",
+              "price": 4.2
+            },
+            {
+              "name": "Draw",
+              "price": 3.75
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "williamhill",
+      "title": "William Hill",
+      "last_update": "2026-03-14T13:01:57Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:01:57Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.75
+            },
+            {
+              "name": "Burnley",
+              "price": 4.2
+            },
+            {
+              "name": "Draw",
+              "price": 3.75
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "betfair_ex_eu",
+      "title": "Betfair",
+      "last_update": "2026-03-14T13:03:18Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:18Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 3.58
+            },
+            {
+              "name": "Burnley",
+              "price": 2.25
+            },
+            {
+              "name": "Draw",
+              "price": 2.92
+            }
+          ]
+        },
+        {
+          "key": "h2h_lay",
+          "last_update": "2026-03-14T13:03:18Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.85
+            },
+            {
+              "name": "Burnley",
+              "price": 4.7
+            },
+            {
+              "name": "Draw",
+              "price": 4.2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "tipico_de",
+      "title": "Tipico",
+      "last_update": "2026-03-14T13:03:31Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:31Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.75
+            },
+            {
+              "name": "Burnley",
+              "price": 4.3
+            },
+            {
+              "name": "Draw",
+              "price": 3.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "pinnacle",
+      "title": "Pinnacle",
+      "last_update": "2026-03-14T13:03:29Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:29Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 3.58
+            },
+            {
+              "name": "Burnley",
+              "price": 2.25
+            },
+            {
+              "name": "Draw",
+              "price": 2.92
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "betonlineag",
+      "title": "BetOnline.ag",
+      "last_update": "2026-03-14T13:03:26Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:26Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.82
+            },
+            {
+              "name": "Burnley",
+              "price": 4.35
+            },
+            {
+              "name": "Draw",
+              "price": 3.92
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "betclic_fr",
+      "title": "Betclic (FR)",
+      "last_update": "2026-03-14T13:03:31Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:31Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.73
+            },
+            {
+              "name": "Burnley",
+              "price": 4.45
+            },
+            {
+              "name": "Draw",
+              "price": 3.98
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "unibet_se",
+      "title": "Unibet (SE)",
+      "last_update": "2026-03-14T13:02:44Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:02:44Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.8
+            },
+            {
+              "name": "Burnley",
+              "price": 4.4
+            },
+            {
+              "name": "Draw",
+              "price": 4.1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "leovegas_se",
+      "title": "LeoVegas (SE)",
+      "last_update": "2026-03-14T13:03:24Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:24Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.77
+            },
+            {
+              "name": "Burnley",
+              "price": 4.35
+            },
+            {
+              "name": "Draw",
+              "price": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "unibet_nl",
+      "title": "Unibet (NL)",
+      "last_update": "2026-03-14T13:03:08Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:08Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.8
+            },
+            {
+              "name": "Burnley",
+              "price": 4.5
+            },
+            {
+              "name": "Draw",
+              "price": 4.1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "coolbet",
+      "title": "Coolbet",
+      "last_update": "2026-03-14T13:02:36Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:02:36Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.82
+            },
+            {
+              "name": "Burnley",
+              "price": 4.48
+            },
+            {
+              "name": "Draw",
+              "price": 4.04
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "everygame",
+      "title": "Everygame",
+      "last_update": "2026-03-14T13:02:16Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:02:16Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.75
+            },
+            {
+              "name": "Burnley",
+              "price": 4.33
+            },
+            {
+              "name": "Draw",
+              "price": 3.9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "matchbook",
+      "title": "Matchbook",
+      "last_update": "2026-03-14T13:03:32Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:32Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.83
+            },
+            {
+              "name": "Burnley",
+              "price": 4.6
+            },
+            {
+              "name": "Draw",
+              "price": 4.1
+            }
+          ]
+        },
+        {
+          "key": "h2h_lay",
+          "last_update": "2026-03-14T13:03:32Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.85
+            },
+            {
+              "name": "Burnley",
+              "price": 4.7
+            },
+            {
+              "name": "Draw",
+              "price": 4.2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "gtbets",
+      "title": "GTbets",
+      "last_update": "2026-03-14T13:03:25Z",
+      "markets": [
+        {
+          "key": "h2h",
+          "last_update": "2026-03-14T13:03:24Z",
+          "outcomes": [
+            {
+              "name": "Bournemouth",
+              "price": 1.84
+            },
+            {
+              "name": "Burnley",
+              "price": 4.1
+            },
+            {
+              "name": "Draw",
+              "price": 3.82
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

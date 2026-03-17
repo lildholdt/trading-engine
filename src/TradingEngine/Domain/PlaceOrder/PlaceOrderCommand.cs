@@ -4,5 +4,6 @@ namespace TradingEngine.Domain.PlaceOrder;
 
 public class PlaceOrderCommand : ICommand 
 {
-    public required string Id { get; init; }
+    public required SportEventId Id { get; init; }
+    public required decimal Price { get; init; }
 }

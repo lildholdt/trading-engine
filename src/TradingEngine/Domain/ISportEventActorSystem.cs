@@ -1,8 +1,10 @@
-﻿namespace TradingEngine.Domain;
+﻿using TradingEngine.Services.Registry;
+
+namespace TradingEngine.Domain;
 
 public interface ISportEventActorSystem
 {
     public ValueTask SendAsync(ISportEventMessage message);
-    ValueTask CreateAsync(SportEventCatalogueEntry entry);
-    ValueTask EndAsync(SportEventCatalogueEntry entry);
+    void CreateAsync(EventRegistryItem entry);
+    void EndAsync(SportEventId id);
 }
