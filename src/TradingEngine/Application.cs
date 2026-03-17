@@ -4,8 +4,8 @@ using TradingEngine.Clients;
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.Polymarket;
 using TradingEngine.Domain;
-using TradingEngine.Domain.CreateEvent;
 using TradingEngine.Domain.PlaceOrder;
+using TradingEngine.Domain.RegistryItemCorrelated;
 using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
@@ -35,13 +35,13 @@ public static class Application
         builder.Services.AddHostedService<EventBusWorker>();
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
+        builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  RegistryItemCorrelatedEventHandler>();
         
         // Register command bus
         builder.Services.AddHostedService<CommandBusWorker>();
         builder.Services.AddSingleton<CommandBus>();
         builder.Services.AddSingleton<ICommandBus>(sp => sp.GetRequiredService<CommandBus>());
         builder.Services.AddSingleton<ICommandHandler<PlaceOrderCommand>,  PlaceOrderCommandHandler>();
-        builder.Services.AddSingleton<ICommandHandler<CreateSportEventCommand>,  CreateSportEventCommandHandler>();
         
         // Register actor system
         builder.Services.AddSingleton<ISportEventActorSystem,  SportEventActorSystem>();

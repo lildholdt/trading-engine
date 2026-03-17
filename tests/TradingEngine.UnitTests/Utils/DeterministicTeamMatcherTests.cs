@@ -34,7 +34,7 @@ public class DeterministicTeamMatcherTests
         const string nameB = "Barcelona Football Club";
 
         // Act
-        var score = _teamMatcher.MatchScore(nameA, nameB);
+        var score = _teamMatcher.TeamScore(nameA, nameB);
 
         // Assert
         Assert.True(score > 0.9, $"Expected high similarity score, but got {score}");
@@ -48,7 +48,7 @@ public class DeterministicTeamMatcherTests
         const string nameB = "Real Madrid";
 
         // Act
-        var score = _teamMatcher.MatchScore(nameA, nameB);
+        var score = _teamMatcher.TeamScore(nameA, nameB);
 
         // Assert
         Assert.True(score < 0.5);
@@ -62,7 +62,7 @@ public class DeterministicTeamMatcherTests
         const string nameB = "Barcelona";
 
         // Act
-        var score = _teamMatcher.MatchScore(nameA, nameB);
+        var score = _teamMatcher.TeamScore(nameA, nameB);
 
         // Assert
         // Since "FC" and "Women" are noise words, the names should be reduced to "Barcelona".
@@ -77,7 +77,7 @@ public class DeterministicTeamMatcherTests
         const string nameB = "Liverpool FC";
 
         // Act
-        var score = _teamMatcher.MatchScore(nameA, nameB);
+        var score = _teamMatcher.TeamScore(nameA, nameB);
 
         // Assert
         Assert.Equal(0, score);

@@ -2,13 +2,13 @@
 using TradingEngine.Clients.OddsApi.Models;
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
-using TradingEngine.Domain.CreateEvent;
-using TradingEngine.Infrastructure.CommandBus;
+using TradingEngine.Domain.RegistryItemCorrelated;
+using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Utils;
 
 namespace TradingEngine.Services.Registry;
 
-public class InMemoryEventRegistry(ITeamMatcher teamMatcher, ICommandBus commandBus) : IEventRegistry
+public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus, ILogger<InMemoryEventRegistry> logger) : IEventRegistry
 {
     private readonly ConcurrentDictionary<SportEventId, EventRegistryItem> _events = new();
 
@@ -25,7 +25,11 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, ICommandBus command
         
         // TODO: Improve how team names are extracted from Polymarket event
         var teams = @event.Title.Split(" vs. "); 
-        if (teams.Length != 2) return;
+        if (teams.Length != 2) 
+            return;
+        
+        if (teams[1].Contains("More Markets")) 
+            return;
                        
         var registryItem = new EventRegistryItem
         {
@@ -45,14 +49,14 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, ICommandBus command
         foreach (var item in uncorrelatedItems)
         {
             // Normalization and team similarity
-            var direct = teamMatcher.MatchScore(odds.HomeTeam, item.HomeTeam) + 
-                         teamMatcher.MatchScore(odds.AwayTeam, item.AwayTeam);
+            var direct =  Math.Round((teamMatcher.TeamScore(odds.HomeTeam, item.HomeTeam) + 
+                                      teamMatcher.TeamScore(odds.AwayTeam, item.AwayTeam)) / 2, 2);
             
-            var swapped = teamMatcher.MatchScore(odds.HomeTeam, item.AwayTeam) + 
-                          teamMatcher.MatchScore(odds.AwayTeam, item.HomeTeam);
+            var swapped = Math.Round((teamMatcher.TeamScore(odds.HomeTeam, item.AwayTeam) + 
+                                      teamMatcher.TeamScore(odds.AwayTeam, item.HomeTeam)) / 2, 2);
             
             var best = Math.Max(swapped, direct);
-            if (!(best > 1.5)) continue;
+            if (!(best > 0.9)) continue;
             
             // Time tolerance
             var timeDifference = Math.Abs((odds.CommenceTime - item.StartTime).TotalMinutes);
@@ -61,8 +65,22 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, ICommandBus command
             // Attach the OddsApi event
             item.OddsApiEvent = odds;
             
+            // Log details about the correlation
+            logger.LogInformation("Registry item correlated. Id={Id}, " +
+                                  "PolymarketHome={PolymarketHome}, " +
+                                  "PolymarketAway={PolymarketAway}, " +
+                                  "OddsApiHome={OddsApiHome}, " +
+                                  "OddsApiAway={OddsApiAway}, " +
+                                  "Score={Score}",
+                                  item.Id,
+                                  item.HomeTeam,
+                                  item.AwayTeam,
+                                  item.OddsApiEvent.HomeTeam,
+                                  item.OddsApiEvent.AwayTeam,
+                                  best);
+            
             // Create an event actor
-            await commandBus.SendAsync(new CreateSportEventCommand {Item =  item});
+            await eventBus.PublishAsync(new RegistryItemCorrelatedEvent {Item =  item});
             return;
         }
     }

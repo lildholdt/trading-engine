@@ -1,6 +1,4 @@
-﻿using TradingEngine.Clients.OddsApi.Models;
-
-namespace TradingEngine.Domain;
+﻿namespace TradingEngine.Domain;
 
 public class MoneyLineOrderStrategy : IOrderStrategy
 {

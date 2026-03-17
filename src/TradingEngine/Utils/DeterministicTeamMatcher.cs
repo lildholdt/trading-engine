@@ -117,7 +117,7 @@ public class DeterministicTeamMatcher(IOptions<ApplicationSettings> options) : I
         return Fuzz.TokenSetRatio(noSpaceA, noSpaceB) / 100.0; // Normalise to 0-1 range
     }
     
-    public double MatchScore(string nameA, string nameB)
+    public double TeamScore(string nameA, string nameB)
     {
         // Step 1: Normalize both team names to remove noise words, punctuation, diacritics, etc.
         var normA = Normalize(nameA);
@@ -151,5 +151,5 @@ public class DeterministicTeamMatcher(IOptions<ApplicationSettings> options) : I
     }
 
     public bool IsMatch(string nameA, string nameB)
-        => MatchScore(nameA, nameB) >= _options.TeamMatching.Threshold; // Return true if the match score meets or exceeds the threshold.
+        => TeamScore(nameA, nameB) >= _options.TeamMatching.Threshold; // Return true if the match score meets or exceeds the threshold.
 }

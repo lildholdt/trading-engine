@@ -1,6 +1,4 @@
-﻿using TradingEngine.Clients.OddsApi.Models;
-
-namespace TradingEngine.Domain.UpdateOdds;
+﻿namespace TradingEngine.Domain.UpdateOdds;
 
 public class UpdateOddsMessage : ISportEventMessage
 {

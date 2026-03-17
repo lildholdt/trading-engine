@@ -9,7 +9,7 @@ public interface ITeamMatcher
     // Returns:
     // - A double value representing the similarity score between the two team names.
     //   The score ranges from 0.0 (completely different) to 1.0 (perfect match).
-    double MatchScore(string nameA, string nameB);
+    double TeamScore(string nameA, string nameB);
     
     // This method determines whether two team names are considered a match based on a specified similarity threshold.
     // Parameters:

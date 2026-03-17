@@ -25,4 +25,13 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Clients\OddsApi\oddsapi-events.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Clients\Polymarket\polymarket-events.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>
