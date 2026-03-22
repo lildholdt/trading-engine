@@ -6,12 +6,12 @@ namespace TradingEngine.Clients.OddsApi;
 
 public class OddsApiClientStub : IOddsApiClient
 {
-    private readonly IEnumerable<Odds> _odds;
+    private readonly IReadOnlyCollection<Odds> _odds;
     public OddsApiClientStub(string jsonFilePath)
     {
         // Load the JSON file and deserialize it into the appropriate objects
         var jsonData = File.ReadAllText(jsonFilePath);
-        var parsedData = JsonSerializer.Deserialize<IEnumerable<Odds>>(jsonData, new JsonSerializerOptions
+        var parsedData = JsonSerializer.Deserialize<IReadOnlyCollection<Odds>>(jsonData, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             Converters = { new JsonStringEnumConverter() }
@@ -20,7 +20,7 @@ public class OddsApiClientStub : IOddsApiClient
         // Simulate events
         _odds = parsedData ?? new List<Odds>();
     }
-    public Task<IEnumerable<Odds>> GetOdds()
+    public Task<IReadOnlyCollection<Odds>> GetOdds()
     {
         return Task.FromResult(_odds);
     }

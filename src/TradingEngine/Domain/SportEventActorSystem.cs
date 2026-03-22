@@ -7,7 +7,6 @@ namespace TradingEngine.Domain;
 public sealed class SportEventActorSystem(
     ICommandBus commandBus, 
     IOddsProvider oddsProvider,
-    IOrderStrategy orderStrategy,
     ILogger<SportEventActorSystem> logger) : ISportEventActorSystem
 {
     private readonly ConcurrentDictionary<string, SportEventActor> _actors = new();
@@ -20,11 +19,11 @@ public sealed class SportEventActorSystem(
 
     public void CreateAsync(EventRegistryItem entry)
     {
-        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, commandBus, orderStrategy, oddsProvider));
+        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, commandBus, oddsProvider));
         
         logger.LogInformation(
             "SportEventActor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",
-            entry.Id, entry.StartTime, entry.HomeTeam, entry.AwayTeam
+            entry.Id, entry.HomeTeam, entry.AwayTeam, entry.StartTime
         );
     }
 

@@ -12,9 +12,27 @@ public class PlaceOrderCommandHandler(
 {
     public Task HandleAsync(PlaceOrderCommand command, CancellationToken cancellationToken = default)
     {
+        // TODO: Add simulation call to Polymarket and log volume
+        // TODO: Add Polymarket prices
+        
         var @event = registry.Get(command.Id);
-        logger.LogInformation("Order has been placed. Price={CommandPrice}, HomeTeam={EventHomeTeam}, AwayTeam={EventAwayTeam}", 
-            command.Price, @event?.HomeTeam, @event?.AwayTeam);
+
+        var averageHome = Math.Round(command.Odds.Sum(x => x.TrueOdds(OutcomeType.Home)) / command.Odds.Count, 2);
+        var averageAway = Math.Round(command.Odds.Sum(x => x.TrueOdds(OutcomeType.Away)) / command.Odds.Count, 2);
+        var averageDraw = Math.Round(command.Odds.Sum(x => x.TrueOdds(OutcomeType.Draw)) / command.Odds.Count, 2);
+        
+        // TODO: Add logic to call order placement API in Polymarket
+        
+        logger.LogInformation(
+            "Order has been placed. HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, " +
+            "AverageHome={AverageHome}, AverageAway={AverageAway}, AverageDraw={AverageDraw}",
+            @event?.HomeTeam,
+            @event?.AwayTeam,
+            averageHome,
+            averageAway,
+            averageDraw
+        );
+        
         return Task.CompletedTask;
     }
 }

@@ -10,23 +10,20 @@ public sealed class SportEventActor
     // Dependencies
     private readonly Channel<ISportEventMessage> _mailbox;
     private readonly ICommandBus _commandBus;
-    private readonly IOrderStrategy _orderStrategy;
     private readonly IOddsProvider _oddsProvider;
 
     // State
     private SportEventId Id { get; init; }
-    private Dictionary<string, Bookmaker> Bookmakers { get; set; } = new();
+    private List<Bookmaker> Bookmakers { get; set; } = [];
     private decimal LatestPrice { get; set; }
 
     public SportEventActor(
         SportEventId id,
         ICommandBus commandBus,
-        IOrderStrategy orderStrategy,
         IOddsProvider oddsProvider)
     {
         Id = id;
         _commandBus = commandBus;
-        _orderStrategy = orderStrategy;
         _oddsProvider = oddsProvider;
         
         _mailbox = Channel.CreateUnbounded<ISportEventMessage>(
@@ -64,7 +61,7 @@ public sealed class SportEventActor
         while (true)
         {
             var odds = await _oddsProvider.GetOdds(Id);
-            if (odds == null) continue;
+            if (odds.Count == 0) continue;
 
             await SendAsync(new UpdateOddsMessage
             {
@@ -73,23 +70,48 @@ public sealed class SportEventActor
             });
 
             // TODO: Apply dynamic polling which is adjusted when start time approaches
+            
+            // x hours before start time
+            // 3 days before 3 min. 
+            // 2 days before 2 min.
+            // 1 days before 1 min => decrease linearly to 5 sek.
+            // 6 hours before 5 sek. 
+            // Stop when 30 min to start time
+            
+            // Added closing line prices from Polymarket / OddsAPI (raw odds)
             await Task.Delay(100000);
         }
     }
 
     // --- state mutation helpers ---
     
-    public async Task ApplyOddsUpdate(IEnumerable<Bookmaker> odds)
+    public async Task ApplyOddsUpdate(IReadOnlyCollection<Bookmaker> odds)
     {
-        var price = _orderStrategy.CalculatePrice(odds);
-        if (LatestPrice != price)
+        if (Equals(odds, Bookmakers))
+            return;
+        
+        // Find all bookmakers that have changed by comparing the old and new collections
+        var changedBookmakers = odds
+            .Where(newBookmaker => 
+                !Bookmakers.Any(existingBookmaker => existingBookmaker.Equals(newBookmaker)))
+            .ToList();
+        
+        // Update only the changed bookmakers in the Bookmakers collection
+        foreach (var changedBookmaker in changedBookmakers)
         {
-            LatestPrice = price;
-            await _commandBus.SendAsync(new PlaceOrderCommand
+            var existingBookmaker = Bookmakers.FirstOrDefault(b => b.Name == changedBookmaker.Name);
+            if (existingBookmaker != null)
             {
-                Id = Id,
-                Price = price,
-            });
-        } 
+                // Replace the existing bookmaker with the new one
+                Bookmakers.Remove(existingBookmaker);
+            }
+            Bookmakers.Add(changedBookmaker);
+        }
+        
+        await _commandBus.SendAsync(new PlaceOrderCommand
+        {
+            Id = Id,
+            Odds = Bookmakers
+        });
     }
 }

@@ -7,7 +7,15 @@ namespace TradingEngine.Services;
 
 public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOddsProvider
 {
-    public async Task<IEnumerable<Bookmaker>> GetOdds(SportEventId id)
+    private readonly IEnumerable<string> _bookmakers = [ 
+        "betfair_ex_uk", 
+        "betfair_sb_uk", 
+        "matchbook", 
+        "smarkets",
+        "pinnacle"
+    ];
+    
+    public async Task<IReadOnlyCollection<Bookmaker>> GetOdds(SportEventId id)
     {
         var item = registry.Get(id);
         if (item == null) return [];
@@ -19,6 +27,9 @@ public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOdd
         {
             var market = b.Markets.FirstOrDefault(x => x.Key == "h2h");
             if (market == null) continue;
+            
+            if(!_bookmakers.Contains(b.Key))
+                continue;
             
             var bookmaker = new Bookmaker
             {

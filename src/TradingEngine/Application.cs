@@ -4,6 +4,7 @@ using TradingEngine.Clients;
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.Polymarket;
 using TradingEngine.Domain;
+using TradingEngine.Domain.OddsUpdated;
 using TradingEngine.Domain.PlaceOrder;
 using TradingEngine.Domain.RegistryItemCorrelated;
 using TradingEngine.Infrastructure;
@@ -36,6 +37,7 @@ public static class Application
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  RegistryItemCorrelatedEventHandler>();
+        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>,  OddsUpdatedEventHandler>();
         
         // Register command bus
         builder.Services.AddHostedService<CommandBusWorker>();
@@ -68,9 +70,6 @@ public static class Application
         builder.Services.AddHostedService<OddsApiSyncService>();
         builder.Services.AddSingleton<IEventRegistry, InMemoryEventRegistry>();
         builder.Services.AddSingleton<IOddsProvider, OddsProvider>();
-        
-        // Order strategies
-        builder.Services.AddSingleton<IOrderStrategy, MoneyLineOrderStrategy>();
 
         // Configure Serilog
         Log.Logger = new LoggerConfiguration()

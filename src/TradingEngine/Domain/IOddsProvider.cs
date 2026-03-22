@@ -15,5 +15,5 @@ public interface IOddsProvider
     /// A task that resolves to an <see cref="Odds"/> object representing the odds for the specified sport event,
     /// or <c>null</c> if no odds are available for the provided event ID.
     /// </returns>
-    public Task<IEnumerable<Bookmaker>> GetOdds(SportEventId id);
+    public Task<IReadOnlyCollection<Bookmaker>> GetOdds(SportEventId id);
 }

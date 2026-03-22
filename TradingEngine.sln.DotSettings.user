@@ -18,6 +18,7 @@
     &lt;TestAncestor&gt;&#xD;
       &lt;TestId&gt;xUnit::0866BA60-0365-AC44-8F4F-4D08EEBCEDDB::net10.0::TradingEngine.UnitTests.Domain.MoneyLineOrderStrategyTest.MatchScore_ShouldReturnHighScore_ForSimilarNames&lt;/TestId&gt;&#xD;
     &lt;/TestAncestor&gt;&#xD;
+    &lt;ProjectFile&gt;0866BA60-0365-AC44-8F4F-4D08EEBCEDDB/d:Domain/f:BookmakerTests.cs&lt;/ProjectFile&gt;&#xD;
   &lt;/Or&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=polymarket/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
