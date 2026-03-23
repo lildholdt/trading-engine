@@ -1,4 +1,5 @@
 ﻿using TradingEngine.Domain;
+using TradingEngine.Domain.Odds;
 using Xunit;
 
 namespace TradingEngine.UnitTests.Domain

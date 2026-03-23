@@ -4,8 +4,8 @@ using TradingEngine.Clients;
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.Polymarket;
 using TradingEngine.Domain;
-using TradingEngine.Domain.OddsUpdated;
-using TradingEngine.Domain.PlaceOrder;
+using TradingEngine.Domain.Odds;
+using TradingEngine.Domain.Odds.OddsUpdated;
 using TradingEngine.Domain.RegistryItemCorrelated;
 using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
@@ -31,19 +31,20 @@ public static class Application
         
         // Register utils
         builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
+        builder.Services.AddSingleton<IOddsWriter>(_ => new OddsWriter("odds.csv"));
 
         // Register event bus
         builder.Services.AddHostedService<EventBusWorker>();
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  RegistryItemCorrelatedEventHandler>();
-        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>,  OddsUpdatedEventHandler>();
+        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
+        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OddsLoggingHandler>();
         
         // Register command bus
         builder.Services.AddHostedService<CommandBusWorker>();
         builder.Services.AddSingleton<CommandBus>();
         builder.Services.AddSingleton<ICommandBus>(sp => sp.GetRequiredService<CommandBus>());
-        builder.Services.AddSingleton<ICommandHandler<PlaceOrderCommand>,  PlaceOrderCommandHandler>();
         
         // Register actor system
         builder.Services.AddSingleton<ISportEventActorSystem,  SportEventActorSystem>();
@@ -59,8 +60,8 @@ public static class Application
         builder.Services.AddTransient<LoggingHandler>();
         //builder.Services.AddHttpClient<IPolyMarketApiClient, PolyMarketApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
         //builder.Services.AddHttpClient<IOddsApiClient, OddsApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
-        builder.Services.AddSingleton<IPolymarketClient>(_ => new PolymarketClientStub("Clients/polymarket/polymarket-event.json"));
-        builder.Services.AddSingleton<IOddsApiClient>(_ => new OddsApiClientStub("Clients/oddsapi/oddsapi-event.json"));
+        builder.Services.AddSingleton<IPolymarketClient>(_ => new PolymarketClientStub("Clients/polymarket/polymarket-events.json"));
+        builder.Services.AddSingleton<IOddsApiClient>(_ => new OddsApiClientStub("Clients/oddsapi/oddsapi-events.json"));
                 
         builder.Services.AddControllers();
         builder.Services.AddSignalR();

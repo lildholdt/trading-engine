@@ -17,7 +17,7 @@ public class OddsApiSyncService(
                 var events = await oddsApiClient.GetOdds();
                 foreach (var @event in events)
                 {  
-                    eventRegistry.AttachOddsApi(@event);
+                    await eventRegistry.AttachOddsApi(@event);
                 }
             }
             catch (Exception ex)

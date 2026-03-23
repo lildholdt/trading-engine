@@ -34,9 +34,9 @@ public record Event
     public bool NegRisk { get; init; }
     public string NegRiskMarketID { get; init; }
     public int CommentCount { get; init; }
-    public List<Market> Markets { get; init; }
-    public List<Series> Series { get; init; }
-    public List<Tag> Tags { get; init; }
+    public List<Market> Markets { get; init; } = [];
+    public List<Series> Series { get; init; } = [];
+    public List<Tag> Tags { get; init; } = [];
     public bool Cyom { get; init; }
     public bool ShowAllOutcomes { get; init; }
     public bool ShowMarketImages { get; init; }

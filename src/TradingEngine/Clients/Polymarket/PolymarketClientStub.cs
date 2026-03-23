@@ -31,6 +31,11 @@ public class PolymarketClientStub : IPolymarketClient
     {
         return Task.FromResult(_events);
     }
+    
+    public Task<Event?> GetEvent(string eventId)
+    {
+        return Task.FromResult(_events.FirstOrDefault(e => e.Id == eventId));
+    }
 
     public async Task StreamEvents(string seriesId, Action<Event> action)
     {

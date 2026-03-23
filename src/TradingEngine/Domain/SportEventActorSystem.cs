@@ -1,11 +1,12 @@
 ﻿using System.Collections.Concurrent;
-using TradingEngine.Infrastructure.CommandBus;
+using TradingEngine.Domain.Odds;
+using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Services.Registry;
 
 namespace TradingEngine.Domain;
 
 public sealed class SportEventActorSystem(
-    ICommandBus commandBus, 
+    IEventBus eventBus, 
     IOddsProvider oddsProvider,
     ILogger<SportEventActorSystem> logger) : ISportEventActorSystem
 {
@@ -19,7 +20,7 @@ public sealed class SportEventActorSystem(
 
     public void CreateAsync(EventRegistryItem entry)
     {
-        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, commandBus, oddsProvider));
+        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, eventBus, oddsProvider));
         
         logger.LogInformation(
             "SportEventActor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",

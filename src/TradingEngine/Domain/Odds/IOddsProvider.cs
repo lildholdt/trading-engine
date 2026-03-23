@@ -1,6 +1,6 @@
 ﻿using TradingEngine.Clients.OddsApi.Models;
 
-namespace TradingEngine.Domain;
+namespace TradingEngine.Domain.Odds;
 
 /// <summary>
 /// Defines the contract for a provider responsible for retrieving odds associated with a specific sport event.

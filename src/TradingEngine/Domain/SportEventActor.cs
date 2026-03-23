@@ -1,7 +1,8 @@
 ﻿using System.Threading.Channels;
-using TradingEngine.Domain.PlaceOrder;
-using TradingEngine.Domain.UpdateOdds;
-using TradingEngine.Infrastructure.CommandBus;
+using TradingEngine.Domain.Odds;
+using TradingEngine.Domain.Odds.OddsUpdated;
+using TradingEngine.Domain.Odds.UpdateOdds;
+using TradingEngine.Infrastructure.EventBus;
 
 namespace TradingEngine.Domain;
 
@@ -9,21 +10,20 @@ public sealed class SportEventActor
 {
     // Dependencies
     private readonly Channel<ISportEventMessage> _mailbox;
-    private readonly ICommandBus _commandBus;
+    private readonly IEventBus _eventBus;
     private readonly IOddsProvider _oddsProvider;
 
     // State
     private SportEventId Id { get; init; }
-    private List<Bookmaker> Bookmakers { get; set; } = [];
-    private decimal LatestPrice { get; set; }
+    private List<Bookmaker> Odds { get; set; } = [];
 
     public SportEventActor(
         SportEventId id,
-        ICommandBus commandBus,
+        IEventBus eventBus,
         IOddsProvider oddsProvider)
     {
         Id = id;
-        _commandBus = commandBus;
+        _eventBus = eventBus;
         _oddsProvider = oddsProvider;
         
         _mailbox = Channel.CreateUnbounded<ISportEventMessage>(
@@ -79,7 +79,7 @@ public sealed class SportEventActor
             // Stop when 30 min to start time
             
             // Added closing line prices from Polymarket / OddsAPI (raw odds)
-            await Task.Delay(100000);
+            await Task.Delay(1000);
         }
     }
 
@@ -87,31 +87,35 @@ public sealed class SportEventActor
     
     public async Task ApplyOddsUpdate(IReadOnlyCollection<Bookmaker> odds)
     {
-        if (Equals(odds, Bookmakers))
+        if (Equals(odds, Odds))
             return;
         
         // Find all bookmakers that have changed by comparing the old and new collections
         var changedBookmakers = odds
             .Where(newBookmaker => 
-                !Bookmakers.Any(existingBookmaker => existingBookmaker.Equals(newBookmaker)))
+                !Odds.Any(existingBookmaker => existingBookmaker.Equals(newBookmaker)))
             .ToList();
         
         // Update only the changed bookmakers in the Bookmakers collection
         foreach (var changedBookmaker in changedBookmakers)
         {
-            var existingBookmaker = Bookmakers.FirstOrDefault(b => b.Name == changedBookmaker.Name);
+            var existingBookmaker = Odds.FirstOrDefault(b => b.Name == changedBookmaker.Name);
             if (existingBookmaker != null)
             {
                 // Replace the existing bookmaker with the new one
-                Bookmakers.Remove(existingBookmaker);
+                Odds.Remove(existingBookmaker);
             }
-            Bookmakers.Add(changedBookmaker);
+            Odds.Add(changedBookmaker);
         }
+
+        if (changedBookmakers.Count == 0)
+            return;
         
-        await _commandBus.SendAsync(new PlaceOrderCommand
+        // Notify that odds has been updated
+        await _eventBus.PublishAsync(new OddsUpdatedEvent
         {
             Id = Id,
-            Odds = Bookmakers
+            Odds = Odds
         });
     }
 }

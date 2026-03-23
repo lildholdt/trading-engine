@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using TradingEngine.Clients.OddsApi.Models;
+using TradingEngine.Clients.Polymarket;
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
 using TradingEngine.Domain.RegistryItemCorrelated;
@@ -22,13 +23,14 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         // Check if the event is already registered
         var found = _events.FirstOrDefault(e => e.Value.PolymarketEvent.Id == @event.Id).Value != null;
         if (found) return;
-        
-        // TODO: Improve how team names are extracted from Polymarket event
+
+        // Find MoneyLine markets
+        var hasMoneyLineMarketTypes = @event.HasMoneyLineMarketTypes;
+        if (!hasMoneyLineMarketTypes) return;
+
+        // Extract team names.
         var teams = @event.Title.Split(" vs. "); 
         if (teams.Length != 2) 
-            return;
-        
-        if (teams[1].Contains("More Markets")) 
             return;
                        
         var registryItem = new EventRegistryItem

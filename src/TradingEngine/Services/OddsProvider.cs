@@ -1,7 +1,8 @@
 ﻿using TradingEngine.Clients.OddsApi;
 using TradingEngine.Domain;
+using TradingEngine.Domain.Odds;
 using TradingEngine.Services.Registry;
-using Bookmaker = TradingEngine.Domain.Bookmaker;
+using Bookmaker = TradingEngine.Domain.Odds.Bookmaker;
 
 namespace TradingEngine.Services;
 

@@ -15,6 +15,18 @@ namespace TradingEngine.Clients.Polymarket
         // Accepts the seriesId as an input parameter and returns a task 
         // that resolves to an enumerable of Event objects.
         Task<IEnumerable<Event>> GetEvents(string seriesId);
+        
+        /// <summary>
+        /// Fetches the details of a specific event.
+        /// </summary>
+        /// <param name="eventId">
+        /// The unique identifier for the event to be retrieved.
+        /// </param>
+        /// <returns>
+        /// A task that resolves to an Event object containing the details of the specified event,
+        /// or null if the event is not found.
+        /// </returns>
+        Task<Event?> GetEvent(string eventId);
 
         // Method to stream events associated with a specific series in real-time.
         // Accepts the seriesId as an input parameter and an Action delegate

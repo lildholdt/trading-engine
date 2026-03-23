@@ -36,23 +36,19 @@ public abstract class ValueObject
 
     public override string ToString()
     {
-        return $"{{{string.Join(", ", GetProperties().Select(f => $"{f.Name}: {f.GetValue(this)}"))}}}";
+        return $"{{{string.Join(", ", GetFields().Select(f => $"{f.Name}: {f.GetValue(this)}"))}}}";
     }
 
     protected virtual IEnumerable<object?> GetEqualityComponents()
     {
-        return GetProperties().Select(x => x.GetValue(this));
+        return GetFields().Select(f => f.GetValue(this));
     }
 
-    protected virtual IEnumerable<PropertyInfo> GetProperties()
+    private IEnumerable<FieldInfo> GetFields()
     {
-        return TypeProperties.GetOrAdd(
-            GetType(),
-            t => t
-                .GetTypeInfo()
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .OrderBy(p => p.Name)
-                .ToList());
+        return GetType()
+            .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            .OrderBy(f => f.Name);
     }
 }
 
