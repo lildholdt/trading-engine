@@ -1,6 +1,6 @@
 ﻿using TradingEngine.Infrastructure;
 
-namespace TradingEngine.Domain.Odds;
+namespace TradingEngine.Domain;
 
 public class Bookmaker : ValueObject
 {

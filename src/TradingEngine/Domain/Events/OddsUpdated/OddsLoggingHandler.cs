@@ -2,7 +2,7 @@
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Services.Registry;
 
-namespace TradingEngine.Domain.Odds.OddsUpdated;
+namespace TradingEngine.Domain.Events.OddsUpdated;
 
 public class OddsLoggingHandler(
     IOddsWriter oddsWriter,
@@ -19,21 +19,29 @@ public class OddsLoggingHandler(
             return;
         }
         
-        var polymarketEvent = await polymarketClient.GetEvent(item.Id);
+        var polymarketEvent = await polymarketClient.GetEvent(item.PolymarketEvent.Id);
+        var markets = polymarketEvent?.GetMoneyLineMarkets();
+        
+        var homeMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.HomeTeam);
+        var awayMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.AwayTeam);
+
+        var homePrice = homeMarket?.OutcomePrices.ElementAt(0);
+        var awayPrice = awayMarket?.OutcomePrices.ElementAt(0);
         
         var records = @event.Odds.Select(record => new OddsRecord
         {
             Id = @event.Id,
-            Home = item!.HomeTeam,
-            Away = item!.AwayTeam,
+            Home = item.HomeTeam,
+            Away = item.AwayTeam,
             Bookmaker = record.Name,
             StartTime = item.StartTime,
             SnapshotTime = DateTime.Now,
             HoursBefore = item.StartTime - DateTime.Now,
             TrueOddsHome = record.TrueOdds(OutcomeType.Home),
-            TrueOddsAway = record.TrueOdds(OutcomeType.Away),
             TrueOddsDraw = record.TrueOdds(OutcomeType.Draw),
-            PolymarketOutcome = 0
+            TrueOddsAway = record.TrueOdds(OutcomeType.Away),
+            PolymarketOutcomeHome = homePrice ?? 0,
+            PolymarketOutcomeAway = awayPrice ?? 0
         }).ToList();
 
         await oddsWriter.WriteRecords(records, cancellationToken);
@@ -49,8 +57,9 @@ public class OddsLoggingHandler(
         public required DateTime SnapshotTime { get; init; }
         public required TimeSpan HoursBefore { get; init; }
         public required decimal TrueOddsHome { get; init; }
-        public required decimal TrueOddsAway { get; init; }
         public required decimal TrueOddsDraw { get; init; }
-        public required decimal PolymarketOutcome { get; init; }
+        public required decimal TrueOddsAway { get; init; }
+        public required decimal PolymarketOutcomeHome { get; init; }
+        public required decimal PolymarketOutcomeAway { get; init; }
     }
 }

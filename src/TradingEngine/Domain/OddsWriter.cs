@@ -1,6 +1,4 @@
-﻿using TradingEngine.Infrastructure;
-
-namespace TradingEngine.Domain.Odds;
+﻿namespace TradingEngine.Domain;
 
 public interface IOddsWriter
 {
@@ -27,11 +25,19 @@ public class OddsWriter(string filePath) : IOddsWriter
             throw new ArgumentException("Records collection cannot be null or empty.", nameof(records));
         }
 
-        await using var writer = new StreamWriter(filePath);
-
-        // Write header
         var properties = typeof(T).GetProperties();
-        await writer.WriteLineAsync(string.Join(",", properties.Select(p => $"\"{p.Name}\"")));
+
+        // Check if the file exists
+        var fileExists = File.Exists(filePath);
+
+        // Open the file in append mode
+        await using var writer = new StreamWriter(filePath, append: true);
+
+        // Write the header only if the file does not already exist
+        if (!fileExists)
+        {
+            await writer.WriteLineAsync(string.Join(",", properties.Select(p => $"\"{p.Name}\"")));
+        }
 
         // Write each record
         foreach (var record in records)

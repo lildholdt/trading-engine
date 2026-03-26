@@ -1,13 +1,15 @@
 ﻿using System.Threading.Channels;
-using TradingEngine.Domain.Odds;
-using TradingEngine.Domain.Odds.OddsUpdated;
-using TradingEngine.Domain.Odds.UpdateOdds;
+using TradingEngine.Domain.Commands.UpdateOdds;
+using TradingEngine.Domain.Events.OddsUpdated;
 using TradingEngine.Infrastructure.EventBus;
 
 namespace TradingEngine.Domain;
 
 public sealed class SportEventActor
 {
+    // 
+    private readonly CancellationTokenSource _cts = new();
+    
     // Dependencies
     private readonly Channel<ISportEventMessage> _mailbox;
     private readonly IEventBus _eventBus;
@@ -15,14 +17,17 @@ public sealed class SportEventActor
 
     // State
     private SportEventId Id { get; init; }
+    private DateTime StartTime { get; init; }
     private List<Bookmaker> Odds { get; set; } = [];
 
     public SportEventActor(
         SportEventId id,
+        DateTime startTime,
         IEventBus eventBus,
         IOddsProvider oddsProvider)
     {
         Id = id;
+        StartTime = startTime;
         _eventBus = eventBus;
         _oddsProvider = oddsProvider;
         
@@ -32,17 +37,17 @@ public sealed class SportEventActor
                 SingleReader = true,
                 SingleWriter = false
             });
-
-        _ = RunAsync();
-        _ = PollOdds();
+        
+        _ = ReadMessagesAsync(_cts.Token);
+        _ = PollOddsAsync(_cts.Token);
     }
     
-    public ValueTask SendAsync(ISportEventMessage message)
+    public ValueTask SendMessageAsync(ISportEventMessage message)
         => _mailbox.Writer.WriteAsync(message);
 
-    private async Task RunAsync()
+    private async Task ReadMessagesAsync(CancellationToken ct)
     {
-        await foreach (var message in _mailbox.Reader.ReadAllAsync())
+        await foreach (var message in _mailbox.Reader.ReadAllAsync(ct))
         {
             try
             {
@@ -56,30 +61,43 @@ public sealed class SportEventActor
         }
     }
     
-    private async Task PollOdds()
+    private async Task PollOddsAsync(CancellationToken ct)
     {
-        while (true)
+        while (!ct.IsCancellationRequested)
         {
             var odds = await _oddsProvider.GetOdds(Id);
             if (odds.Count == 0) continue;
 
-            await SendAsync(new UpdateOddsMessage
+            await SendMessageAsync(new UpdateOddsMessage
             {
                 SportEventId = Id,
                 Bookmakers = odds
             });
-
-            // TODO: Apply dynamic polling which is adjusted when start time approaches
             
-            // x hours before start time
-            // 3 days before 3 min. 
-            // 2 days before 2 min.
-            // 1 days before 1 min => decrease linearly to 5 sek.
-            // 6 hours before 5 sek. 
-            // Stop when 30 min to start time
+            // Check if the match has ended
+            var timeUntilStart = StartTime - DateTime.UtcNow;
+            if (timeUntilStart.TotalMilliseconds < 0) break;
             
-            // Added closing line prices from Polymarket / OddsAPI (raw odds)
-            await Task.Delay(1000);
+            // Calculate odds polling interval
+            var delayMilliseconds = timeUntilStart.TotalDays switch
+            {
+                > 3 => TimeSpan.FromMinutes(5).Milliseconds, // More than 3 days: 5 minutes
+                > 2 => TimeSpan.FromMinutes(3).Milliseconds, // 2-3 days: 3 minutes
+                > 1 => TimeSpan.FromMinutes(2).Milliseconds, // 1-2 days: 2 minutes
+                _ when timeUntilStart.TotalHours > 6 => TimeSpan.FromMinutes(1).Milliseconds, // 6-24 hours: 1 minute
+                _ => TimeSpan.FromSeconds(5).Milliseconds // Less than 6 hours: 5 seconds
+            };
+            
+            try
+            {
+                // Use Task.Delay with cancellation support
+                await Task.Delay(delayMilliseconds, ct);
+            }
+            catch (TaskCanceledException)
+            {
+                // Task.Delay was canceled, exit the loop
+                break;
+            }
         }
     }
 

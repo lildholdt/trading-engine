@@ -1,20 +1,27 @@
-﻿namespace TradingEngine.Clients.Polymarket.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace TradingEngine.Clients.Polymarket.Models;
 
 public record Market
 {
     public string? Id { get; init; }
     public string? Question { get; init; }
-    public string ConditionId { get; init; }
-    public string Slug { get; init; }
-    public string ResolutionSource { get; init; }
+    public string? ConditionId { get; init; }
+    public string? Slug { get; init; }
+    public string? ResolutionSource { get; init; }
     public DateTime EndDate { get; init; }
-    public string Liquidity { get; init; }
+    public string? Liquidity { get; init; }
     public DateTime StartDate { get; init; }
-    public string Image { get; init; }
-    public string Icon { get; init; }
-    public string Description { get; init; }
-    public string Outcomes { get; init; }
-    public string OutcomePrices { get; init; }
+    public string? Image { get; init; }
+    public string? Icon { get; init; }
+    public string? Description { get; init; }
+
+    [JsonConverter(typeof(JsonStringListConverter))]
+    public IReadOnlyCollection<string> Outcomes { get; init; } = [];
+
+    [JsonConverter(typeof(JsonDecimalListConverter))]
+    public IReadOnlyCollection<decimal> OutcomePrices { get; init; } = [];
+    
     public string Volume { get; init; }
     public bool Active { get; init; }
     public bool Closed { get; init; }

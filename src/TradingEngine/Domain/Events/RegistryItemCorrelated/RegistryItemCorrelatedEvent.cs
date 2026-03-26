@@ -1,7 +1,7 @@
 ﻿using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Services.Registry;
 
-namespace TradingEngine.Domain.RegistryItemCorrelated;
+namespace TradingEngine.Domain.Events.RegistryItemCorrelated;
 
 public class RegistryItemCorrelatedEvent : IEvent
 {

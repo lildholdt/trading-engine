@@ -2,7 +2,7 @@
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Services.Registry;
 
-namespace TradingEngine.Domain.Odds.OddsUpdated;
+namespace TradingEngine.Domain.Events.OddsUpdated;
 
 public class OrderPlacementHandler(
     IPolymarketClient polymarketClient, 

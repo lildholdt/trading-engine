@@ -1,6 +1,6 @@
 ﻿using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.Odds.OddsUpdated;
+namespace TradingEngine.Domain.Events.OddsUpdated;
 
 public class OddsUpdatedEvent : IEvent
 {

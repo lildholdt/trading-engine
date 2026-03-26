@@ -1,6 +1,6 @@
 ﻿using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.RegistryItemCorrelated;
+namespace TradingEngine.Domain.Events.RegistryItemCorrelated;
 
 public class RegistryItemCorrelatedEventHandler(ISportEventActorSystem actorSystem) :  IEventHandler<RegistryItemCorrelatedEvent>
 {

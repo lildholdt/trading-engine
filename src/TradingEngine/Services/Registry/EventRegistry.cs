@@ -3,7 +3,7 @@ using TradingEngine.Clients.OddsApi.Models;
 using TradingEngine.Clients.Polymarket;
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
-using TradingEngine.Domain.RegistryItemCorrelated;
+using TradingEngine.Domain.Events.RegistryItemCorrelated;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Utils;
 
@@ -33,6 +33,7 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         if (teams.Length != 2) 
             return;
                        
+        // Create registry item
         var registryItem = new EventRegistryItem
         {
             Id = SportEventId.New(),
@@ -42,6 +43,7 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
             PolymarketEvent = @event
         };
         
+        // Add registry item
         _events.TryAdd(registryItem.Id, registryItem);
     }
 

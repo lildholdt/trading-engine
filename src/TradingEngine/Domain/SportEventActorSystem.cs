@@ -1,5 +1,4 @@
 ﻿using System.Collections.Concurrent;
-using TradingEngine.Domain.Odds;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Services.Registry;
 
@@ -15,12 +14,12 @@ public sealed class SportEventActorSystem(
     public ValueTask SendAsync(ISportEventMessage message)
     {
         _actors.TryGetValue(message.SportEventId, out var actor);
-        return actor?.SendAsync(message) ?? ValueTask.CompletedTask;
+        return actor?.SendMessageAsync(message) ?? ValueTask.CompletedTask;
     }
 
     public void CreateAsync(EventRegistryItem entry)
     {
-        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, eventBus, oddsProvider));
+        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, entry.StartTime, eventBus, oddsProvider));
         
         logger.LogInformation(
             "SportEventActor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",

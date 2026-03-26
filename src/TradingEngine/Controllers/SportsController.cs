@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
-using TradingEngine.Domain.Odds;
-using TradingEngine.Domain.Odds.UpdateOdds;
+using TradingEngine.Domain.Commands.UpdateOdds;
 using TradingEngine.Infrastructure.Hub;
 
 namespace TradingEngine.Controllers;
