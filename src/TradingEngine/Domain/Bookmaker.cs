@@ -1,4 +1,5 @@
-﻿using TradingEngine.Infrastructure;
+﻿using System.Collections.Immutable;
+using TradingEngine.Infrastructure;
 
 namespace TradingEngine.Domain;
 
@@ -6,7 +7,7 @@ public class Bookmaker : ValueObject
 {
     public required string Name { get; init; }
     public DateTime LastUpdate { get; init; }
-    public required Dictionary<OutcomeType, decimal> Outcomes { get; init; } = new();
+    public required ImmutableDictionary<OutcomeType, decimal> Outcomes { get; init; } = ImmutableDictionary<OutcomeType, decimal>.Empty;
     
     /// <summary>
     /// Retrieves the odds for a specific outcome type.
@@ -42,6 +43,27 @@ public class Bookmaker : ValueObject
     }
     
     /// <summary>
+    /// Compares the Outcomes of this bookmaker with another bookmaker to check for changes.
+    /// </summary>
+    /// <param name="other">The other bookmaker to compare against.</param>
+    /// <returns>True if the Outcomes have changed, otherwise false.</returns>
+    public bool HasOutcomesChanged(Bookmaker other)
+    {
+        if (Name != other.Name || Outcomes.Count != other.Outcomes.Count)
+            return true;
+
+        foreach (var kvp in Outcomes)
+        {
+            if (!other.Outcomes.TryGetValue(kvp.Key, out var otherValue) || kvp.Value != otherValue)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    /// <summary>
     /// Provides the components used for equality comparison of this model.
     /// </summary>
     /// <returns>An enumerable of objects representing the components used for equality checks.</returns>
@@ -49,6 +71,7 @@ public class Bookmaker : ValueObject
     {
         yield return Name;
         yield return LastUpdate;
+        yield return Outcomes;
 
         // Ensure deep equality of the dictionary by comparing key-value pairs
         foreach (var kvp in Outcomes.OrderBy(k => k.Key))

@@ -1,4 +1,5 @@
-﻿using TradingEngine.Domain;
+﻿using System.Collections.Immutable;
+using TradingEngine.Domain;
 using Xunit;
 
 namespace TradingEngine.UnitTests.Domain
@@ -14,7 +15,8 @@ namespace TradingEngine.UnitTests.Domain
                 { OutcomeType.Home, 3.58m },
                 { OutcomeType.Away, 2.25m },
                 { OutcomeType.Draw, 2.92m }
-            };
+            }.ToImmutableDictionary();
+            
             var bookmaker = new Bookmaker
             {
                 Name = "TestBookmaker",
@@ -38,7 +40,8 @@ namespace TradingEngine.UnitTests.Domain
                 { OutcomeType.Home, 3.58m },
                 { OutcomeType.Away, 2.25m },
                 { OutcomeType.Draw, 2.92m }
-            };
+            }.ToImmutableDictionary();
+            
             var bookmaker = new Bookmaker
             {
                 Name = "TestBookmaker",
@@ -70,7 +73,7 @@ namespace TradingEngine.UnitTests.Domain
                 { OutcomeType.Home, 2.5m },
                 { OutcomeType.Away, 3.0m },
                 { OutcomeType.Draw, 3.5m }
-            };
+            }.ToImmutableDictionary();
 
             var bookmaker1 = new Bookmaker
             {
@@ -82,8 +85,8 @@ namespace TradingEngine.UnitTests.Domain
             var bookmaker2 = new Bookmaker
             {
                 Name = "TestBookmaker",
-                LastUpdate = new DateTime(2023, 1, 1),
-                Outcomes = new Dictionary<OutcomeType, decimal>(outcomes) // Create a separate instance of the dictionary
+                LastUpdate = new DateTime(2023, 1, 2),
+                Outcomes = new Dictionary<OutcomeType, decimal>(outcomes).ToImmutableDictionary() // Create a separate instance of the dictionary
             };
 
             // Act and Assert: Verify that the two objects are equal
@@ -99,14 +102,14 @@ namespace TradingEngine.UnitTests.Domain
                 { OutcomeType.Home, 2.5m },
                 { OutcomeType.Away, 3.0m },
                 { OutcomeType.Draw, 3.5m }
-            };
+            }.ToImmutableDictionary();
 
             var outcomes2 = new Dictionary<OutcomeType, decimal>
             {
                 { OutcomeType.Home, 2.6m }, // Different value for Home outcome
                 { OutcomeType.Away, 3.0m },
                 { OutcomeType.Draw, 3.5m }
-            };
+            }.ToImmutableDictionary();
 
             var bookmaker1 = new Bookmaker
             {

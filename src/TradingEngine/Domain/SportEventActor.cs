@@ -146,12 +146,14 @@ public sealed class SportEventActor
     
     public async Task ApplyOddsUpdate(IReadOnlyCollection<Bookmaker> odds)
     {
+        // If the object are completely identical, do nothing.
         if (Equals(odds, Odds))
             return;
         
         // Find all bookmakers that have changed by comparing the old and new collections
         var changedBookmakers = odds
-            .Where(newBookmaker => !Odds.Any(existingBookmaker => existingBookmaker.Equals(newBookmaker)))
+            .Where(newBookmaker => Odds.Any(existingBookmaker =>
+                existingBookmaker.Name == newBookmaker.Name && existingBookmaker.HasOutcomesChanged(newBookmaker)))
             .ToList();
         
         // Update only the changed bookmakers in the Bookmakers collection

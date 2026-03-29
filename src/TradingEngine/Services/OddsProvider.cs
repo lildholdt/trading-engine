@@ -1,4 +1,5 @@
-﻿using TradingEngine.Clients.OddsApi;
+﻿using System.Collections.Immutable;
+using TradingEngine.Clients.OddsApi;
 using TradingEngine.Domain;
 using TradingEngine.Services.Registry;
 using Bookmaker = TradingEngine.Domain.Bookmaker;
@@ -40,7 +41,7 @@ public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOdd
                     { OutcomeType.Home, market.Outcomes.FirstOrDefault(x => x.Name == item.OddsApiEvent?.HomeTeam)!.Price},
                     { OutcomeType.Away, market.Outcomes.FirstOrDefault(x => x.Name == item.OddsApiEvent?.AwayTeam)!.Price},
                     { OutcomeType.Draw, market.Outcomes.FirstOrDefault(x => x.Name == "Draw")!.Price}
-                }
+                }.ToImmutableDictionary()
             };
             bookmakers.Add(bookmaker);
         }

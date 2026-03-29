@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Immutable;
+using Microsoft.AspNetCore.Mvc;
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
 using TradingEngine.Domain.Messages;
@@ -28,7 +29,7 @@ public class SportsController(
                         { OutcomeType.Home, odds.Home },
                         { OutcomeType.Away, odds.Away },
                         { OutcomeType.Draw, odds.Draw }
-                    }
+                    }.ToImmutableDictionary()
                 }
             ]
         };
