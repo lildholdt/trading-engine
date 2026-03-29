@@ -66,8 +66,8 @@ public static class Application
         builder.Services.AddSignalR();
         
         // Register services
-        builder.Services.AddHostedService<PolymarketSyncService>();
         builder.Services.AddHostedService<OddsApiSyncService>();
+        builder.Services.AddHostedService<PolymarketSyncService>();
         builder.Services.AddSingleton<IEventRegistry, InMemoryEventRegistry>();
         builder.Services.AddSingleton<IOddsProvider, OddsProvider>();
 

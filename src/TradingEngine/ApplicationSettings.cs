@@ -6,6 +6,7 @@ public class ApplicationSettings
     public int LongRunningRequestThresholdInMs { get; init; } = 3000;
     public TeamMatching TeamMatching { get; init; } = new();
     public OddsApi OddsApi { get; init; } = new();
+    public int EventPollingIntervalInMs { get; init; } = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;
 }
 
 public class TeamMatching

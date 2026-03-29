@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.ObjectModel;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using TradingEngine.Clients.OddsApi.Models;
 
@@ -22,12 +23,29 @@ public class OddsApiClientStub : IOddsApiClient
     }
     public Task<IReadOnlyCollection<Odds>> GetOdds()
     {
-        return Task.FromResult(_odds);
+        return Task.FromResult<IReadOnlyCollection<Odds>>(new ReadOnlyCollection<Odds>(_odds.ToList()));
     }
 
     public Task<Odds?> GetOdds(string eventId)
     {
-        return Task.FromResult(_odds.FirstOrDefault(e => e.Id == eventId));
+        var existingOdds = _odds.FirstOrDefault(e => e.Id == eventId);
+
+        if (existingOdds == null)
+        {
+            return Task.FromResult<Odds?>(null);
+        }
+
+        // Create a new instance of Odds
+        var newOdds = new Odds
+        {
+            Id = existingOdds.Id,
+            Bookmakers = existingOdds.Bookmakers,
+            SportKey = existingOdds.SportKey,
+            SportTitle = existingOdds.SportTitle,
+            HomeTeam = existingOdds.HomeTeam,
+            AwayTeam = existingOdds.AwayTeam,
+        };
+        return Task.FromResult<Odds?>(newOdds);
     }
 }
 
