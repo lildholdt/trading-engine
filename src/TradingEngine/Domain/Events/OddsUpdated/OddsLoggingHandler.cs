@@ -37,6 +37,9 @@ public class OddsLoggingHandler(
             StartTime = item.StartTime,
             SnapshotTime = DateTime.Now,
             HoursBefore = item.StartTime - DateTime.Now,
+            OddsHome = record.Outcome(OutcomeType.Home),
+            OddsDraw = record.Outcome(OutcomeType.Draw),
+            OddsAway = record.Outcome(OutcomeType.Away),
             TrueOddsHome = record.TrueOdds(OutcomeType.Home),
             TrueOddsDraw = record.TrueOdds(OutcomeType.Draw),
             TrueOddsAway = record.TrueOdds(OutcomeType.Away),
@@ -45,6 +48,24 @@ public class OddsLoggingHandler(
         }).ToList();
 
         await oddsWriter.WriteRecords(records, cancellationToken);
+
+        foreach (var record in records)
+        {
+            logger.LogInformation("Processed odds record for EventId: {EventId}, HomeTeam: {HomeTeam}, AwayTeam: {AwayTeam}, Bookmaker: {Bookmaker}, StartTime: {StartTime}, SnapshotTime: {SnapshotTime}, HoursBefore: {HoursBefore}, TrueOddsHome: {TrueOddsHome}, TrueOddsDraw: {TrueOddsDraw}, TrueOddsAway: {TrueOddsAway}, PolymarketOutcomeHome: {PolymarketOutcomeHome}, PolymarketOutcomeAway: {PolymarketOutcomeAway}.",
+                record.Id,
+                record.Home,
+                record.Away,
+                record.Bookmaker,
+                record.StartTime,
+                record.SnapshotTime,
+                record.HoursBefore,
+                record.TrueOddsHome,
+                record.TrueOddsDraw,
+                record.TrueOddsAway,
+                record.PolymarketOutcomeHome,
+                record.PolymarketOutcomeAway);
+        }
+        
     }
 
     public record OddsRecord
@@ -56,6 +77,9 @@ public class OddsLoggingHandler(
         public required string Bookmaker { get; init; }
         public required DateTime SnapshotTime { get; init; }
         public required TimeSpan HoursBefore { get; init; }
+        public required decimal OddsHome { get; init; }
+        public required decimal OddsDraw { get; init; }
+        public required decimal OddsAway { get; init; }
         public required decimal TrueOddsHome { get; init; }
         public required decimal TrueOddsDraw { get; init; }
         public required decimal TrueOddsAway { get; init; }
