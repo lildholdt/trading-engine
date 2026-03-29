@@ -8,7 +8,7 @@ namespace TradingEngine.Domain;
 public sealed class SportEventActor
 {
     // Dependencies
-    private readonly Channel<ISportEventCommand> _mailbox;
+    private readonly Channel<ISportEventMessage> _mailbox;
     private readonly IEventBus _eventBus;
     private readonly IOddsProvider _oddsProvider;
     private readonly ILogger<SportEventActor> _logger;
@@ -32,7 +32,7 @@ public sealed class SportEventActor
         _oddsProvider = oddsProvider;
         _logger = serviceProvider.GetRequiredService<ILogger<SportEventActor>>();
         
-        _mailbox = Channel.CreateUnbounded<ISportEventCommand>(
+        _mailbox = Channel.CreateUnbounded<ISportEventMessage>(
             new UnboundedChannelOptions
             {
                 SingleReader = true,
@@ -42,8 +42,8 @@ public sealed class SportEventActor
         _ = RunAsync(_cts.Token);
     }
     
-    public ValueTask SendMessageAsync(ISportEventCommand command)
-        => _mailbox.Writer.WriteAsync(command);
+    public ValueTask SendMessageAsync(ISportEventMessage message)
+        => _mailbox.Writer.WriteAsync(message);
 
     private async Task RunAsync(CancellationToken ct)
     {
@@ -99,9 +99,10 @@ public sealed class SportEventActor
         {
             try
             {
+                // Get new odds via the provider
                 var odds = await _oddsProvider.GetOdds(Id);
                 if (odds.Count == 0) continue;
-
+                
                 await SendMessageAsync(new UpdateOddsMessage
                 {
                     SportEventId = Id,
@@ -125,7 +126,7 @@ public sealed class SportEventActor
                 _logger.LogInformation("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", Id, delayMilliseconds);
             
                 // Use Task.Delay with cancellation support
-                await Task.Delay((int)delayMilliseconds, ct);
+                await Task.Delay((int)1000, ct);
             }
             catch (OperationCanceledException)
             {
@@ -150,8 +151,7 @@ public sealed class SportEventActor
         
         // Find all bookmakers that have changed by comparing the old and new collections
         var changedBookmakers = odds
-            .Where(newBookmaker => 
-                !Odds.Any(existingBookmaker => existingBookmaker.Equals(newBookmaker)))
+            .Where(newBookmaker => !Odds.Any(existingBookmaker => existingBookmaker.Equals(newBookmaker)))
             .ToList();
         
         // Update only the changed bookmakers in the Bookmakers collection

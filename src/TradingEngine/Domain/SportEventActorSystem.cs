@@ -12,10 +12,10 @@ public sealed class SportEventActorSystem(
 {
     private readonly ConcurrentDictionary<string, SportEventActor> _actors = new();
 
-    public ValueTask SendAsync(ISportEventCommand command)
+    public ValueTask SendAsync(ISportEventMessage message)
     {
-        _actors.TryGetValue(command.SportEventId, out var actor);
-        return actor?.SendMessageAsync(command) ?? ValueTask.CompletedTask;
+        _actors.TryGetValue(message.SportEventId, out var actor);
+        return actor?.SendMessageAsync(message) ?? ValueTask.CompletedTask;
     }
 
     public void CreateAsync(EventRegistryItem entry)

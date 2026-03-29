@@ -51,7 +51,7 @@ public class OddsLoggingHandler(
 
         foreach (var record in records)
         {
-            logger.LogInformation("Processed odds record for EventId: {EventId}, HomeTeam: {HomeTeam}, AwayTeam: {AwayTeam}, Bookmaker: {Bookmaker}, StartTime: {StartTime}, SnapshotTime: {SnapshotTime}, HoursBefore: {HoursBefore}, TrueOddsHome: {TrueOddsHome}, TrueOddsDraw: {TrueOddsDraw}, TrueOddsAway: {TrueOddsAway}, PolymarketOutcomeHome: {PolymarketOutcomeHome}, PolymarketOutcomeAway: {PolymarketOutcomeAway}.",
+            logger.LogInformation("Odds updated: {EventId}, HomeTeam: {HomeTeam}, AwayTeam: {AwayTeam}, Bookmaker: {Bookmaker}, StartTime: {StartTime}, SnapshotTime: {SnapshotTime}, HoursBefore: {HoursBefore}, TrueOddsHome: {TrueOddsHome}, TrueOddsDraw: {TrueOddsDraw}, TrueOddsAway: {TrueOddsAway}, PolymarketOutcomeHome: {PolymarketOutcomeHome}, PolymarketOutcomeAway: {PolymarketOutcomeAway}.",
                 record.Id,
                 record.Home,
                 record.Away,

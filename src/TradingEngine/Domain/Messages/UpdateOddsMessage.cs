@@ -1,6 +1,6 @@
 ﻿namespace TradingEngine.Domain.Messages;
 
-public class UpdateOddsMessage : ISportEventCommand
+public class UpdateOddsMessage : ISportEventMessage
 {
     public required string SportEventId { get; init; }
     public required IReadOnlyCollection<Bookmaker> Bookmakers { get; init; }

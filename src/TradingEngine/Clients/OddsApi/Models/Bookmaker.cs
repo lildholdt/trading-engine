@@ -5,13 +5,13 @@ namespace TradingEngine.Clients.OddsApi.Models;
 public record Bookmaker
 {
     [JsonPropertyName("key")]
-    public string Key { get; set; }
+    public string Key { get; init; }
     
     [JsonPropertyName("title")]
-    public string Title { get; set; }
+    public string Title { get; init; }
     
     [JsonPropertyName("last_update")]
-    public DateTime LastUpdate { get; set; }
+    public DateTime LastUpdate { get; init; }
     
-    public List<Market> Markets { get; set; }
+    public List<Market> Markets { get; init; }
 }

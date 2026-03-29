@@ -1,6 +1,6 @@
 ﻿namespace TradingEngine.Domain.Messages;
 
-public class EndMatchMessage : ISportEventCommand
+public class EndMatchMessage : ISportEventMessage
 {
     public required string SportEventId { get; init; }
     

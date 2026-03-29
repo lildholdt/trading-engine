@@ -4,7 +4,7 @@ namespace TradingEngine.Domain;
 
 public interface ISportEventActorSystem
 {
-    public ValueTask SendAsync(ISportEventCommand command);
+    public ValueTask SendAsync(ISportEventMessage message);
     void CreateAsync(EventRegistryItem entry);
     void EndAsync(SportEventId id);
 }
