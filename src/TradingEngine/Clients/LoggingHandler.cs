@@ -45,7 +45,7 @@ public class LoggingHandler(ILogger<LoggingHandler> logger, IOptions<Application
         var requestBody = await ReadContent(request.Content);
         logger.LogDebug("[{HttpInterface:l}] Request body: \r\n {Body}", @interface, requestBody);
         
-        logger.LogInformation("[{HttpInterface:l}] Request: {Method:l} {RequestUri}", @interface, request.Method, request.RequestUri);
+        logger.LogDebug("[{HttpInterface:l}] Request: {Method:l} {RequestUri}", @interface, request.Method, request.RequestUri);
     }
 
 
@@ -58,14 +58,14 @@ public class LoggingHandler(ILogger<LoggingHandler> logger, IOptions<Application
             var responseBody = await ReadContent(response.Content);
             logger.LogDebug("[{HttpInterface:l}] Response body: \r\n {Body}", @interface, responseBody);
 
-        logger.LogInformation("[{HttpInterface:l}] Response: {Method:l} {RequestUri} returned {StatusCode} in {Elapsed} ms",
+        logger.LogDebug("[{HttpInterface:l}] Response: {Method:l} {RequestUri} returned {StatusCode} in {Elapsed} ms",
                                    @interface, request.Method, request.RequestUri, (int)response.StatusCode, elapsedMilliseconds);
     }
 
 
     private void LogLongRunningRequest(string @interface, HttpRequestMessage request, long elapsedMilliseconds)
     {
-        logger.LogInformation("[{HttpInterface:l}] Long running request: {Method:l} {RequestUri} returned in {Elapsed} ms",
+        logger.LogDebug("[{HttpInterface:l}] Long running request: {Method:l} {RequestUri} returned in {Elapsed} ms",
                          @interface, request.Method, request.RequestUri, elapsedMilliseconds);
     }
 

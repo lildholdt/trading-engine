@@ -126,7 +126,7 @@ public sealed class SportEventActor
                 _logger.LogInformation("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", Id, delayMilliseconds);
             
                 // Use Task.Delay with cancellation support
-                await Task.Delay((int)1000, ct);
+                await Task.Delay((int)delayMilliseconds, ct);
             }
             catch (OperationCanceledException)
             {
