@@ -11,10 +11,10 @@ public sealed class SportEventActorSystem(
 {
     private readonly ConcurrentDictionary<string, SportEventActor> _actors = new();
 
-    public ValueTask SendAsync(ISportEventMessage message)
+    public ValueTask SendAsync(ISportEventCommand command)
     {
-        _actors.TryGetValue(message.SportEventId, out var actor);
-        return actor?.SendMessageAsync(message) ?? ValueTask.CompletedTask;
+        _actors.TryGetValue(command.SportEventId, out var actor);
+        return actor?.SendMessageAsync(command) ?? ValueTask.CompletedTask;
     }
 
     public void CreateAsync(EventRegistryItem entry)
@@ -29,6 +29,7 @@ public sealed class SportEventActorSystem(
 
     public void EndAsync(SportEventId id)
     {
-        throw new NotImplementedException();
+        _actors.TryGetValue(id, out var actor);
+        actor?.EndMatch();
     }
 }

@@ -33,6 +33,10 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         if (teams.Length != 2) 
             return;
                        
+        // Do not consider events where the game is already started
+        if (@event.StartTime < DateTime.Now)
+            return;
+        
         // Create registry item
         var registryItem = new EventRegistryItem
         {

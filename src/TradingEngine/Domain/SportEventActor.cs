@@ -1,17 +1,14 @@
 ﻿using System.Threading.Channels;
-using TradingEngine.Domain.Commands.UpdateOdds;
 using TradingEngine.Domain.Events.OddsUpdated;
+using TradingEngine.Domain.Messages;
 using TradingEngine.Infrastructure.EventBus;
 
 namespace TradingEngine.Domain;
 
 public sealed class SportEventActor
 {
-    // 
-    private readonly CancellationTokenSource _cts = new();
-    
     // Dependencies
-    private readonly Channel<ISportEventMessage> _mailbox;
+    private readonly Channel<ISportEventCommand> _mailbox;
     private readonly IEventBus _eventBus;
     private readonly IOddsProvider _oddsProvider;
 
@@ -19,7 +16,8 @@ public sealed class SportEventActor
     private SportEventId Id { get; init; }
     private DateTime StartTime { get; init; }
     private List<Bookmaker> Odds { get; set; } = [];
-
+    private readonly CancellationTokenSource _cts = new();
+    
     public SportEventActor(
         SportEventId id,
         DateTime startTime,
@@ -31,7 +29,7 @@ public sealed class SportEventActor
         _eventBus = eventBus;
         _oddsProvider = oddsProvider;
         
-        _mailbox = Channel.CreateUnbounded<ISportEventMessage>(
+        _mailbox = Channel.CreateUnbounded<ISportEventCommand>(
             new UnboundedChannelOptions
             {
                 SingleReader = true,
@@ -42,8 +40,8 @@ public sealed class SportEventActor
         _ = PollOddsAsync(_cts.Token);
     }
     
-    public ValueTask SendMessageAsync(ISportEventMessage message)
-        => _mailbox.Writer.WriteAsync(message);
+    public ValueTask SendMessageAsync(ISportEventCommand command)
+        => _mailbox.Writer.WriteAsync(command);
 
     private async Task ReadMessagesAsync(CancellationToken ct)
     {
@@ -135,5 +133,10 @@ public sealed class SportEventActor
             Id = Id,
             Odds = Odds
         });
+    }
+    
+    public async Task EndMatch()
+    {
+        await _cts.CancelAsync();
     }
 }

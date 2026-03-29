@@ -22,7 +22,7 @@ public class PolymarketClient(HttpClient httpClient) : IPolymarketClient
     public async Task<IEnumerable<Event>> GetEvents(string seriesId)
     {
         // Request sport events
-        var response = await httpClient.GetAsync($"{BaseUrl}/events?series_id={seriesId}&ative=true&closed=false");
+        var response = await httpClient.GetAsync($"{BaseUrl}/events?series_id={seriesId}&active=true&closed=false");
         
         // Ensure the request was successful
         response.EnsureSuccessStatusCode();
@@ -45,7 +45,7 @@ public class PolymarketClient(HttpClient httpClient) : IPolymarketClient
 
     public async Task StreamEvents(string seriesId, Action<Event> action)
     {
-        var stream = await httpClient.GetStreamAsync($"{BaseUrl}/events?series_id={seriesId}&ative=true&closed=false");
+        var stream = await httpClient.GetStreamAsync($"{BaseUrl}/events?series_id={seriesId}&active=true&closed=false");
         await foreach (var @event in JsonSerializer.DeserializeAsyncEnumerable<Event>(stream, new JsonSerializerOptions
                        {
                            PropertyNameCaseInsensitive = true
