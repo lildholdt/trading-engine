@@ -36,7 +36,7 @@ public class OddsLoggingHandler(
             Bookmaker = record.Name,
             StartTime = item.StartTime,
             SnapshotTime = DateTime.Now,
-            HoursBefore = item.StartTime - DateTime.Now,
+            HoursBefore = (int)(item.StartTime - DateTime.Now).TotalHours,
             OddsHome = record.Outcome(OutcomeType.Home),
             OddsDraw = record.Outcome(OutcomeType.Draw),
             OddsAway = record.Outcome(OutcomeType.Away),
@@ -76,7 +76,7 @@ public class OddsLoggingHandler(
         public required string Away { get; init; }
         public required string Bookmaker { get; init; }
         public required DateTime SnapshotTime { get; init; }
-        public required TimeSpan HoursBefore { get; init; }
+        public required int HoursBefore { get; init; }
         public required decimal OddsHome { get; init; }
         public required decimal OddsDraw { get; init; }
         public required decimal OddsAway { get; init; }
