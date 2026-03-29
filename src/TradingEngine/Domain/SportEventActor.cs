@@ -64,56 +64,79 @@ public sealed class SportEventActor
 
     private async Task ReadMessagesAsync(CancellationToken ct)
     {
-        await foreach (var message in _mailbox.Reader.ReadAllAsync(ct))
+        try
         {
-            try
+            await foreach (var message in _mailbox.Reader.ReadAllAsync(ct))
             {
-                await message.ApplyAsync(this);
+                try
+                {
+                    await message.ApplyAsync(this);
+                }
+                catch (Exception ex)
+                {
+                    // Log and handle the exception to keep the loop running
+                    _logger.LogError("Error processing message: {ExMessage}", ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                // Log and handle the exception to keep the loop running
-                Console.WriteLine($"Error processing message: {ex.Message}");
-            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Gracefully handle cancellation
+            _logger.LogError("Message reading cancelled for eventId: {EventId}.", Id);
+        }
+        catch (Exception ex)
+        {
+            // Handle errors in the reading phase
+            _logger.LogError("Error reading messages: {ExMessage}", ex.Message);
         }
     }
     
     private async Task PollOddsAsync(CancellationToken ct)
     {
+        _logger.LogInformation("Starting odds polling for EventId: {EventId}", Id);
+
         while (!ct.IsCancellationRequested)
         {
-            var odds = await _oddsProvider.GetOdds(Id);
-            if (odds.Count == 0) continue;
-
-            await SendMessageAsync(new UpdateOddsMessage
-            {
-                SportEventId = Id,
-                Bookmakers = odds
-            });
-            
-            // Check if the match has ended
-            var timeUntilStart = StartTime - DateTime.UtcNow;
-            if (timeUntilStart.TotalMilliseconds < 0) break;
-            
-            // Calculate odds polling interval
-            var delayMilliseconds = timeUntilStart.TotalDays switch
-            {
-                > 3 => TimeSpan.FromMinutes(5).Milliseconds, // More than 3 days: 5 minutes
-                > 2 => TimeSpan.FromMinutes(3).Milliseconds, // 2-3 days: 3 minutes
-                > 1 => TimeSpan.FromMinutes(2).Milliseconds, // 1-2 days: 2 minutes
-                _ when timeUntilStart.TotalHours > 6 => TimeSpan.FromMinutes(1).Milliseconds, // 6-24 hours: 1 minute
-                _ => TimeSpan.FromSeconds(5).Milliseconds // Less than 6 hours: 5 seconds
-            };
-            
             try
             {
+                var odds = await _oddsProvider.GetOdds(Id);
+                if (odds.Count == 0) continue;
+
+                await SendMessageAsync(new UpdateOddsMessage
+                {
+                    SportEventId = Id,
+                    Bookmakers = odds
+                });
+                
+                // Check if the match has ended
+                var timeUntilStart = StartTime - DateTime.UtcNow;
+                if (timeUntilStart.TotalMilliseconds < 0) break;
+                
+                // Calculate odds polling interval
+                var delayMilliseconds = timeUntilStart.TotalDays switch
+                {
+                    > 3 => TimeSpan.FromMinutes(5).TotalMilliseconds, // More than 3 days: 5 minutes
+                    > 2 => TimeSpan.FromMinutes(3).TotalMilliseconds, // 2-3 days: 3 minutes
+                    > 1 => TimeSpan.FromMinutes(2).TotalMilliseconds, // 1-2 days: 2 minutes
+                    _ when timeUntilStart.TotalHours > 6 => TimeSpan.FromMinutes(1).TotalMilliseconds, // 6-24 hours: 1 minute
+                    _ => TimeSpan.FromSeconds(5).TotalMilliseconds // Less than 6 hours: 5 seconds
+                };
+                
+                _logger.LogInformation("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", Id, delayMilliseconds);
+            
                 // Use Task.Delay with cancellation support
-                await Task.Delay(delayMilliseconds, ct);
+                await Task.Delay((int)delayMilliseconds, ct);
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
-                // Task.Delay was canceled, exit the loop
-                break;
+                // Task.Delay was canceled, exit the loop gracefully
+                _logger.LogInformation("Polling task cancelled for EventId: {EventId}", Id);
+                return;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while polling odds for EventId: {EventId}", Id);
+                throw;
             }
         }
     }
