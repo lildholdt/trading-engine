@@ -18,7 +18,8 @@ public class OddsApiClient(HttpClient httpClient, IOptions<ApplicationSettings> 
     {
         var response = await httpClient.GetAsync($"{Settings.OddsApi.BaseUrl}/sports/soccer_epl/odds/?apiKey={Settings.OddsApi.ApiKey}&regions=eu&eventIds={eventId}"); 
         response.EnsureSuccessStatusCode();
-        return await response.DeserializeJsonAsync<Odds>();
+        var collection = await response.DeserializeJsonAsync<IReadOnlyCollection<Odds>>() ?? [];
+        return collection.Count == 0 ? null : collection.First();
     }
 }
 
