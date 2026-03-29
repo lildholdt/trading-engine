@@ -11,6 +11,7 @@ public sealed class SportEventActor
     private readonly Channel<ISportEventCommand> _mailbox;
     private readonly IEventBus _eventBus;
     private readonly IOddsProvider _oddsProvider;
+    private readonly ILogger<SportEventActor> _logger;
 
     // State
     private SportEventId Id { get; init; }
@@ -22,12 +23,14 @@ public sealed class SportEventActor
         SportEventId id,
         DateTime startTime,
         IEventBus eventBus,
-        IOddsProvider oddsProvider)
+        IOddsProvider oddsProvider,
+        IServiceProvider serviceProvider)
     {
         Id = id;
         StartTime = startTime;
         _eventBus = eventBus;
         _oddsProvider = oddsProvider;
+        _logger = serviceProvider.GetRequiredService<ILogger<SportEventActor>>();
         
         _mailbox = Channel.CreateUnbounded<ISportEventCommand>(
             new UnboundedChannelOptions
@@ -36,12 +39,28 @@ public sealed class SportEventActor
                 SingleWriter = false
             });
         
-        _ = ReadMessagesAsync(_cts.Token);
-        _ = PollOddsAsync(_cts.Token);
+        _ = RunAsync(_cts.Token);
     }
     
     public ValueTask SendMessageAsync(ISportEventCommand command)
         => _mailbox.Writer.WriteAsync(command);
+
+    private async Task RunAsync(CancellationToken ct)
+    {
+        // Start both tasks
+        var pollingTask = PollOddsAsync(ct);
+        var mailboxTask = ReadMessagesAsync(ct);
+        
+        try
+        {
+            // Wait for both tasks to complete or the cancellation token to trigger
+            await Task.WhenAll(pollingTask, mailboxTask);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "An error occurred in SportEventActor for EventId: {EventId}", Id);
+        }
+    }
 
     private async Task ReadMessagesAsync(CancellationToken ct)
     {

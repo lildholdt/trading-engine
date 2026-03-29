@@ -7,6 +7,7 @@ namespace TradingEngine.Domain;
 public sealed class SportEventActorSystem(
     IEventBus eventBus, 
     IOddsProvider oddsProvider,
+    IServiceProvider serviceProvider,
     ILogger<SportEventActorSystem> logger) : ISportEventActorSystem
 {
     private readonly ConcurrentDictionary<string, SportEventActor> _actors = new();
@@ -19,7 +20,7 @@ public sealed class SportEventActorSystem(
 
     public void CreateAsync(EventRegistryItem entry)
     {
-        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, entry.StartTime, eventBus, oddsProvider));
+        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, entry.StartTime, eventBus, oddsProvider, serviceProvider));
         
         logger.LogInformation(
             "SportEventActor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",
