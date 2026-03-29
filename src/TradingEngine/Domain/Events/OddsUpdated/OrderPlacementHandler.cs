@@ -13,6 +13,9 @@ public class OrderPlacementHandler(
     { 
         var item = registry.Get(@event.Id);
 
+        if (@event.Odds.Count == 0)
+            return;
+        
         var averageHome = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Home)) / @event.Odds.Count, 2);
         var averageAway = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Away)) / @event.Odds.Count, 2);
         var averageDraw = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Draw)) / @event.Odds.Count, 2);

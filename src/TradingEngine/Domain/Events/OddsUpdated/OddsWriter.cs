@@ -20,9 +20,9 @@ public class OddsWriter(string filePath) : IOddsWriter
             throw new ArgumentException("File path cannot be null or empty.", nameof(filePath));
         }
 
-        if (records == null || !records.Any())
+        if (records == null)
         {
-            throw new ArgumentException("Records collection cannot be null or empty.", nameof(records));
+            throw new ArgumentException("Records collection cannot be null.", nameof(records));
         }
 
         var properties = typeof(T).GetProperties();

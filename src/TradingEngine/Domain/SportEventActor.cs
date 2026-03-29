@@ -149,28 +149,49 @@ public sealed class SportEventActor
         // If the object are completely identical, do nothing.
         if (Equals(odds, Odds))
             return;
-        
-        // Find all bookmakers that have changed by comparing the old and new collections
-        var changedBookmakers = odds
-            .Where(newBookmaker => Odds.Any(existingBookmaker =>
-                existingBookmaker.Name == newBookmaker.Name && existingBookmaker.HasOutcomesChanged(newBookmaker)))
-            .ToList();
-        
-        // Update only the changed bookmakers in the Bookmakers collection
-        foreach (var changedBookmaker in changedBookmakers)
-        {
-            var existingBookmaker = Odds.FirstOrDefault(b => b.Name == changedBookmaker.Name);
-            if (existingBookmaker != null)
-            {
-                // Replace the existing bookmaker with the new one
-                Odds.Remove(existingBookmaker);
-            }
-            Odds.Add(changedBookmaker);
-        }
 
-        if (changedBookmakers.Count == 0)
-            return;
+        // Flag to track if an update is needed
+        var hasChanges = false;
+
+        // Store the first odds update and notify
+        if (Odds.Count == 0)
+        {
+            Odds = odds.ToList();
+            hasChanges = true; // Mark changes to ensure the event is fired
+        }
+        else
+        {
+            // Find all bookmakers that have changed by comparing the old and new collections
+            var changedBookmakers = odds
+                .Where(newBookmaker => Odds.Any(existingBookmaker =>
+                    existingBookmaker.Name == newBookmaker.Name && existingBookmaker.HasOutcomesChanged(newBookmaker)))
+                .ToList();
+
+            // Update only the changed bookmakers in the Bookmakers collection
+            foreach (var changedBookmaker in changedBookmakers)
+            {
+                var existingBookmaker = Odds.FirstOrDefault(b => b.Name == changedBookmaker.Name);
+                if (existingBookmaker != null)
+                {
+                    // Replace the existing bookmaker with the new one
+                    Odds.Remove(existingBookmaker);
+                }
+
+                Odds.Add(changedBookmaker);
+            }
+
+            // If any bookmakers have changed, mark the update
+            if (changedBookmakers.Count > 0)
+            {
+                hasChanges = true;
+            }
+
+        }
         
+        // If there are no changes, do nothing
+        if (!hasChanges)
+            return;
+
         // Notify that odds has been updated
         await _eventBus.PublishAsync(new OddsUpdatedEvent
         {
