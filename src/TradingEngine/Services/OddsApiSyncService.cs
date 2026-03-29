@@ -24,7 +24,7 @@ public class OddsApiSyncService(
             {
                 logger.LogError(ex, "Error fetching matches from OddsApi");
             }
-            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
+            await Task.Delay(TimeSpan.FromMinutes(5), cancellationToken);
         }
     }
 }

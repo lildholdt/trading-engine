@@ -14,9 +14,11 @@ public class OddsApiClient(HttpClient httpClient, IOptions<ApplicationSettings> 
         return await response.DeserializeJsonAsync<IReadOnlyCollection<Odds>>() ?? [];
     }
 
-    public Task<Odds?> GetOdds(string eventId)
+    public async Task<Odds?> GetOdds(string eventId)
     {
-        throw new NotImplementedException();
+        var response = await httpClient.GetAsync($"{Settings.OddsApi.BaseUrl}/sports/soccer_epl/odds/?apiKey={Settings.OddsApi.ApiKey}&regions=eu&eventIds={eventId}"); 
+        response.EnsureSuccessStatusCode();
+        return await response.DeserializeJsonAsync<Odds>();
     }
 }
 
