@@ -43,15 +43,28 @@ public class OddsLoggingHandler(
             TrueOddsHome = record.TrueOdds(OutcomeType.Home),
             TrueOddsDraw = record.TrueOdds(OutcomeType.Draw),
             TrueOddsAway = record.TrueOdds(OutcomeType.Away),
+            TrueOddsAverage = record.TrueOdds(OutcomeType.Away),
             PolymarketOutcomeHome = homePrice ?? 0,
-            PolymarketOutcomeAway = awayPrice ?? 0
+            PolymarketOutcomeDraw = awayPrice ?? 0,
+            PolymarketOutcomeAway = awayPrice ?? 0,
         }).ToList();
 
         await oddsWriter.WriteRecords(records, cancellationToken);
 
         foreach (var record in records)
         {
-            logger.LogInformation("Odds updated: {EventId}, HomeTeam: {HomeTeam}, AwayTeam: {AwayTeam}, Bookmaker: {Bookmaker}, StartTime: {StartTime}, SnapshotTime: {SnapshotTime}, HoursBefore: {HoursBefore}, TrueOddsHome: {TrueOddsHome}, TrueOddsDraw: {TrueOddsDraw}, TrueOddsAway: {TrueOddsAway}, PolymarketOutcomeHome: {PolymarketOutcomeHome}, PolymarketOutcomeAway: {PolymarketOutcomeAway}.",
+            logger.LogInformation("Odds updated: {EventId}, " +
+                                  "HomeTeam: {HomeTeam}, " +
+                                  "AwayTeam: {AwayTeam}, " +
+                                  "Bookmaker: {Bookmaker}, " +
+                                  "StartTime: {StartTime}, " +
+                                  "SnapshotTime: {SnapshotTime}, " +
+                                  "HoursBefore: {HoursBefore}, " +
+                                  "TrueOddsHome: {TrueOddsHome}, " +
+                                  "TrueOddsDraw: {TrueOddsDraw}, " +
+                                  "TrueOddsAway: {TrueOddsAway}, " +
+                                  "PolymarketOutcomeHome: {PolymarketOutcomeHome}, " +
+                                  "PolymarketOutcomeAway: {PolymarketOutcomeAway}.",
                 record.Id,
                 record.Home,
                 record.Away,
@@ -83,7 +96,9 @@ public class OddsLoggingHandler(
         public required decimal TrueOddsHome { get; init; }
         public required decimal TrueOddsDraw { get; init; }
         public required decimal TrueOddsAway { get; init; }
+        public required decimal TrueOddsAverage { get; init; }
         public required decimal PolymarketOutcomeHome { get; init; }
+        public required decimal PolymarketOutcomeDraw { get; init; }
         public required decimal PolymarketOutcomeAway { get; init; }
     }
 }

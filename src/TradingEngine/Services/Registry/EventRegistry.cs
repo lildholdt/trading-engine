@@ -32,6 +32,9 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         var teams = @event.Title.Split(" vs. "); 
         if (teams.Length != 2) 
             return;
+        
+        var home = @event.Teams.First().Name ?? teams[0];
+        var away = @event.Teams.Last().Name ?? teams[1];
                        
         // Do not consider events where the game is already started
         if (@event.StartTime < DateTime.Now)
@@ -41,8 +44,8 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         var registryItem = new EventRegistryItem
         {
             Id = SportEventId.New(),
-            HomeTeam = teams[0],
-            AwayTeam = teams[1],
+            HomeTeam = home,
+            AwayTeam = away,
             StartTime = @event.StartTime,
             PolymarketEvent = @event
         };
