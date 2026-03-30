@@ -19,7 +19,8 @@ public class PolymarketSyncService(
             try
             {
                 // TODO: Identify strategy for selecting and correlation series ids across Polymarket and OddsAPI
-                await httpClient.StreamEvents("10188", eventRegistry.RegisterPolymarket);
+                //await httpClient.StreamEvents("10188", eventRegistry.RegisterPolymarket);   // Premier League
+                await httpClient.StreamEvents("10243", eventRegistry.RegisterPolymarket);
             }
             catch (Exception ex)
             {

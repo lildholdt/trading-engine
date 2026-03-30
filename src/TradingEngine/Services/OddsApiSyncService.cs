@@ -18,7 +18,7 @@ public class OddsApiSyncService(
         {
             try
             {
-                var events = await oddsApiClient.GetOdds();
+                var events = await oddsApiClient.GetOdds(SportsType.WorldCupQualifiers);
                 foreach (var @event in events)
                 {  
                     await eventRegistry.AttachOddsApi(@event);

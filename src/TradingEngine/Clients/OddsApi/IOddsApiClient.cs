@@ -4,6 +4,6 @@ namespace TradingEngine.Clients.OddsApi;
 
 public interface IOddsApiClient
 {
-    Task<IReadOnlyCollection<Odds>> GetOdds();
-    Task<Odds?> GetOdds(string eventId);
+    Task<IReadOnlyCollection<Odds>> GetOdds(SportsType sportsType);
+    Task<Odds?> GetOdds(SportsType sportsType, string eventId);
 }

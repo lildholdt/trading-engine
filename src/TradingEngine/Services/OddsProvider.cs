@@ -19,9 +19,10 @@ public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOdd
     public async Task<IReadOnlyCollection<Bookmaker>> GetOdds(SportEventId id)
     {
         var item = registry.Get(id);
-        if (item == null) return [];
+        if (item?.OddsApiEvent == null) return [];
         
-        var odds = await client.GetOdds(item.OddsApiEvent?.Id!);
+        var sportsType = SportsType.FromValue(item.OddsApiEvent.SportKey);
+        var odds = await client.GetOdds(sportsType, item.OddsApiEvent.Id);
 
         var bookmakers = new List<Bookmaker>();
         foreach (var b in odds?.Bookmakers!)

@@ -21,12 +21,12 @@ public class OddsApiClientStub : IOddsApiClient
         // Simulate events
         _odds = parsedData ?? new List<Odds>();
     }
-    public Task<IReadOnlyCollection<Odds>> GetOdds()
+    public Task<IReadOnlyCollection<Odds>> GetOdds(SportsType sportsType)
     {
         return Task.FromResult<IReadOnlyCollection<Odds>>(new ReadOnlyCollection<Odds>(_odds.ToList()));
     }
 
-    public Task<Odds?> GetOdds(string eventId)
+    public Task<Odds?> GetOdds(SportsType sportsType, string eventId)
     {
         var existingOdds = _odds.FirstOrDefault(e => e.Id == eventId);
 
