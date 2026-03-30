@@ -7,6 +7,11 @@ public class Bookmaker : ValueObject
 {
     public required string Name { get; init; }
     public DateTime LastUpdate { get; init; }
+    public decimal Home => Outcomes[OutcomeType.Home];
+    public decimal Away => Outcomes[OutcomeType.Away];
+    public decimal Draw => Outcomes[OutcomeType.Draw];
+    
+    
     public required ImmutableDictionary<OutcomeType, decimal> Outcomes { get; init; } = ImmutableDictionary<OutcomeType, decimal>.Empty;
     
     /// <summary>

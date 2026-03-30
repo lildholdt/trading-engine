@@ -22,28 +22,28 @@ public record Market
     [JsonConverter(typeof(JsonDecimalListConverter))]
     public IReadOnlyCollection<decimal> OutcomePrices { get; init; } = [];
     
-    public string Volume { get; init; }
+    public string? Volume { get; init; }
     public bool Active { get; init; }
     public bool Closed { get; init; }
-    public string MarketMakerAddress { get; init; }
+    public string? MarketMakerAddress { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime UpdatedAt { get; init; }
     public bool New { get; init; }
     public bool Featured { get; init; }
-    public string SubmittedBy { get; init; }
+    public string? SubmittedBy { get; init; }
     public bool Archived { get; init; }
-    public string ResolvedBy { get; init; }
+    public string? ResolvedBy { get; init; }
     public bool Restricted { get; init; }
-    public string GroupItemTitle { get; init; }
-    public string GroupItemThreshold { get; init; }
-    public string QuestionID { get; init; }
+    public string? GroupItemTitle { get; init; }
+    public string? GroupItemThreshold { get; init; }
+    public string? QuestionID { get; init; }
     public bool EnableOrderBook { get; init; }
     public decimal OrderPriceMinTickSize { get; init; }
     public int OrderMinSize { get; init; }
     public decimal VolumeNum { get; init; }
     public decimal LiquidityNum { get; init; }
-    public string EndDateIso { get; init; }
-    public string StartDateIso { get; init; }
+    public string? EndDateIso { get; init; }
+    public string? StartDateIso { get; init; }
     public bool HasReviewedDates { get; init; }
     public decimal Volume24hr { get; init; }
     public decimal Volume1wk { get; init; }
@@ -84,8 +84,8 @@ public record Market
     public bool ClearBookOnStart { get; init; }
     public bool ManualActivation { get; init; }
     public bool NegRiskOther { get; init; }
-    public string SportsMarketType { get; init; }
-    public string UmaResolutionStatuses { get; init; }
+    public string? SportsMarketType { get; init; }
+    public string? UmaResolutionStatuses { get; init; }
     public bool PendingDeployment { get; init; }
     public bool Deploying { get; init; }
     public DateTime DeployingTimestamp { get; init; }
@@ -93,5 +93,5 @@ public record Market
     public bool HoldingRewardsEnabled { get; init; }
     public bool FeesEnabled { get; init; }
     public bool RequiresTranslation { get; init; }
-    public string FeeType { get; init; }
+    public string? FeeType { get; init; }
 }

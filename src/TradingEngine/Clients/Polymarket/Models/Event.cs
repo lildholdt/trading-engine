@@ -2,17 +2,17 @@
 
 public record Event
 {
-    public string Id { get; init; }
-    public string Ticker { get; init; }
-    public string Slug { get; init; }
-    public string Title { get; init; }
-    public string Description { get; init; }
-    public string ResolutionSource { get; init; }
+    public string? Id { get; init; }
+    public string? Ticker { get; init; }
+    public string? Slug { get; init; }
+    public string? Title { get; init; }
+    public string? Description { get; init; }
+    public string? ResolutionSource { get; init; }
     public DateTime StartDate { get; init; }
     public DateTime CreationDate { get; init; }
     public DateTime EndDate { get; init; }
-    public string Image { get; init; }
-    public string Icon { get; init; }
+    public string? Image { get; init; }
+    public string? Icon { get; init; }
     public bool Active { get; init; }
     public bool Closed { get; init; }
     public bool Archived { get; init; }
@@ -32,7 +32,7 @@ public record Event
     public bool EnableOrderBook { get; init; }
     public decimal LiquidityClob { get; init; }
     public bool NegRisk { get; init; }
-    public string NegRiskMarketID { get; init; }
+    public string? NegRiskMarketID { get; init; }
     public int CommentCount { get; init; }
     public List<Market> Markets { get; init; } = [];
     public List<Series> Series { get; init; } = [];
@@ -45,12 +45,12 @@ public record Event
     public DateTime EventDate { get; init; }
     public DateTime StartTime { get; init; }
     public int EventWeek { get; init; }
-    public string SeriesSlug { get; init; }
+    public string? SeriesSlug { get; init; }
     public bool NegRiskAugmented { get; init; }
     public bool PendingDeployment { get; init; }
     public bool Deploying { get; init; }
     public DateTime DeployingTimestamp { get; init; }
     public long GameId { get; init; }
     public bool RequiresTranslation { get; init; }
-    public List<Team> Teams { get; init; }
+    public List<Team> Teams { get; init; } = [];
 }

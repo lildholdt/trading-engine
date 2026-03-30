@@ -1,4 +1,5 @@
-﻿using TradingEngine.Clients.Polymarket;
+﻿using TradingEngine.Clients.OddsApi.Models;
+using TradingEngine.Clients.Polymarket;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Services.Registry;
 
@@ -24,9 +25,15 @@ public class OddsLoggingHandler(
         
         var homeMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.HomeTeam);
         var awayMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.AwayTeam);
+        var drawMarket = markets?.FirstOrDefault(x => x.GroupItemTitle!.Contains("Draw"));
 
         var homePrice = homeMarket?.OutcomePrices.ElementAt(0);
         var awayPrice = awayMarket?.OutcomePrices.ElementAt(0);
+        var drawPrice = drawMarket?.OutcomePrices.ElementAt(0);
+
+        var avgHome = @event.Odds.Sum(x => x.Home) / @event.Odds.Count;
+        var avgDraw = @event.Odds.Sum(x => x.Draw) / @event.Odds.Count;
+        var avgAway = @event.Odds.Sum(x => x.Away) / @event.Odds.Count;
         
         var records = @event.Odds.Select(record => new OddsRecord
         {
@@ -45,7 +52,7 @@ public class OddsLoggingHandler(
             TrueOddsAway = record.TrueOdds(OutcomeType.Away),
             TrueOddsAverage = record.TrueOdds(OutcomeType.Away),
             PolymarketOutcomeHome = homePrice ?? 0,
-            PolymarketOutcomeDraw = awayPrice ?? 0,
+            PolymarketOutcomeDraw = drawPrice ?? 0,
             PolymarketOutcomeAway = awayPrice ?? 0,
         }).ToList();
 
@@ -64,6 +71,7 @@ public class OddsLoggingHandler(
                                   "TrueOddsDraw: {TrueOddsDraw}, " +
                                   "TrueOddsAway: {TrueOddsAway}, " +
                                   "PolymarketOutcomeHome: {PolymarketOutcomeHome}, " +
+                                  "PolymarketOutcomeDraw: {PolymarketOutcomeDraw}, " +
                                   "PolymarketOutcomeAway: {PolymarketOutcomeAway}.",
                 record.Id,
                 record.Home,
@@ -76,6 +84,7 @@ public class OddsLoggingHandler(
                 record.TrueOddsDraw,
                 record.TrueOddsAway,
                 record.PolymarketOutcomeHome,
+                record.PolymarketOutcomeDraw,
                 record.PolymarketOutcomeAway);
         }
         

@@ -2,14 +2,14 @@
 
 public record Series
 {
-    public string Id { get; init; }
-    public string Ticker { get; init; }
-    public string Slug { get; init; }
-    public string Title { get; init; }
-    public string SeriesType { get; init; }
-    public string Recurrence { get; init; }
-    public string Image { get; init; }
-    public string Icon { get; init; }
+    public string? Id { get; init; }
+    public string? Ticker { get; init; }
+    public string? Slug { get; init; }
+    public string? Title { get; init; }
+    public string? SeriesType { get; init; }
+    public string? Recurrence { get; init; }
+    public string? Image { get; init; }
+    public string? Icon { get; init; }
     public bool Active { get; init; }
     public bool Closed { get; init; }
     public bool Archived { get; init; }

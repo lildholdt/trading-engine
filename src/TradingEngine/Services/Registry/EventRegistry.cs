@@ -29,12 +29,12 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         if (!hasMoneyLineMarketTypes) return;
 
         // Extract team names.
-        var teams = @event.Title.Split(" vs. "); 
-        if (teams.Length != 2) 
+        var teams = @event.Title?.Split(" vs. "); 
+        if (teams?.Length != 2) 
             return;
         
-        var home = @event.Teams.First().Name ?? teams[0];
-        var away = @event.Teams.Last().Name ?? teams[1];
+        var home = @event.Teams.FirstOrDefault()?.Name ?? teams[0];
+        var away = @event.Teams.LastOrDefault()?.Name ?? teams[1];
                        
         // Do not consider events where the game is already started
         if (@event.StartTime < DateTime.Now)
