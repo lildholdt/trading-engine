@@ -9,6 +9,6 @@ public static class PolymarketModelExtensions
         public bool HasMoneyLineMarketTypes => @event.Markets.Any(x => x.SportsMarketType is "moneyline" or null);
         public bool HasSpreadsMarketTypes => @event.Markets.Any(x => x.SportsMarketType == "spreads");
         public IReadOnlyCollection<Market> GetMoneyLineMarkets() => 
-            @event.Markets.Where(x => x.SportsMarketType == "moneyline").ToList();
+            @event.Markets.Where(x => x.SportsMarketType is "moneyline" or null).ToList();
     }
 }
