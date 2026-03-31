@@ -51,7 +51,8 @@ public record Market
     public decimal Volume1yr { get; init; }
     public string GameStartTime { get; init; }
     public int SecondsDelay { get; init; }
-    public string ClobTokenIds { get; init; }
+    [JsonConverter(typeof(JsonStringListConverter))]
+    public IReadOnlyCollection<string> ClobTokenIds { get; init; }
     public string UmaBond { get; init; }
     public string UmaReward { get; init; }
     public decimal Volume24hrClob { get; init; }

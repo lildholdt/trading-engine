@@ -1,5 +1,4 @@
-﻿using TradingEngine.Clients.OddsApi.Models;
-using TradingEngine.Clients.Polymarket;
+﻿using TradingEngine.Clients.Polymarket;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Services.Registry;
 
@@ -21,15 +20,15 @@ public class OddsLoggingHandler(
         }
         
         var polymarketEvent = await polymarketClient.GetEvent(item.PolymarketEvent.Id);
-        var markets = polymarketEvent?.GetMoneyLineMarkets();
+        var markets = polymarketEvent?.MoneyLineMarkets;
         
         var homeMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.HomeTeam);
         var awayMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.AwayTeam);
         var drawMarket = markets?.FirstOrDefault(x => x.GroupItemTitle!.Contains("Draw"));
 
-        var homePrice = homeMarket?.OutcomePrices.ElementAt(0);
-        var awayPrice = awayMarket?.OutcomePrices.ElementAt(0);
-        var drawPrice = drawMarket?.OutcomePrices.ElementAt(0);
+        var homePrice = homeMarket?.Outcome.Price;
+        var awayPrice = awayMarket?.Outcome.Price;
+        var drawPrice = drawMarket?.Outcome.Price;
 
         var avgHome = @event.Odds.Sum(x => x.Home) / @event.Odds.Count;
         var avgDraw = @event.Odds.Sum(x => x.Draw) / @event.Odds.Count;

@@ -3,5 +3,6 @@
 public class Outcome
 {
     public string? Name { get; init; }
-    public string? Price {get; init;}
+    public decimal Price { get; init; }
+    public string? ClobTokenId { get; init; }
 }
