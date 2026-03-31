@@ -43,7 +43,7 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         // Create registry item
         var registryItem = new EventRegistryItem
         {
-            Id = SportEventId.New(),
+            Id = SportEventId.New,
             HomeTeam = home,
             AwayTeam = away,
             StartTime = @event.StartTime,

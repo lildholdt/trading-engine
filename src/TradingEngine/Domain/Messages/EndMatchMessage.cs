@@ -6,6 +6,6 @@ public class EndMatchMessage : ISportEventMessage
     
     public async Task ApplyAsync(SportEventActor actor)
     {
-        await actor.EndMatch();
+        await actor.StopAsync();
     }
 }

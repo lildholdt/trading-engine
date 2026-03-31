@@ -11,7 +11,6 @@ public class Bookmaker : ValueObject
     public decimal Away => Outcomes[OutcomeType.Away];
     public decimal Draw => Outcomes[OutcomeType.Draw];
     
-    
     public required ImmutableDictionary<OutcomeType, decimal> Outcomes { get; init; } = ImmutableDictionary<OutcomeType, decimal>.Empty;
     
     /// <summary>

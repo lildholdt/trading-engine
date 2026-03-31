@@ -6,7 +6,7 @@ public class SportEventId(Guid value) : ValueObject
 {
     private Guid Value { get; } = value;
 
-    public static SportEventId New() => new(Guid.NewGuid());
+    public static SportEventId New => new(Guid.NewGuid());
 
     public static implicit operator string(SportEventId obj) => obj.Value.ToString();
 

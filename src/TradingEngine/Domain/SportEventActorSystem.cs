@@ -20,17 +20,19 @@ public sealed class SportEventActorSystem(
 
     public void CreateAsync(EventRegistryItem entry)
     {
-        _actors.GetOrAdd(entry.Id, new SportEventActor(entry.Id, entry.StartTime, eventBus, oddsProvider, serviceProvider));
-        
-        logger.LogInformation(
-            "SportEventActor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",
-            entry.Id, entry.HomeTeam, entry.AwayTeam, entry.StartTime
-        );
+        var actor = new SportEventActor(entry.Id, entry.HomeTeam, entry.AwayTeam, entry.StartTime, eventBus, oddsProvider, serviceProvider);
+        _actors.GetOrAdd(entry.Id, actor);
+        actor.StartAsync();
     }
 
-    public void EndAsync(SportEventId id)
+    public async Task StopAsync(SportEventId id)
     {
         _actors.TryGetValue(id, out var actor);
-        actor?.EndMatch();
+        if (actor == null)
+        {
+            logger.LogInformation("Couldn't stop actor. ID: {Id} was not found", id);
+            return;
+        }
+        await actor.StopAsync()!;
     }
 }

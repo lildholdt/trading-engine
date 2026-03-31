@@ -15,18 +15,25 @@ public sealed class SportEventActor
 
     // State
     private SportEventId Id { get; init; }
+    private string HomeTeam { get; init; }
+    private string AwayTeam { get; init; }
     private DateTime StartTime { get; init; }
     private List<Bookmaker> Odds { get; set; } = [];
     private readonly CancellationTokenSource _cts = new();
+    private readonly List<Task> _runningTasks = [];
     
     public SportEventActor(
         SportEventId id,
+        string homeTeam,
+        string awayTeam,
         DateTime startTime,
         IEventBus eventBus,
         IOddsProvider oddsProvider,
         IServiceProvider serviceProvider)
     {
         Id = id;
+        HomeTeam = homeTeam;
+        AwayTeam = awayTeam;
         StartTime = startTime;
         _eventBus = eventBus;
         _oddsProvider = oddsProvider;
@@ -39,27 +46,29 @@ public sealed class SportEventActor
                 SingleWriter = false
             });
         
-        _ = RunAsync(_cts.Token);
+        _logger.LogInformation(
+            "SportEventActor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",
+            Id, HomeTeam, AwayTeam, StartTime
+        );
     }
     
     public ValueTask SendMessageAsync(ISportEventMessage message)
         => _mailbox.Writer.WriteAsync(message);
 
-    private async Task RunAsync(CancellationToken ct)
+    public void StartAsync()
     {
-        // Start both tasks
+        // Create cancellation token
+        var ct = _cts.Token;
+        
+        // Start and track the polling task
         var pollingTask = PollOddsAsync(ct);
         var mailboxTask = ReadMessagesAsync(ct);
         
-        try
-        {
-            // Wait for both tasks to complete or the cancellation token to trigger
-            await Task.WhenAll(pollingTask, mailboxTask);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "An error occurred in SportEventActor for EventId: {EventId}", Id);
-        }
+        // Add tasks to the running task list
+        _runningTasks.Add(pollingTask);
+        _runningTasks.Add(mailboxTask);
+        
+        _logger.LogInformation("SportEventActor started for EventId: {EventId}", Id);
     }
 
     private async Task ReadMessagesAsync(CancellationToken ct)
@@ -199,8 +208,13 @@ public sealed class SportEventActor
         });
     }
     
-    public async Task EndMatch()
+    public async Task StopAsync()
     {
+        // Signal cancellation
         await _cts.CancelAsync();
+
+        // Wait for all tasks to complete
+        await Task.WhenAll(_runningTasks);
+        _logger.LogInformation("SportEventActor stopped for EventId: {EventId}", Id);
     }
 }

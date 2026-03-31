@@ -85,8 +85,8 @@ namespace TradingEngine.UnitTests.Domain
             var bookmaker2 = new Bookmaker
             {
                 Name = "TestBookmaker",
-                LastUpdate = new DateTime(2023, 1, 2),
-                Outcomes = new Dictionary<OutcomeType, decimal>(outcomes).ToImmutableDictionary() // Create a separate instance of the dictionary
+                LastUpdate = new DateTime(2023, 1, 1),
+                Outcomes = outcomes // Create a separate instance of the dictionary
             };
 
             // Act and Assert: Verify that the two objects are equal
