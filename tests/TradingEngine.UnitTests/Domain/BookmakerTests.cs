@@ -20,7 +20,7 @@ namespace TradingEngine.UnitTests.Domain
             var bookmaker = new Bookmaker
             {
                 Name = "TestBookmaker",
-                LastUpdate = DateTime.Now,
+                LastUpdate = DateTime.UtcNow,
                 Outcomes = outcomes
             };
 
@@ -45,7 +45,7 @@ namespace TradingEngine.UnitTests.Domain
             var bookmaker = new Bookmaker
             {
                 Name = "TestBookmaker",
-                LastUpdate = DateTime.Now,
+                LastUpdate = DateTime.UtcNow,
                 Outcomes = outcomes
             };
 
