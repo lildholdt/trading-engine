@@ -137,7 +137,6 @@ public sealed class SportEventActor
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while polling odds for EventId: {EventId}", Id);
-                throw;
             }
         }
     }
