@@ -30,9 +30,9 @@ public class OddsLoggingHandler(
         var awayPrice = awayMarket?.Outcome.Price;
         var drawPrice = drawMarket?.Outcome.Price;
 
-        var avgHome = @event.Odds.Sum(x => x.Home) / @event.Odds.Count;
-        var avgDraw = @event.Odds.Sum(x => x.Draw) / @event.Odds.Count;
-        var avgAway = @event.Odds.Sum(x => x.Away) / @event.Odds.Count;
+        var averageHome = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Home)) / @event.Odds.Count, 2);
+        var averageAway = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Away)) / @event.Odds.Count, 2);
+        var averageDraw = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Draw)) / @event.Odds.Count, 2);
         
         var records = @event.Odds.Select(record => new OddsRecord
         {
@@ -41,17 +41,17 @@ public class OddsLoggingHandler(
             Away = item.AwayTeam,
             Bookmaker = record.Name,
             StartTime = item.StartTime,
-            SnapshotTime = DateTime.Now,
-            HoursBefore = (int)(item.StartTime - DateTime.Now).TotalHours,
+            SnapshotTime = DateTime.UtcNow,
+            HoursBefore = (int)(item.StartTime - DateTime.UtcNow).TotalHours,
             OddsHome = record.Outcome(OutcomeType.Home),
             OddsDraw = record.Outcome(OutcomeType.Draw),
             OddsAway = record.Outcome(OutcomeType.Away),
             TrueOddsHome = record.TrueOdds(OutcomeType.Home),
             TrueOddsDraw = record.TrueOdds(OutcomeType.Draw),
             TrueOddsAway = record.TrueOdds(OutcomeType.Away),
-            TrueOddsAverageHome = avgHome,
-            TrueOddsAverageDraw = avgDraw,
-            TrueOddsAverageAway = avgAway,
+            TrueOddsAverageHome = averageHome,
+            TrueOddsAverageDraw = averageDraw,
+            TrueOddsAverageAway = averageAway,
             PolymarketOutcomeHome = homePrice ?? 0,
             PolymarketOutcomeDraw = drawPrice ?? 0,
             PolymarketOutcomeAway = awayPrice ?? 0,
