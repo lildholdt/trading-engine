@@ -24,8 +24,11 @@ public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOdd
         var sportsType = SportsType.FromValue(item.OddsApiEvent.SportKey);
         var odds = await client.GetOdds(sportsType, item.OddsApiEvent.Id);
 
+        if (odds == null) 
+            return [];
+        
         var bookmakers = new List<Bookmaker>();
-        foreach (var b in odds?.Bookmakers!)
+        foreach (var b in odds.Bookmakers)
         {
             var market = b.Markets.FirstOrDefault(x => x.Key == "h2h");
             if (market == null) continue;

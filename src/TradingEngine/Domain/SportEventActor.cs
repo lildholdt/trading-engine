@@ -19,8 +19,10 @@ public sealed class SportEventActor
     private string AwayTeam { get; init; }
     private DateTime StartTime { get; init; }
     private List<Bookmaker> Odds { get; set; } = [];
+    
     private readonly CancellationTokenSource _cts = new();
     private readonly List<Task> _runningTasks = [];
+    private bool Started => _runningTasks.Count != 0;
     
     public SportEventActor(
         SportEventId id,
@@ -47,16 +49,20 @@ public sealed class SportEventActor
             });
         
         _logger.LogInformation(
-            "SportEventActor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",
+            "Actor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",
             Id, HomeTeam, AwayTeam, StartTime
         );
     }
-    
-    public ValueTask SendMessageAsync(ISportEventMessage message)
-        => _mailbox.Writer.WriteAsync(message);
 
+    public ValueTask SendMessageAsync(ISportEventMessage message)
+        => !Started ? throw new InvalidOperationException("Actor not started") : _mailbox.Writer.WriteAsync(message);
+    
     public void StartAsync()
     {
+        // Check if the actor is already started
+        if (Started) 
+            throw new InvalidOperationException("Actor already started");
+        
         // Create cancellation token
         var ct = _cts.Token;
         
@@ -68,7 +74,7 @@ public sealed class SportEventActor
         _runningTasks.Add(pollingTask);
         _runningTasks.Add(mailboxTask);
         
-        _logger.LogInformation("SportEventActor started for EventId: {EventId}", Id);
+        _logger.LogInformation("Actor started for EventId: {EventId}", Id);
     }
 
     private async Task ReadMessagesAsync(CancellationToken ct)
@@ -210,11 +216,14 @@ public sealed class SportEventActor
     
     public async Task StopAsync()
     {
+        if (!Started) 
+            throw new InvalidOperationException("Must call StartAsync before Stop");
+        
         // Signal cancellation
         await _cts.CancelAsync();
 
         // Wait for all tasks to complete
         await Task.WhenAll(_runningTasks);
-        _logger.LogInformation("SportEventActor stopped for EventId: {EventId}", Id);
+        _logger.LogInformation("Actor stopped for EventId: {EventId}", Id);
     }
 }
