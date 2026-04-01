@@ -67,8 +67,8 @@ public sealed class SportEventActor
         var ct = _cts.Token;
         
         // Start and track the polling task
-        var pollingTask = PollOddsAsync(ct);
-        var mailboxTask = ReadMessagesAsync(ct);
+        var pollingTask = Task.Run(() => PollOddsAsync(ct), ct);
+        var mailboxTask = Task.Run(() => ReadMessagesAsync(ct), ct);
         
         // Add tasks to the running task list
         _runningTasks.Add(pollingTask);

@@ -15,22 +15,13 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.2" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <None Include="Clients\OddsApi\oddsapi-events.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Clients\Polymarket\polymarket-events.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="Clients\OddsApi\oddsapi-events.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Update="Clients\OddsApi\Resources\oddsapi-events.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Update="Clients\Polymarket\polymarket-events.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Update="Clients\Polymarket\Resources\polymarket-events.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

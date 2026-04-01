@@ -21,8 +21,8 @@ public sealed class SportEventActorSystem(
     public void CreateAsync(EventRegistryItem entry)
     {
         var actor = new SportEventActor(entry.Id, entry.HomeTeam, entry.AwayTeam, entry.StartTime, eventBus, oddsProvider, serviceProvider);
-        _actors.GetOrAdd(entry.Id, actor);
         actor.StartAsync();
+        _actors.GetOrAdd(entry.Id, actor);
     }
 
     public async Task StopAsync(SportEventId id)

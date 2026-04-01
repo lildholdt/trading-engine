@@ -57,11 +57,9 @@ public static class Application
         // Register clients
         builder.Services.AddHttpClient();
         builder.Services.AddTransient<LoggingHandler>();
-        //builder.Services.AddHttpClient<IPolymarketClient, PolymarketClient>().AddNamedHttpMessageHandler<LoggingHandler>();
-        //builder.Services.AddHttpClient<IOddsApiClient, OddsApiClient>().AddNamedHttpMessageHandler<LoggingHandler>();
-        builder.Services.AddSingleton<IPolymarketClient>(_ => new PolymarketClientStub("Clients/polymarket/polymarket-events.json"));
-        builder.Services.AddSingleton<IOddsApiClient>(_ => new OddsApiClientStub("Clients/oddsapi/oddsapi-events.json"));
-                
+        builder.Services.AddPolymarketClient(builder.Configuration);
+        builder.Services.AddOddsApiClient(builder.Configuration);
+        
         builder.Services.AddControllers();
         builder.Services.AddSignalR();
         

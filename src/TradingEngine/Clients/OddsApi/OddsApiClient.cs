@@ -3,20 +3,20 @@ using TradingEngine.Clients.OddsApi.Models;
 
 namespace TradingEngine.Clients.OddsApi;
 
-public class OddsApiClient(HttpClient httpClient, IOptions<ApplicationSettings> options) : IOddsApiClient
+public class OddsApiClient(HttpClient httpClient, IOptions<OddsApiSettings> options) : IOddsApiClient
 {
-    private ApplicationSettings Settings { get; init; } = options.Value;
+    private OddsApiSettings Settings { get; init; } = options.Value;
     
     public async Task<IReadOnlyCollection<Odds>> GetOdds(SportsType sportsType)
     {
-        var response = await httpClient.GetAsync($"{Settings.OddsApi.BaseUrl}/sports/{sportsType.Value}/odds/?apiKey={Settings.OddsApi.ApiKey}&regions=eu"); 
+        var response = await httpClient.GetAsync($"{Settings.BaseUrl}/sports/{sportsType.Value}/odds/?apiKey={Settings.ApiKey}&regions=eu"); 
         response.EnsureSuccessStatusCode();
         return await response.DeserializeJsonAsync<IReadOnlyCollection<Odds>>() ?? [];
     }
 
     public async Task<Odds?> GetOdds(SportsType sportsType, string eventId)
     {
-        var response = await httpClient.GetAsync($"{Settings.OddsApi.BaseUrl}/sports/{sportsType.Value}/odds/?apiKey={Settings.OddsApi.ApiKey}&regions=eu&eventIds={eventId}"); 
+        var response = await httpClient.GetAsync($"{Settings.BaseUrl}/sports/{sportsType.Value}/odds/?apiKey={Settings.ApiKey}&regions=eu&eventIds={eventId}"); 
         response.EnsureSuccessStatusCode();
         var collection = await response.DeserializeJsonAsync<IReadOnlyCollection<Odds>>() ?? [];
         return collection.Count == 0 ? null : collection.First();

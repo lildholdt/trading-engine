@@ -10,7 +10,7 @@ public class OrderPlacementHandler(
     ILogger<OrderPlacementHandler> logger) : IEventHandler<OddsUpdatedEvent>
 {
     public async Task HandleAsync(OddsUpdatedEvent @event, CancellationToken cancellationToken = default)
-    { 
+    {
         var item = registry.Get(@event.Id);
         if (item == null)
         {
@@ -19,7 +19,10 @@ public class OrderPlacementHandler(
         }
 
         if (@event.Odds.Count == 0)
+        {
+            logger.LogError("Couldn't place order. No odds available");
             return;
+        }
 
         if (item.PolymarketEvent.Id == null)
         {
