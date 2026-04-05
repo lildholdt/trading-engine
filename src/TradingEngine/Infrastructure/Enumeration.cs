@@ -6,8 +6,8 @@ public abstract class Enumeration<T> : ValueObject, IComparable where T : Enumer
 {
     private static int _currentId = 0;
     public int Id { get; init; }
-    public string Value { get; init; }
-    public string DisplayName { get; init; }
+    public string Value { get; init; } = string.Empty;
+    public string DisplayName { get; init; } = string.Empty;
 
     protected Enumeration() {}
     

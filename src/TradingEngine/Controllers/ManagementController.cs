@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
-using TradingEngine.Infrastructure.Hub;
 using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Controllers;
@@ -10,8 +8,7 @@ namespace TradingEngine.Controllers;
 [Route("api")]
 public class ManagementController(
     ISportEventActorSystem actorSystem,
-    IEventRegistry eventRegistry,
-    IHubPublisher<Event> hub) : ControllerBase
+    IEventRegistry eventRegistry) : ControllerBase
 {
     [HttpGet("registry")]
     public IActionResult GetRegistryItems()

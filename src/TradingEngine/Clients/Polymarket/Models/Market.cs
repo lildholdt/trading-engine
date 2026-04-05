@@ -49,12 +49,12 @@ public record Market
     public decimal Volume1wk { get; init; }
     public decimal Volume1mo { get; init; }
     public decimal Volume1yr { get; init; }
-    public string GameStartTime { get; init; }
+    public string GameStartTime { get; init; } = string.Empty;
     public int SecondsDelay { get; init; }
     [JsonConverter(typeof(JsonStringListConverter))]
-    public IReadOnlyCollection<string> ClobTokenIds { get; init; }
-    public string UmaBond { get; init; }
-    public string UmaReward { get; init; }
+    public IReadOnlyCollection<string> ClobTokenIds { get; init; } = [];
+    public string UmaBond { get; init; } = string.Empty;
+    public string UmaReward { get; init; } = string.Empty;
     public decimal Volume24hrClob { get; init; }
     public decimal Volume1wkClob { get; init; }
     public decimal Volume1moClob { get; init; }
@@ -64,8 +64,8 @@ public record Market
     public int CustomLiveness { get; init; }
     public bool AcceptingOrders { get; init; }
     public bool NegRisk { get; init; }
-    public string NegRiskMarketID { get; init; }
-    public string NegRiskRequestID { get; init; }
+    public string NegRiskMarketID { get; init; } = string.Empty;
+    public string NegRiskRequestID { get; init; } = string.Empty;
     public bool Ready { get; init; }
     public bool Funded { get; init; }
     public DateTime AcceptingOrdersTimestamp { get; init; }
