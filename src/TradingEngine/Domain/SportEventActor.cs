@@ -14,10 +14,10 @@ public sealed class SportEventActor
     private readonly ILogger<SportEventActor> _logger;
 
     // State
-    private SportEventId Id { get; init; }
-    private string HomeTeam { get; init; }
-    private string AwayTeam { get; init; }
-    private DateTime StartTime { get; init; }
+    private SportEventId Id { get; }
+    private string HomeTeam { get; }
+    private string AwayTeam { get; }
+    private DateTime StartTime { get; }
     private List<Bookmaker> Odds { get; set; } = [];
     
     private readonly CancellationTokenSource _cts = new();

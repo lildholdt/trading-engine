@@ -1,0 +1,71 @@
+services:
+  trading-engine:
+    container_name: trading-engine
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      logstash:
+        condition: service_started
+    networks:
+      - observability
+    restart: unless-stopped
+
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.3
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.enrollment.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - observability
+    restart: unless-stopped
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:8.14.3
+    environment:
+      - xpack.monitoring.enabled=false
+      - LS_JAVA_OPTS=-Xms256m -Xmx256m
+    ports:
+      - "5044:5044"
+      - "5001:5000"
+    volumes:
+      - ./docker/logstash/pipeline/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    depends_on:
+      elasticsearch:
+        condition: service_started
+    networks:
+      - observability
+    restart: unless-stopped
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:8.14.3
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_started
+    networks:
+      - observability
+    restart: unless-stopped
+
+volumes:
+  elasticsearch-data:
+
+networks:
+  observability:
+    driver: bridge
