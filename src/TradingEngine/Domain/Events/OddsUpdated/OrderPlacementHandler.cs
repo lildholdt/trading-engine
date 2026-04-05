@@ -4,11 +4,19 @@ using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Domain.Events.OddsUpdated;
 
+/// <summary>
+/// Handles odds updates and evaluates order placement opportunities.
+/// </summary>
 public class OrderPlacementHandler(
     IPolymarketClient polymarketClient, 
     IEventRegistry registry,
     ILogger<OrderPlacementHandler> logger) : IEventHandler<OddsUpdatedEvent>
 {
+    /// <summary>
+    /// Processes an odds update to prepare and log order placement decisions.
+    /// </summary>
+    /// <param name="event">The odds update event.</param>
+    /// <param name="cancellationToken">A token used to cancel the operation.</param>
     public async Task HandleAsync(OddsUpdatedEvent @event, CancellationToken cancellationToken = default)
     {
         var item = registry.Get(@event.Id);

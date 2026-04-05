@@ -4,12 +4,20 @@ using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Domain.Events.OddsUpdated;
 
+/// <summary>
+/// Handles odds updates by enriching data and appending odds snapshots to the configured writer.
+/// </summary>
 public class OddsLoggingHandler(
     IOddsWriter oddsWriter,
     IPolymarketClient polymarketClient,
     IEventRegistry eventRegistry,
     ILogger<OddsLoggingHandler> logger) : IEventHandler<OddsUpdatedEvent>
 {
+    /// <summary>
+    /// Processes an odds update event, computes aggregates, and writes output records.
+    /// </summary>
+    /// <param name="event">The odds update event.</param>
+    /// <param name="cancellationToken">A token used to cancel the operation.</param>
     public async Task HandleAsync(OddsUpdatedEvent @event, CancellationToken cancellationToken = default)
     {
         var item = eventRegistry.Get(@event.Id);

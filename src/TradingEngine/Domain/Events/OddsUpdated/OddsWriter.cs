@@ -1,10 +1,22 @@
 ﻿namespace TradingEngine.Domain.Events.OddsUpdated;
 
+/// <summary>
+/// Defines a writer abstraction for persisting odds records.
+/// </summary>
 public interface IOddsWriter
 {
+    /// <summary>
+    /// Persists a sequence of records.
+    /// </summary>
+    /// <typeparam name="T">The record type.</typeparam>
+    /// <param name="records">The records to persist.</param>
+    /// <param name="cancellationToken">A token used to cancel the operation.</param>
     Task WriteRecords<T>(IEnumerable<T> records, CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// CSV file implementation of <see cref="IOddsWriter"/>.
+/// </summary>
 public class OddsWriter(string filePath) : IOddsWriter
 {
     /// <summary>
