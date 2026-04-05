@@ -1,36 +1,36 @@
-﻿// Importing the namespace containing the models used in the PolyMarket API client.
+﻿using TradingEngine.Clients.Polymarket.Models;
 
-using TradingEngine.Clients.Polymarket.Models;
+namespace TradingEngine.Clients.Polymarket;
 
-namespace TradingEngine.Clients.Polymarket
+/// <summary>
+/// Defines methods for retrieving and streaming Polymarket data.
+/// </summary>
+public interface IPolymarketClient
 {
-    // Interface definition for the PolyMarket API client.
-    public interface IPolymarketClient
-    {
-        // Method to fetch a collection of sports.
-        // Returns a task that resolves to an enumerable of SportEntry objects.
-        Task<IEnumerable<SportEntry>> GetSports();
+    /// <summary>
+    /// Retrieves available sports entries from Polymarket.
+    /// </summary>
+    /// <returns>A collection of sport entries.</returns>
+    Task<IEnumerable<SportEntry>> GetSports();
 
-        // Method to fetch events associated with a specific series.
-        // Accepts the seriesId as an input parameter and returns a task 
-        // that resolves to an enumerable of Event objects.
-        Task<IEnumerable<Event>> GetEvents(PolymarketSeries series);
-        
-        /// <summary>
-        /// Fetches the details of a specific event.
-        /// </summary>
-        /// <param name="eventId">
-        /// The unique identifier for the event to be retrieved.
-        /// </param>
-        /// <returns>
-        /// A task that resolves to an Event object containing the details of the specified event,
-        /// or null if the event is not found.
-        /// </returns>
-        Task<Event?> GetEvent(string eventId);
+    /// <summary>
+    /// Retrieves events for a specific Polymarket series.
+    /// </summary>
+    /// <param name="series">The series to query.</param>
+    /// <returns>A collection of events in the specified series.</returns>
+    Task<IEnumerable<Event>> GetEvents(PolymarketSeries series);
+    
+    /// <summary>
+    /// Fetches the details of a specific event.
+    /// </summary>
+    /// <param name="eventId">The unique identifier for the event to retrieve.</param>
+    /// <returns>The event details, or <c>null</c> if no event was found.</returns>
+    Task<Event?> GetEvent(string eventId);
 
-        // Method to stream events associated with a specific series in real-time.
-        // Accepts the seriesId as an input parameter and an Action delegate
-        // to handle each streamed Event object.
-        Task StreamEvents(string seriesId, Action<Event> action);
-    }
+    /// <summary>
+    /// Streams events for a specific series and invokes the callback for each event.
+    /// </summary>
+    /// <param name="seriesId">The series identifier to stream.</param>
+    /// <param name="action">Callback executed for each streamed event.</param>
+    Task StreamEvents(string seriesId, Action<Event> action);
 }

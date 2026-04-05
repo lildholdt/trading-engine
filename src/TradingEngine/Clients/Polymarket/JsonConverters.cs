@@ -4,21 +4,36 @@ using System.Text.Json.Serialization;
 
 namespace TradingEngine.Clients.Polymarket;
 
+/// <summary>
+/// Converts JSON string payloads into read-only string collections and back.
+/// </summary>
 public class JsonStringListConverter : JsonConverter<IReadOnlyCollection<string>>
 {
+    /// <summary>
+    /// Reads a JSON string value that contains a serialized string array.
+    /// </summary>
     public override List<string>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         return JsonSerializer.Deserialize<List<string>>(reader.GetString() ?? "[]");
     }
 
+    /// <summary>
+    /// Writes a read-only string collection as a JSON string payload.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, IReadOnlyCollection<string> value, JsonSerializerOptions options)
     {
         writer.WriteStringValue(JsonSerializer.Serialize(value));
     }
 }
 
+/// <summary>
+/// Converts JSON string payloads into read-only decimal collections and back.
+/// </summary>
 public class JsonDecimalListConverter : JsonConverter<IReadOnlyCollection<decimal>>
 {
+    /// <summary>
+    /// Reads a JSON string value that contains a serialized decimal array.
+    /// </summary>
     public override IReadOnlyCollection<decimal>? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         // Read the JSON string
@@ -48,6 +63,9 @@ public class JsonDecimalListConverter : JsonConverter<IReadOnlyCollection<decima
         return decimalList.AsReadOnly();
     }
 
+    /// <summary>
+    /// Writes a read-only decimal collection as a JSON string payload.
+    /// </summary>
     public override void Write(Utf8JsonWriter writer, IReadOnlyCollection<decimal> value, JsonSerializerOptions options)
     {
         // Convert the IReadOnlyCollection<decimal> to a List<string>

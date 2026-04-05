@@ -1,5 +1,8 @@
 ﻿namespace TradingEngine.Clients.Polymarket;
 
+/// <summary>
+/// Service registration helpers for Polymarket clients.
+/// </summary>
 public static class ServiceCollectionExtensions
 {
 	private const string SettingsSection = "Polymarket";
@@ -7,6 +10,10 @@ public static class ServiceCollectionExtensions
 	
 	extension(IServiceCollection services)
 	{
+		/// <summary>
+		/// Registers Polymarket client services based on configuration.
+		/// </summary>
+		/// <param name="configuration">Application configuration source.</param>
 		public void AddPolymarketClient(IConfiguration configuration)
 		{
 			services.Configure<PolymarketSettings>(configuration.GetSection(SettingsSection));
