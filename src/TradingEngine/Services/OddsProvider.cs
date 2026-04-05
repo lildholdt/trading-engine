@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Domain;
-using TradingEngine.Services.Registry;
+using TradingEngine.Infrastructure.Registry;
 using Bookmaker = TradingEngine.Domain.Bookmaker;
 
 namespace TradingEngine.Services;
@@ -21,7 +21,7 @@ public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOdd
         var item = registry.Get(id);
         if (item?.OddsApiEvent == null) return [];
         
-        var sportsType = SportsType.FromValue(item.OddsApiEvent.SportKey);
+        var sportsType = OddsApiSportsType.FromValue(item.OddsApiEvent.SportKey);
         var odds = await client.GetOdds(sportsType, item.OddsApiEvent.Id);
 
         if (odds == null) 

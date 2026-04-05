@@ -4,11 +4,19 @@ namespace TradingEngine.Infrastructure;
 
 public abstract class Enumeration<T> : ValueObject, IComparable where T : Enumeration<T>, new()
 {
+    private static int _currentId = 0;
     public int Id { get; init; }
     public string Value { get; init; }
     public string DisplayName { get; init; }
 
     protected Enumeration() {}
+    
+    protected Enumeration(string value, string? displayName = null)
+    {
+        Id = Interlocked.Increment(ref _currentId);;
+        Value = value;
+        DisplayName = displayName ?? value;
+    }
     
     protected Enumeration(int id, string value, string? displayName = null)
     {

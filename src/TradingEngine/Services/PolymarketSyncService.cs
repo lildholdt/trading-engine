@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using TradingEngine.Clients.Polymarket;
-using TradingEngine.Services.Registry;
+using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Services;
 
@@ -18,9 +18,11 @@ public class PolymarketSyncService(
         {
             try
             {
-                // TODO: Identify strategy for selecting and correlation series ids across Polymarket and OddsAPI
-                //await httpClient.StreamEvents("10188", eventRegistry.RegisterPolymarket);   // Premier League
-                await httpClient.StreamEvents("10243", eventRegistry.RegisterPolymarket);
+                var items = eventRegistry.GetConfiguration().Where(x => x.Active);
+                foreach (var item in items)
+                {
+                    await httpClient.StreamEvents(item.PolymarketSeriesId, eventRegistry.RegisterPolymarket);    
+                }
             }
             catch (Exception ex)
             {

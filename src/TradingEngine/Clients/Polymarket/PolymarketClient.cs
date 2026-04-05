@@ -19,10 +19,10 @@ public class PolymarketClient(HttpClient httpClient) : IPolymarketClient
         return await response.DeserializeJsonAsync<IEnumerable<SportEntry>>() ?? [];
     }
 
-    public async Task<IEnumerable<Event>> GetEvents(string seriesId)
+    public async Task<IEnumerable<Event>> GetEvents(PolymarketSeries series)
     {
         // Request sport events
-        var response = await httpClient.GetAsync($"{BaseUrl}/events?series_id={seriesId}&active=true&closed=false");
+        var response = await httpClient.GetAsync($"{BaseUrl}/events?series_id={series.Value}&active=true&closed=false");
         
         // Ensure the request was successful
         response.EnsureSuccessStatusCode();

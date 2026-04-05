@@ -13,8 +13,8 @@ using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
+using TradingEngine.Infrastructure.Registry;
 using TradingEngine.Services;
-using TradingEngine.Services.Registry;
 using TradingEngine.Utils;
 
 namespace TradingEngine;

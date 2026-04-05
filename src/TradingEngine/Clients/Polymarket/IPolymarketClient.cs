@@ -14,7 +14,7 @@ namespace TradingEngine.Clients.Polymarket
         // Method to fetch events associated with a specific series.
         // Accepts the seriesId as an input parameter and returns a task 
         // that resolves to an enumerable of Event objects.
-        Task<IEnumerable<Event>> GetEvents(string seriesId);
+        Task<IEnumerable<Event>> GetEvents(PolymarketSeries series);
         
         /// <summary>
         /// Fetches the details of a specific event.

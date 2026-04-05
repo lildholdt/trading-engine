@@ -10,6 +10,7 @@ public class SportEventId(Guid value) : ValueObject
 
     public static implicit operator string(SportEventId obj) => obj.Value.ToString();
     public static implicit operator SportEventId(string s) => new(Guid.Parse(s));
+    public static implicit operator SportEventId(Guid s) => new(s);
     
     public override string ToString()
     {

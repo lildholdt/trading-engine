@@ -1,6 +1,6 @@
 ﻿using TradingEngine.Clients.Polymarket;
 using TradingEngine.Infrastructure.EventBus;
-using TradingEngine.Services.Registry;
+using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Domain.Events.OddsUpdated;
 

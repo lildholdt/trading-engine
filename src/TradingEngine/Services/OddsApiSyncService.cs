@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 using TradingEngine.Clients.OddsApi;
-using TradingEngine.Services.Registry;
+using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Services;
 
@@ -18,10 +18,14 @@ public class OddsApiSyncService(
         {
             try
             {
-                var events = await oddsApiClient.GetOdds(SportsType.WorldCupQualifiers);
-                foreach (var @event in events)
-                {  
-                    await eventRegistry.AttachOddsApi(@event);
+                var items = eventRegistry.GetConfiguration().Where(x => x.Active);
+                foreach (var item in items)
+                {
+                    var events = await oddsApiClient.GetOdds(OddsApiSportsType.WorldCupQualifiers);
+                    foreach (var @event in events)
+                    {  
+                        await eventRegistry.AttachOddsApi(@event);
+                    }    
                 }
             }
             catch (Exception ex)

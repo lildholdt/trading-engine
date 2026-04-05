@@ -2,7 +2,7 @@
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
 
-namespace TradingEngine.Services.Registry;
+namespace TradingEngine.Infrastructure.Registry;
 
 /// <summary>
 /// Interface that defines methods for managing and interacting with events in an event registry.
@@ -15,6 +15,12 @@ public interface IEventRegistry
     /// <param name="id">The unique identifier of the sport event to retrieve.</param>
     public EventRegistryItem? Get(SportEventId id);
 
+    public IReadOnlyCollection<EventRegistryItem> GetAll();
+
+    public IReadOnlyCollection<EventRegistryConfigurationItem> GetConfiguration();
+    public void UpdateConfiguration(int id, bool state);
+    
+    
     /// <summary>
     /// Registers a new PolyMarket event into the event registry.
     /// </summary>

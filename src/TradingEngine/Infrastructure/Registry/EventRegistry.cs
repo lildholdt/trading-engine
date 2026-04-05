@@ -7,15 +7,31 @@ using TradingEngine.Domain.Events.RegistryItemCorrelated;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Utils;
 
-namespace TradingEngine.Services.Registry;
+namespace TradingEngine.Infrastructure.Registry;
 
 public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus, ILogger<InMemoryEventRegistry> logger) : IEventRegistry
 {
     private readonly ConcurrentDictionary<SportEventId, EventRegistryItem> _events = new();
-
+    private readonly EventRegistryConfiguration _configuration = new();
+    
     public EventRegistryItem? Get(SportEventId id)
     {
         return _events.TryGetValue(id, out var item) ? item : null;
+    }
+    
+    public IReadOnlyCollection<EventRegistryItem> GetAll()
+    {
+        return _events.Values.ToList().AsReadOnly();
+    }
+
+    public IReadOnlyCollection<EventRegistryConfigurationItem> GetConfiguration()
+    {
+        return _configuration.GetAll();
+    }
+
+    public void UpdateConfiguration(int id, bool state)
+    {
+        _configuration.Update(id, state);
     }
 
     public void RegisterPolymarket(Event @event)

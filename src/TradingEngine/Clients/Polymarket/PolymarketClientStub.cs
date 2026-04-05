@@ -27,7 +27,7 @@ public class PolymarketClientStub : IPolymarketClient
         throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<Event>> GetEvents(string seriesId)
+    public Task<IEnumerable<Event>> GetEvents(PolymarketSeries series)
     {
         return Task.FromResult(_events);
     }

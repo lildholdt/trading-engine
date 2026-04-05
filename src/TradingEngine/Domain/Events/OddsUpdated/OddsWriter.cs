@@ -1,4 +1,4 @@
-﻿namespace TradingEngine.Domain;
+﻿namespace TradingEngine.Domain.Events.OddsUpdated;
 
 public interface IOddsWriter
 {

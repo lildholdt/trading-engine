@@ -2,7 +2,7 @@
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
 
-namespace TradingEngine.Services.Registry;
+namespace TradingEngine.Infrastructure.Registry;
 
 public class EventRegistryItem
 {

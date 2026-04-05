@@ -1,10 +1,8 @@
-﻿using System.Collections.Immutable;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
-using TradingEngine.Domain.Messages;
 using TradingEngine.Infrastructure.Hub;
-using TradingEngine.Services.Registry;
+using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Controllers;
 
@@ -15,6 +13,27 @@ public class ManagementController(
     IEventRegistry eventRegistry,
     IHubPublisher<Event> hub) : ControllerBase
 {
+    [HttpGet("registry")]
+    public IActionResult GetRegistryItems()
+    {
+        var items = eventRegistry.GetAll();
+        return Ok(items);
+    }
+    
+    [HttpGet("registry/configuration")]
+    public IActionResult GetRegistryConfiguration()
+    {
+        var config = eventRegistry.GetConfiguration();
+        return Ok(config);
+    }
+    
+    [HttpPost("registry/configuration/{id}")]
+    public IActionResult UpdateRegistryConfiguration(int id, bool state)
+    {
+        eventRegistry.UpdateConfiguration(id, state);
+        return Ok();
+    }
+    
     [HttpGet("events")]
     public IActionResult GetEvents()
     {
@@ -22,8 +41,15 @@ public class ManagementController(
         return Ok(events);
     }
     
-    [HttpDelete("events")]
-    public IActionResult StopEvent(string id)
+    [HttpGet("events/{id}")]
+    public IActionResult GetEvent(Guid id)
+    {
+        var events = actorSystem.GetState(id);
+        return Ok(events);
+    }
+    
+    [HttpDelete("events/{id}")]
+    public IActionResult StopEvent(Guid id)
     {
         actorSystem.StopAsync(id);
         return Ok();
@@ -34,38 +60,5 @@ public class ManagementController(
     {
         actorSystem.Reset();
         return Ok();
-    }
-    
-    [HttpPost("odds")]
-    public async Task<IActionResult> UpdateOdds(
-        [FromBody] UpdateOddsBody odds)
-    {
-        var marketUpdateMessage = new UpdateOddsMessage
-        {
-            SportEventId = new SportEventId(odds.SportEventId), 
-            Bookmakers = [new Bookmaker
-                {
-                    Name = odds.Bookmaker,
-                    LastUpdate =  DateTime.Now,
-                    Outcomes = new Dictionary<OutcomeType, decimal>
-                    {
-                        { OutcomeType.Home, odds.Home },
-                        { OutcomeType.Away, odds.Away },
-                        { OutcomeType.Draw, odds.Draw }
-                    }.ToImmutableDictionary()
-                }
-            ]
-        };
-        await actorSystem.SendAsync(marketUpdateMessage);
-        return Ok();
-    }
-    
-    public class UpdateOddsBody
-    {
-        public Guid SportEventId { get; set; }
-        public string Bookmaker { get; set; }
-        public decimal Home { get; set; }
-        public decimal Away { get; set; }
-        public decimal Draw { get; set; }
     }
 }

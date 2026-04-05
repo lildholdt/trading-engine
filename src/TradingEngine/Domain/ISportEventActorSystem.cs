@@ -1,4 +1,4 @@
-﻿using TradingEngine.Services.Registry;
+﻿using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Domain;
 
@@ -37,6 +37,8 @@ public interface ISportEventActorSystem
     /// </summary>
     /// <returns>A read-only collection of <see cref="SportEventActorState"/> objects representing the state of each sport event actor.</returns>
     IReadOnlyCollection<SportEventActorState> GetStates();
+    
+    SportEventActorState GetState(SportEventId id);
 
     /// <summary>
     /// Resets the state of the system, clearing all existing sport event actors and their associated states.

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
-using TradingEngine.Domain.Messages;
 using TradingEngine.Infrastructure.EventBus;
-using TradingEngine.Services.Registry;
+using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Domain;
 
@@ -43,6 +42,17 @@ public sealed class SportEventActorSystem(
     {
         var sportEventActorStates = _actors.Values.Select(actor => actor.GetState()).ToArray();
         return sportEventActorStates;
+    }
+
+    public SportEventActorState GetState(SportEventId id)
+    {
+        if (_actors.TryGetValue(id, out var actor))
+        {
+            return actor.GetState();
+        }
+
+        logger.LogInformation("Couldn't get actor state. ID: {Id} was not found", id);
+        throw new KeyNotFoundException($"Sport event actor with ID '{id}' was not found.");
     }
 
     public async Task Reset()
