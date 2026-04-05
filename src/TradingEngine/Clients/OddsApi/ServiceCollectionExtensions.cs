@@ -3,7 +3,7 @@
 public static class ServiceCollectionExtensions
 {
 	private const string SettingsSection = "OddsApi";
-	private const string ResourcePath = "Clients/OddsApi/Resources/oddsapi-event.json";
+	private const string ResourcePath = "Clients/OddsApi/Resources/oddsapi-events.json";
 	
 	extension(IServiceCollection services)
 	{

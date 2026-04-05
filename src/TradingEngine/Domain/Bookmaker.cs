@@ -1,12 +1,20 @@
 ﻿using System.Collections.Immutable;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using TradingEngine.Infrastructure;
 
 namespace TradingEngine.Domain;
 
 public class Bookmaker : ValueObject
 {
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        Converters = { new JsonStringEnumConverter() }
+    };
+
     public required string Name { get; init; }
     public DateTime LastUpdate { get; init; }
+    
     public decimal Home => Outcomes[OutcomeType.Home];
     public decimal Away => Outcomes[OutcomeType.Away];
     public decimal Draw => Outcomes[OutcomeType.Draw];
@@ -65,6 +73,31 @@ public class Bookmaker : ValueObject
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Serializes the current bookmaker object to JSON.
+    /// </summary>
+    /// <returns>A JSON string representation of the current bookmaker object.</returns>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(this, SerializerOptions);
+    }
+
+    /// <summary>
+    /// Deserializes a JSON string into a <see cref="Bookmaker"/> instance.
+    /// </summary>
+    /// <param name="json">The JSON content to deserialize.</param>
+    /// <returns>The deserialized <see cref="Bookmaker"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when JSON cannot be deserialized to a <see cref="Bookmaker"/>.</exception>
+    public static Bookmaker Deserialize(string json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            throw new ArgumentException("JSON content cannot be null or empty.", nameof(json));
+
+        var bookmaker = JsonSerializer.Deserialize<Bookmaker>(json, SerializerOptions);
+        return bookmaker ?? throw new InvalidOperationException("Failed to deserialize Bookmaker from JSON.");
     }
     
     /// <summary>

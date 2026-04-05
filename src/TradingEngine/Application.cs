@@ -4,6 +4,9 @@ using TradingEngine.Clients;
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.Polymarket;
 using TradingEngine.Domain;
+using TradingEngine.Domain.Events.ActorCreated;
+using TradingEngine.Domain.Events.ActorStarted;
+using TradingEngine.Domain.Events.ActorStopped;
 using TradingEngine.Domain.Events.OddsUpdated;
 using TradingEngine.Domain.Events.RegistryItemCorrelated;
 using TradingEngine.Infrastructure;
@@ -37,6 +40,9 @@ public static class Application
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  RegistryItemCorrelatedEventHandler>();
+        builder.Services.AddSingleton<IEventHandler<ActorCreatedEvent>, ActorCreatedEventHandler>();
+        builder.Services.AddSingleton<IEventHandler<ActorStartedEvent>, ActorStartedEventHandler>();
+        builder.Services.AddSingleton<IEventHandler<ActorStoppedEvent>, RegistryCleanupHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OddsLoggingHandler>();
         
@@ -50,6 +56,7 @@ public static class Application
         
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
+        builder.Services.AddSingleton<IMySqlConnectionFactory, MySqlConnectionFactory>();
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));

@@ -26,4 +26,8 @@ public interface IEventRegistry
     /// </summary>
     /// <param name="event">The OddsApi event to attach.</param>
     public Task AttachOddsApi(Odds @event);
+    
+    public void Remove(SportEventId id);
+
+    public void Reset();
 }

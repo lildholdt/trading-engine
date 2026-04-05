@@ -1,4 +1,7 @@
-﻿using System.Threading.Channels;
+﻿using System.Collections.ObjectModel;
+using System.Threading.Channels;
+using TradingEngine.Domain.Events.ActorCreated;
+using TradingEngine.Domain.Events.ActorStopped;
 using TradingEngine.Domain.Events.OddsUpdated;
 using TradingEngine.Domain.Messages;
 using TradingEngine.Infrastructure.EventBus;
@@ -54,6 +57,14 @@ public sealed class SportEventActor
         );
     }
 
+    public SportEventActorState GetState() => new() {
+        Id = Id,
+        HomeTeam = HomeTeam,
+        AwayTeam = AwayTeam,
+        StartTime = StartTime,
+        Odds = new ReadOnlyCollection<Bookmaker>(Odds)
+    };
+    
     public ValueTask SendMessageAsync(ISportEventMessage message)
         => !Started ? throw new InvalidOperationException("Actor not started") : _mailbox.Writer.WriteAsync(message);
     
@@ -73,6 +84,12 @@ public sealed class SportEventActor
         // Add tasks to the running task list
         _runningTasks.Add(pollingTask);
         _runningTasks.Add(mailboxTask);
+
+        // Signal that actor has been created
+        _eventBus.PublishAsync(new ActorCreatedEvent
+        {
+            State = GetState()
+        }, ct);
         
         _logger.LogInformation("Actor started for EventId: {EventId}", Id);
     }
@@ -97,7 +114,7 @@ public sealed class SportEventActor
         catch (OperationCanceledException)
         {
             // Gracefully handle cancellation
-            _logger.LogError("Message reading cancelled for eventId: {EventId}.", Id);
+            _logger.LogDebug("Message reading cancelled for eventId: {EventId}.", Id);
         }
         catch (Exception ex)
         {
@@ -115,7 +132,7 @@ public sealed class SportEventActor
             try
             {
                 // Get new odds via the provider
-                var odds = await _oddsProvider.GetOdds(Id);
+                var odds = await _oddsProvider.GetOdds(Id).WaitAsync(ct);
                 if (odds.Count == 0) continue;
                 
                 await SendMessageAsync(new UpdateOddsMessage
@@ -138,7 +155,7 @@ public sealed class SportEventActor
                     _ => TimeSpan.FromSeconds(5).TotalMilliseconds // Less than 6 hours: 5 seconds
                 };
                 
-                _logger.LogInformation("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", Id, delayMilliseconds);
+                _logger.LogDebug("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", Id, delayMilliseconds);
             
                 // Use Task.Delay with cancellation support
                 await Task.Delay((int)delayMilliseconds, ct);
@@ -146,7 +163,7 @@ public sealed class SportEventActor
             catch (OperationCanceledException)
             {
                 // Task.Delay was canceled, exit the loop gracefully
-                _logger.LogInformation("Polling task cancelled for EventId: {EventId}", Id);
+                _logger.LogDebug("Polling task cancelled for EventId: {EventId}", Id);
                 return;
             }
             catch (Exception ex)
@@ -218,12 +235,19 @@ public sealed class SportEventActor
     {
         if (!Started) 
             throw new InvalidOperationException("Must call StartAsync before Stop");
+
+        // Stop accepting new messages and let the reader loop finish.
+        _mailbox.Writer.TryComplete();
         
         // Signal cancellation
         await _cts.CancelAsync();
 
-        // Wait for all tasks to complete
-        await Task.WhenAll(_runningTasks);
+        // Notify that actor has been stopped
+        await _eventBus.PublishAsync(new ActorStoppedEvent
+        {
+            Id = Id
+        });
+        
         _logger.LogInformation("Actor stopped for EventId: {EventId}", Id);
     }
 }

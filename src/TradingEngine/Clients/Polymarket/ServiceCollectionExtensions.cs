@@ -3,7 +3,7 @@
 public static class ServiceCollectionExtensions
 {
 	private const string SettingsSection = "Polymarket";
-	private const string ResourcePath = "Clients/Polymarket/Resources/polymarket-event.json";
+	private const string ResourcePath = "Clients/Polymarket/Resources/polymarket-events.json";
 	
 	extension(IServiceCollection services)
 	{

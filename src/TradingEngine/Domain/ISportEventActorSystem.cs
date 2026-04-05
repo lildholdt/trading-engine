@@ -9,7 +9,7 @@ namespace TradingEngine.Domain;
 public interface ISportEventActorSystem
 {
     /// <summary>
-    /// Sends a message to the appropriate sport event actor for processing. 
+    /// Sends a message to the appropriate actor for processing. 
     /// If no actor exists for the event in the message, the message will either be discarded or cause an error, depending on the implementation.
     /// </summary>
     /// <param name="message">The message to be sent to a sport event actor.</param>
@@ -30,4 +30,18 @@ public interface ISportEventActorSystem
     /// <param name="id">The unique identifier of the sport event whose actor should be stopped.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous operation of stopping the actor.</returns>
     Task StopAsync(SportEventId id);
+    
+    /// <summary>
+    /// Retrieves a read-only collection of the current states of all sport event actors managed by the system.
+    /// Each state contains information such as the event ID, participating teams, start time, and current odds.
+    /// </summary>
+    /// <returns>A read-only collection of <see cref="SportEventActorState"/> objects representing the state of each sport event actor.</returns>
+    IReadOnlyCollection<SportEventActorState> GetStates();
+
+    /// <summary>
+    /// Resets the state of the system, clearing all existing sport event actors and their associated states.
+    /// This method ensures the system is returned to a clean state, removing all active actors and their data.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous operation of resetting the system.</returns>
+    Task Reset();
 }

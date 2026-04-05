@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using TradingEngine.Domain.Messages;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Services.Registry;
 
@@ -10,7 +11,7 @@ public sealed class SportEventActorSystem(
     IServiceProvider serviceProvider,
     ILogger<SportEventActorSystem> logger) : ISportEventActorSystem
 {
-    private readonly ConcurrentDictionary<string, SportEventActor> _actors = new();
+    private readonly ConcurrentDictionary<SportEventId, SportEventActor> _actors = new();
 
     public ValueTask SendAsync(ISportEventMessage message)
     {
@@ -33,6 +34,23 @@ public sealed class SportEventActorSystem(
             logger.LogInformation("Couldn't stop actor. ID: {Id} was not found", id);
             return;
         }
-        await actor.StopAsync()!;
+        
+        await actor.StopAsync();
+        _actors.TryRemove(id, out _);
+    }
+
+    public IReadOnlyCollection<SportEventActorState> GetStates()
+    {
+        var sportEventActorStates = _actors.Values.Select(actor => actor.GetState()).ToArray();
+        return sportEventActorStates;
+    }
+
+    public async Task Reset()
+    {
+        foreach (var actor in _actors)
+        {
+            await actor.Value.StopAsync();
+            _actors.TryRemove(actor.Key, out _);
+        }
     }
 }

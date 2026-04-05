@@ -27,7 +27,7 @@ public class PolymarketSyncService(
                 logger.LogError("Error polling API: {ExMessage}", ex.Message);
             }
 
-            logger.LogInformation("Next polymarket polling in {Delay} seconds.", 
+            logger.LogDebug("Next polymarket polling in {Delay} seconds.", 
                 TimeSpan.FromMilliseconds(options.Value.EventPollingIntervalInMs));
             
             // Wait before polling again

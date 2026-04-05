@@ -2,6 +2,6 @@
 
 public interface ISportEventMessage
 {
-    public string SportEventId { get; init; }
+    public SportEventId SportEventId { get; init; }
     Task ApplyAsync(SportEventActor actor);
 }

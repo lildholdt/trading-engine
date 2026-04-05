@@ -29,7 +29,7 @@ public class OddsApiSyncService(
                 logger.LogError(ex, "Error fetching matches from OddsApi");
             }
             
-            logger.LogInformation("Next OddsApi polling in {Delay} seconds.", 
+            logger.LogDebug("Next OddsApi polling in {Delay} seconds.", 
                 TimeSpan.FromMilliseconds(options.Value.EventPollingIntervalInMs));
             
             // Wait before polling again

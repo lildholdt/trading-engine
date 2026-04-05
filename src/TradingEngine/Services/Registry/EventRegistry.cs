@@ -95,4 +95,16 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
             return;
         }
     }
+
+    public void Remove(SportEventId id)
+    {
+        _events.TryRemove(id, out _);
+        logger.LogInformation("Removed event {Id}. from registry", id);
+    }
+
+    public void Reset()
+    {
+        _events.Clear();
+        logger.LogInformation("Cleared event registry");
+    }
 }

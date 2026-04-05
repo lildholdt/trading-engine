@@ -4,15 +4,38 @@ using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
 using TradingEngine.Domain.Messages;
 using TradingEngine.Infrastructure.Hub;
+using TradingEngine.Services.Registry;
 
 namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api")]
-public class SportsController(
+public class ManagementController(
     ISportEventActorSystem actorSystem,
+    IEventRegistry eventRegistry,
     IHubPublisher<Event> hub) : ControllerBase
 {
+    [HttpGet("events")]
+    public IActionResult GetEvents()
+    {
+        var events = actorSystem.GetStates();
+        return Ok(events);
+    }
+    
+    [HttpDelete("events")]
+    public IActionResult StopEvent(string id)
+    {
+        actorSystem.StopAsync(id);
+        return Ok();
+    }
+    
+    [HttpPost("events/reset")]
+    public IActionResult Reset()
+    {
+        actorSystem.Reset();
+        return Ok();
+    }
+    
     [HttpPost("odds")]
     public async Task<IActionResult> UpdateOdds(
         [FromBody] UpdateOddsBody odds)
