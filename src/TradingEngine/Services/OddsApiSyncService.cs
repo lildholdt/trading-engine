@@ -21,7 +21,7 @@ public class OddsApiSyncService(
                 var items = eventRegistry.GetConfiguration().Where(x => x.Active);
                 foreach (var item in items)
                 {
-                    var events = await oddsApiClient.GetOdds(OddsApiSportsType.WorldCupQualifiers);
+                    var events = await oddsApiClient.GetOdds(item.OddsApiSportsType);
                     foreach (var @event in events)
                     {  
                         await eventRegistry.AttachOddsApi(@event);

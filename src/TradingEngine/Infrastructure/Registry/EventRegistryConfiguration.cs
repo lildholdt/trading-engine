@@ -14,7 +14,7 @@ public class EventRegistryConfiguration
         AddConfiguration("World Cup Qualifiers", PolymarketSeries.WorldCupQualifiers, OddsApiSportsType.WorldCupQualifiers);
     }
 
-    private void AddConfiguration(string name, string polymarketSeriesId, string oddsApiSportsType)
+    private void AddConfiguration(string name, PolymarketSeries polymarketSeriesId, OddsApiSportsType oddsApiSportsType)
     {
         _config.Add(new EventRegistryConfigurationItem
         {
