@@ -1,6 +1,6 @@
 using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.Events.ActorStarted;
+namespace TradingEngine.Domain.StartActor;
 
 /// <summary>
 /// Event published when a sport event actor has started processing.

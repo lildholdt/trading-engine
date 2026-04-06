@@ -3,7 +3,6 @@ using TradingEngine.Clients.OddsApi.Models;
 using TradingEngine.Clients.Polymarket;
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
-using TradingEngine.Domain.Events.RegistryItemCorrelated;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Utils;
 

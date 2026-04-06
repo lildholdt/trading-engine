@@ -1,6 +1,6 @@
 using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.Events.ActorCreated;
+namespace TradingEngine.Domain.CreateActor;
 
 /// <summary>
 /// Event published when a new sport event actor has been created.

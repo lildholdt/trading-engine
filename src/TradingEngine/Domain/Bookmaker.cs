@@ -1,10 +1,12 @@
-﻿using System.Collections.Immutable;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using TradingEngine.Infrastructure;
 
 namespace TradingEngine.Domain;
 
+/// <summary>
+/// Represents a bookmaker and its associated odds.
+/// </summary>
 public class Bookmaker : ValueObject
 {
     private static readonly JsonSerializerOptions SerializerOptions = new()
@@ -12,85 +14,63 @@ public class Bookmaker : ValueObject
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public required string Name { get; init; }
-    public DateTime LastUpdate { get; init; }
-    
-    public decimal Home => Outcomes[OutcomeType.Home];
-    public decimal Away => Outcomes[OutcomeType.Away];
-    public decimal Draw => Outcomes[OutcomeType.Draw];
-    
-    public required ImmutableDictionary<OutcomeType, decimal> Outcomes { get; init; } = ImmutableDictionary<OutcomeType, decimal>.Empty;
-    
     /// <summary>
-    /// Retrieves the odds for a specific outcome type.
+    /// Gets the name of the bookmaker.
     /// </summary>
-    /// <param name="outcome">The outcome type for which odds are to be retrieved.</param>
-    /// <returns>The decimal odds associated with the specified outcome.</returns>
-    public decimal Outcome(OutcomeType outcome) => Outcomes[outcome];
+    public string Name { get; }
 
     /// <summary>
-    /// Calculates the "true odds" for a specific outcome type, factoring in the market margin.
+    /// Gets the timestamp of the last update for this bookmaker's odds.
     /// </summary>
-    /// <param name="outcomeType">The outcome type for which true odds are to be calculated.</param>
-    /// <returns>The true odds as a decimal value, rounded to two decimal places.</returns>
-    public decimal TrueOdds(OutcomeType outcomeType)
-    {
-        // Calculate margin
-        var margin = Outcomes.Sum(outcome => 1 / outcome.Value) - 1;
+    public DateTime LastUpdate { get; }
 
-        // Calculate True Odds and construct the dictionary
-        return Math.Round(3 * Outcomes[outcomeType] / (3 - margin * Outcomes[outcomeType]), 2);
-    }
-    
     /// <summary>
-    /// Calculates the "true odds" for all outcomes in the model, factoring in the market margin.
+    /// Gets the odds for the home outcome.
     /// </summary>
-    /// <returns>A dictionary mapping each <see cref="OutcomeType"/> to its calculated true odds.</returns>
-    public Dictionary<OutcomeType, decimal> TrueOdds()
-    {
-        return Outcomes.ToDictionary(
-            outcome => outcome.Key,
-            outcome => TrueOdds(outcome.Key)
-        );
-    }
-    
+    public Outcome Outcome { get; }
+
     /// <summary>
-    /// Compares the Outcomes of this bookmaker with another bookmaker to check for changes.
+    /// Initializes a new instance of the <see cref="Bookmaker"/> class.
+    /// </summary>
+    /// <param name="name">The name of the bookmaker.</param>
+    /// <param name="lastUpdate">The timestamp of the last update.</param>
+    /// <param name="outcome"></param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> is null or empty.</exception>
+    /// <exception cref="ArgumentException">Thrown when any of the odds are not positive.</exception>
+    public Bookmaker(string name, Outcome outcome)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentNullException(nameof(name), "Name cannot be null or empty.");
+
+        Name = name;
+        LastUpdate = DateTime.UtcNow;
+        Outcome = outcome;
+    }
+
+    /// <summary>
+    /// Determines whether the odds have changed compared to another bookmaker.
     /// </summary>
     /// <param name="other">The other bookmaker to compare against.</param>
-    /// <returns>True if the Outcomes have changed, otherwise false.</returns>
+    /// <returns>True if the odds have changed, otherwise false.</returns>
     public bool HasOutcomesChanged(Bookmaker other)
     {
-        if (Name != other.Name || Outcomes.Count != other.Outcomes.Count)
-            return true;
-
-        foreach (var kvp in Outcomes)
-        {
-            if (!other.Outcomes.TryGetValue(kvp.Key, out var otherValue) || kvp.Value != otherValue)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        ArgumentNullException.ThrowIfNull(other);
+        if (Name != other.Name) return true;
+        return Outcome != other.Outcome;
     }
 
     /// <summary>
-    /// Serializes the current bookmaker object to JSON.
+    /// Serializes the current bookmaker to JSON.
     /// </summary>
-    /// <returns>A JSON string representation of the current bookmaker object.</returns>
-    public string Serialize()
-    {
-        return JsonSerializer.Serialize(this, SerializerOptions);
-    }
+    /// <returns>A JSON string representation of the current bookmaker.</returns>
+    public string Serialize() => JsonSerializer.Serialize(this, SerializerOptions);
 
     /// <summary>
     /// Deserializes a JSON string into a <see cref="Bookmaker"/> instance.
     /// </summary>
     /// <param name="json">The JSON content to deserialize.</param>
     /// <returns>The deserialized <see cref="Bookmaker"/> instance.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or whitespace.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when JSON cannot be deserialized to a <see cref="Bookmaker"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or invalid.</exception>
     public static Bookmaker Deserialize(string json)
     {
         if (string.IsNullOrWhiteSpace(json))
@@ -99,28 +79,14 @@ public class Bookmaker : ValueObject
         var bookmaker = JsonSerializer.Deserialize<Bookmaker>(json, SerializerOptions);
         return bookmaker ?? throw new InvalidOperationException("Failed to deserialize Bookmaker from JSON.");
     }
-    
+
     /// <summary>
-    /// Provides the components used for equality comparison of this model.
+    /// Provides the components used for equality comparison.
     /// </summary>
-    /// <returns>An enumerable of objects representing the components used for equality checks.</returns>
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return Name;
         yield return LastUpdate;
-        yield return Outcomes;
-
-        // Ensure deep equality of the dictionary by comparing key-value pairs
-        foreach (var kvp in Outcomes.OrderBy(k => k.Key))
-        {
-            yield return kvp.Key;
-            yield return kvp.Value;
-        }
+        yield return Outcome;
     }
-}
-
-public enum OutcomeType {
-    Home,
-    Away,
-    Draw
 }

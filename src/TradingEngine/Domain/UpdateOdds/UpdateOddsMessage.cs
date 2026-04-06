@@ -1,4 +1,4 @@
-﻿namespace TradingEngine.Domain.Messages;
+﻿namespace TradingEngine.Domain.UpdateOdds;
 
 public class UpdateOddsMessage : ISportEventMessage
 {

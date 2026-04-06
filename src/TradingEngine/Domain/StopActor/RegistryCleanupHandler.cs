@@ -1,7 +1,7 @@
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Registry;
 
-namespace TradingEngine.Domain.Events.ActorStopped;
+namespace TradingEngine.Domain.StopActor;
 
 /// <summary>
 /// Handles actor stopped events by removing the corresponding event entry from the registry.

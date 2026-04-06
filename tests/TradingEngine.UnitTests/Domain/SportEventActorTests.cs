@@ -1,9 +1,8 @@
-using System.Collections.Immutable;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using TradingEngine.Domain;
-using TradingEngine.Domain.Events.OddsUpdated;
+using TradingEngine.Domain.UpdateOdds;
 using TradingEngine.Infrastructure.EventBus;
 using Xunit;
 using Bookmaker = TradingEngine.Domain.Bookmaker;
@@ -158,7 +157,12 @@ public class SportEventActorTests
     [Fact]
     public async Task EndMatch_CancelsProcessing()
     {
+        _oddsProvider
+            .Setup(x => x.GetOdds(It.IsAny<SportEventId>()))
+            .ReturnsAsync(new List<Bookmaker>());
+
         var actor = CreateActor();
+        actor.StartAsync();
 
         await actor.StopAsync();
 
@@ -189,16 +193,12 @@ public class SportEventActorTests
     {
         public static Bookmaker CreateBookmaker(string name, decimal odds = 1.5m)
         {
-            return new Bookmaker
+            return new Bookmaker(name, new Outcome
             {
-                Name = name,
-                Outcomes = new Dictionary<OutcomeType, decimal>
-                {
-                    { OutcomeType.Home, odds },
-                    { OutcomeType.Draw, odds },
-                    { OutcomeType.Away, odds }
-                }.ToImmutableDictionary()
-            };
+                Home = odds,
+                Draw = odds,
+                Away = odds
+            });
         }
     }
 }

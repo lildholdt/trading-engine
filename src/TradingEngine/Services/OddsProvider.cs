@@ -2,7 +2,6 @@
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Domain;
 using TradingEngine.Infrastructure.Registry;
-using Bookmaker = TradingEngine.Domain.Bookmaker;
 
 namespace TradingEngine.Services;
 
@@ -35,18 +34,15 @@ public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOdd
             
             if(!_bookmakers.Contains(b.Key))
                 continue;
-            
-            var bookmaker = new Bookmaker
+
+            var outcome = new Outcome
             {
-                Name = b.Key,
-                LastUpdate = b.LastUpdate,
-                Outcomes = new Dictionary<OutcomeType, decimal>
-                {
-                    { OutcomeType.Home, market.Outcomes.FirstOrDefault(x => x.Name == item.OddsApiEvent?.HomeTeam)!.Price},
-                    { OutcomeType.Away, market.Outcomes.FirstOrDefault(x => x.Name == item.OddsApiEvent?.AwayTeam)!.Price},
-                    { OutcomeType.Draw, market.Outcomes.FirstOrDefault(x => x.Name == "Draw")!.Price}
-                }.ToImmutableDictionary()
+                Home = market.Outcomes.FirstOrDefault(x => x.Name == item.OddsApiEvent?.HomeTeam)!.Price,
+                Away = market.Outcomes.FirstOrDefault(x => x.Name == item.OddsApiEvent?.AwayTeam)!.Price,
+                Draw = market.Outcomes.FirstOrDefault(x => x.Name == "Draw")!.Price
             };
+            
+            var bookmaker = new Bookmaker(b.Key, outcome);
             bookmakers.Add(bookmaker);
         }
         return bookmakers;

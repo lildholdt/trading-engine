@@ -1,6 +1,6 @@
 using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.Events.ActorStopped;
+namespace TradingEngine.Domain.StopActor;
 
 /// <summary>
 /// Event published when a sport event actor has stopped.

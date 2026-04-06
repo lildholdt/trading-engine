@@ -2,7 +2,7 @@
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Registry;
 
-namespace TradingEngine.Domain.Events.OddsUpdated;
+namespace TradingEngine.Domain.UpdateOdds;
 
 /// <summary>
 /// Handles odds updates and evaluates order placement opportunities.
@@ -42,9 +42,9 @@ public class OrderPlacementHandler(
         var polymarketHomeOutcome = polymarketEvent?.MoneyLineMarkets.Get(item.HomeTeam)?.Outcome;
         var polymarketAwayOutcome = polymarketEvent?.MoneyLineMarkets.Get(item.AwayTeam)?.Outcome;
         
-        var averageHome = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Home)) / @event.Odds.Count, 2);
-        var averageAway = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Away)) / @event.Odds.Count, 2);
-        var averageDraw = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Draw)) / @event.Odds.Count, 2);
+        var averageHome = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Home)) / @event.Odds.Count, 2);
+        var averageAway = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Away)) / @event.Odds.Count, 2);
+        var averageDraw = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Draw)) / @event.Odds.Count, 2);
         
         // TODO: Add logic to call order placement API in Polymarket
         

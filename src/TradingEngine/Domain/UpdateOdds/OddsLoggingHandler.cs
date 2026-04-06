@@ -2,7 +2,7 @@
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Registry;
 
-namespace TradingEngine.Domain.Events.OddsUpdated;
+namespace TradingEngine.Domain.UpdateOdds;
 
 /// <summary>
 /// Handles odds updates by enriching data and appending odds snapshots to the configured writer.
@@ -38,9 +38,9 @@ public class OddsLoggingHandler(
         var awayPrice = awayMarket?.Outcome.Price;
         var drawPrice = drawMarket?.Outcome.Price;
 
-        var averageHome = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Home)) / @event.Odds.Count, 2);
-        var averageAway = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Away)) / @event.Odds.Count, 2);
-        var averageDraw = Math.Round(@event.Odds.Sum(x => x.TrueOdds(OutcomeType.Draw)) / @event.Odds.Count, 2);
+        var averageHome = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Home)) / @event.Odds.Count, 2);
+        var averageAway = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Away)) / @event.Odds.Count, 2);
+        var averageDraw = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Draw)) / @event.Odds.Count, 2);
         
         var records = @event.Odds.Select(record => new OddsRecord
         {
@@ -51,12 +51,12 @@ public class OddsLoggingHandler(
             StartTime = item.StartTime,
             SnapshotTime = DateTime.UtcNow,
             HoursBefore = (int)(item.StartTime - DateTime.UtcNow).TotalHours,
-            OddsHome = record.Outcome(OutcomeType.Home),
-            OddsDraw = record.Outcome(OutcomeType.Draw),
-            OddsAway = record.Outcome(OutcomeType.Away),
-            TrueOddsHome = record.TrueOdds(OutcomeType.Home),
-            TrueOddsDraw = record.TrueOdds(OutcomeType.Draw),
-            TrueOddsAway = record.TrueOdds(OutcomeType.Away),
+            OddsHome = record.Outcome.Home,
+            OddsDraw = record.Outcome.Draw,
+            OddsAway = record.Outcome.Away,
+            TrueOddsHome = record.Outcome.CalculateTrueOdds(OutcomeType.Home),
+            TrueOddsDraw = record.Outcome.CalculateTrueOdds(OutcomeType.Draw),
+            TrueOddsAway = record.Outcome.CalculateTrueOdds(OutcomeType.Away),
             TrueOddsAverageHome = averageHome,
             TrueOddsAverageDraw = averageDraw,
             TrueOddsAverageAway = averageAway,

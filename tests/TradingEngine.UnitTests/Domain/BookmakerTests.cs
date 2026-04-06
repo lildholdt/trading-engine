@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using TradingEngine.Domain;
+﻿using TradingEngine.Domain;
 using Xunit;
 
 namespace TradingEngine.UnitTests.Domain
@@ -7,126 +6,81 @@ namespace TradingEngine.UnitTests.Domain
     public class BookmakerTests
     {
         [Fact]
-        public void TrueOdds_SingleOutcomeType_CalculatesCorrectly()
+        public void CalculateTrueOdds_SingleOutcomeType_CalculatesCorrectly()
         {
-            // Arrange
-            var outcomes = new Dictionary<OutcomeType, decimal>
+            var outcome = new Outcome
             {
-                { OutcomeType.Home, 3.58m },
-                { OutcomeType.Away, 2.25m },
-                { OutcomeType.Draw, 2.92m }
-            }.ToImmutableDictionary();
-            
-            var bookmaker = new Bookmaker
-            {
-                Name = "TestBookmaker",
-                LastUpdate = DateTime.UtcNow,
-                Outcomes = outcomes
+                Home = 3.58m,
+                Away = 2.25m,
+                Draw = 2.92m
             };
 
-            // Act
-            var trueOddsHome = bookmaker.TrueOdds(OutcomeType.Home);
+            var trueOddsHome = outcome.CalculateTrueOdds(OutcomeType.Home);
 
-            // Assert
-            Assert.Equal(3.89m, trueOddsHome);
+            Assert.Equal(3.36m, trueOddsHome);
         }
 
         [Fact]
-        public void TrueOdds_AllOutcomes_CalculatesCorrectly()
+        public void CalculateTrueOdds_AllOutcomes_CalculatesCorrectly()
         {
-            // Arrange
-            var outcomes = new Dictionary<OutcomeType, decimal>
+            var outcome = new Outcome
             {
-                { OutcomeType.Home, 3.58m },
-                { OutcomeType.Away, 2.25m },
-                { OutcomeType.Draw, 2.92m }
-            }.ToImmutableDictionary();
-            
-            var bookmaker = new Bookmaker
-            {
-                Name = "TestBookmaker",
-                LastUpdate = DateTime.UtcNow,
-                Outcomes = outcomes
+                Home = 3.58m,
+                Away = 2.25m,
+                Draw = 2.92m
             };
 
-            // Act
-            var trueOdds = bookmaker.TrueOdds();
+            var trueOdds = new Dictionary<OutcomeType, decimal>
+            {
+                { OutcomeType.Home, outcome.CalculateTrueOdds(OutcomeType.Home) },
+                { OutcomeType.Away, outcome.CalculateTrueOdds(OutcomeType.Away) },
+                { OutcomeType.Draw, outcome.CalculateTrueOdds(OutcomeType.Draw) }
+            };
 
-            // Calculate expected True Odds for all outcomes
             var expected = new Dictionary<OutcomeType, decimal>
             {
-                { OutcomeType.Home, 3.89m },
-                { OutcomeType.Away, 2.37m },
-                { OutcomeType.Draw, 3.12m }
+                { OutcomeType.Home, 3.36m },
+                { OutcomeType.Away, 2.11m },
+                { OutcomeType.Draw, 2.74m }
             };
 
-            // Assert
             Assert.Equal(expected, trueOdds);
         }
         
         [Fact]
-        public void IdenticalBookmakerObjects_ShouldBeEqual()
+        public void HasOutcomesChanged_WithSameData_ReturnsFalse()
         {
-            // Arrange: Create two identical Bookmaker objects
-            var outcomes = new Dictionary<OutcomeType, decimal>
+            var outcome = new Outcome
             {
-                { OutcomeType.Home, 2.5m },
-                { OutcomeType.Away, 3.0m },
-                { OutcomeType.Draw, 3.5m }
-            }.ToImmutableDictionary();
-
-            var bookmaker1 = new Bookmaker
-            {
-                Name = "TestBookmaker",
-                LastUpdate = new DateTime(2023, 1, 1),
-                Outcomes = outcomes
+                Home = 2.5m,
+                Away = 3.0m,
+                Draw = 3.5m
             };
 
-            var bookmaker2 = new Bookmaker
-            {
-                Name = "TestBookmaker",
-                LastUpdate = new DateTime(2023, 1, 1),
-                Outcomes = outcomes // Create a separate instance of the dictionary
-            };
+            var bookmaker1 = new Bookmaker("TestBookmaker", outcome);
+            var bookmaker2 = new Bookmaker("TestBookmaker", outcome);
 
-            // Act and Assert: Verify that the two objects are equal
-            Assert.Equal(bookmaker1, bookmaker2); // Uses ValueObject equality
+            Assert.False(bookmaker1.HasOutcomesChanged(bookmaker2));
         }
 
         [Fact]
-        public void DifferentBookmakerObjects_ShouldNotBeEqual()
+        public void HasOutcomesChanged_WithDifferentOutcomes_ReturnsTrue()
         {
-            // Arrange: Create two different Bookmaker objects
-            var outcomes1 = new Dictionary<OutcomeType, decimal>
+            var bookmaker1 = new Bookmaker("TestBookmaker", new Outcome
             {
-                { OutcomeType.Home, 2.5m },
-                { OutcomeType.Away, 3.0m },
-                { OutcomeType.Draw, 3.5m }
-            }.ToImmutableDictionary();
+                Home = 2.5m,
+                Away = 3.0m,
+                Draw = 3.5m
+            });
 
-            var outcomes2 = new Dictionary<OutcomeType, decimal>
+            var bookmaker2 = new Bookmaker("TestBookmaker", new Outcome
             {
-                { OutcomeType.Home, 2.6m }, // Different value for Home outcome
-                { OutcomeType.Away, 3.0m },
-                { OutcomeType.Draw, 3.5m }
-            }.ToImmutableDictionary();
+                Home = 2.6m,
+                Away = 3.0m,
+                Draw = 3.5m
+            });
 
-            var bookmaker1 = new Bookmaker
-            {
-                Name = "TestBookmaker",
-                LastUpdate = new DateTime(2023, 1, 1),
-                Outcomes = outcomes1
-            };
-
-            var bookmaker2 = new Bookmaker
-            {
-                Name = "TestBookmaker",
-                LastUpdate = new DateTime(2023, 1, 1),
-                Outcomes = outcomes2
-            };
-
-            // Act and Assert: Verify that the two objects are not equal
-            Assert.NotEqual(bookmaker1, bookmaker2); // Uses ValueObject inequality
+            Assert.True(bookmaker1.HasOutcomesChanged(bookmaker2));
         }
     }
 }

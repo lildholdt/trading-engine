@@ -1,9 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Channels;
-using TradingEngine.Domain.Events.ActorCreated;
-using TradingEngine.Domain.Events.ActorStopped;
-using TradingEngine.Domain.Events.OddsUpdated;
-using TradingEngine.Domain.Messages;
+using TradingEngine.Domain.CreateActor;
+using TradingEngine.Domain.StopActor;
+using TradingEngine.Domain.UpdateOdds;
 using TradingEngine.Infrastructure.EventBus;
 
 namespace TradingEngine.Domain;

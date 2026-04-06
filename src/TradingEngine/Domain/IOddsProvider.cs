@@ -12,7 +12,7 @@ public interface IOddsProvider
     /// </summary>
     /// <param name="id">The unique identifier of the sport event.</param>
     /// <returns>
-    /// A task that resolves to an <see cref="Odds"/> object representing the odds for the specified sport event,
+    /// A task that resolves to an <see cref="Outcome"/> object representing the odds for the specified sport event,
     /// or <c>null</c> if no odds are available for the provided event ID.
     /// </returns>
     public Task<IReadOnlyCollection<Bookmaker>> GetOdds(SportEventId id);

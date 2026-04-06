@@ -1,6 +1,6 @@
 ﻿using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.Events.OddsUpdated;
+namespace TradingEngine.Domain.UpdateOdds;
 
 /// <summary>
 /// Event published when odds for a sport event have changed.
