@@ -5,7 +5,7 @@ namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api")]
-public class EventsController(ISportEventActorSystem actorSystem) : ControllerBase
+public class SportEventsController(ISportEventActorSystem actorSystem) : ControllerBase
 {
     [HttpGet("events")]
     public IActionResult GetEvents()

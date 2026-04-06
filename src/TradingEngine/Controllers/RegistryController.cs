@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TradingEngine.Domain;
 using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Controllers;
