@@ -52,7 +52,6 @@ public static class Application
         
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
-        builder.Services.AddSingleton<IMySqlConnectionFactory, MySqlConnectionFactory>();
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
