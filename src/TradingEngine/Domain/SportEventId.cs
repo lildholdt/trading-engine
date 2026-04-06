@@ -1,10 +1,12 @@
-﻿using TradingEngine.Infrastructure;
+﻿using System.Text.Json.Serialization;
+using TradingEngine.Infrastructure;
 
 namespace TradingEngine.Domain;
 
+[method: JsonConstructor]
 public class SportEventId(Guid value) : ValueObject
 {
-    private Guid Value { get; } = value;
+    public Guid Value { get; } = value;
 
     public static SportEventId New => new(Guid.NewGuid());
 

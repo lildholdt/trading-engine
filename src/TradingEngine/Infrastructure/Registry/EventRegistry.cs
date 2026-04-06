@@ -74,22 +74,8 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         var uncorrelatedItems = _events.Values.Where(e => e.OddsApiEvent == null);
         foreach (var item in uncorrelatedItems)
         {
-            // Normalization and team similarity
-            var direct =  Math.Round((teamMatcher.TeamScore(odds.HomeTeam, item.HomeTeam) + 
-                                      teamMatcher.TeamScore(odds.AwayTeam, item.AwayTeam)) / 2, 2);
-            
-            var swapped = Math.Round((teamMatcher.TeamScore(odds.HomeTeam, item.AwayTeam) + 
-                                      teamMatcher.TeamScore(odds.AwayTeam, item.HomeTeam)) / 2, 2);
-            
-            var best = Math.Max(swapped, direct);
-            if (!(best > 0.9)) continue;
-            
-            // Time tolerance
-            var timeDifference = Math.Abs((odds.CommenceTime - item.StartTime).TotalMinutes);
-            if (timeDifference > 60) continue;
-            
-            // Attach the OddsApi event
-            item.OddsApiEvent = odds;
+            var attached = item.AttachOddsApiEvent(teamMatcher, odds);
+            if (!attached) continue;
             
             // Log details about the correlation
             logger.LogInformation("Registry item correlated. Id={Id}, " +
@@ -101,9 +87,9 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
                                   item.Id,
                                   item.HomeTeam,
                                   item.AwayTeam,
-                                  item.OddsApiEvent.HomeTeam,
-                                  item.OddsApiEvent.AwayTeam,
-                                  best);
+                                  item.OddsApiEvent?.HomeTeam,
+                                  item.OddsApiEvent?.AwayTeam,
+                                  item.CorrelationScore);
             
             // Create an event actor
             await eventBus.PublishAsync(new RegistryItemCorrelatedEvent {Item =  item});

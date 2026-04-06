@@ -34,7 +34,6 @@ public interface IEventRegistry
     /// <param name="state">The new active state to apply.</param>
     public void UpdateConfiguration(int id, bool state);
     
-    
     /// <summary>
     /// Registers a new PolyMarket event into the event registry.
     /// </summary>
