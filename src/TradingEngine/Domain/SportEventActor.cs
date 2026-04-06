@@ -83,12 +83,6 @@ public sealed class SportEventActor
         // Add tasks to the running task list
         _runningTasks.Add(pollingTask);
         _runningTasks.Add(mailboxTask);
-
-        // Signal that actor has been created
-        _eventBus.PublishAsync(new ActorCreatedEvent
-        {
-            State = GetState()
-        }, ct);
         
         _logger.LogInformation("Actor started for EventId: {EventId}", Id);
     }
@@ -242,10 +236,7 @@ public sealed class SportEventActor
         await _cts.CancelAsync();
 
         // Notify that actor has been stopped
-        await _eventBus.PublishAsync(new ActorStoppedEvent
-        {
-            Id = Id
-        });
+        await _eventBus.PublishAsync(new ActorStoppedEvent { Id = Id });
         
         _logger.LogInformation("Actor stopped for EventId: {EventId}", Id);
     }
