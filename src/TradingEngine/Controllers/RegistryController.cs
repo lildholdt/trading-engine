@@ -10,7 +10,7 @@ public class RegistryController(IEventRegistry eventRegistry) : ControllerBase
 {
     private record RegistryItemModel(Guid Id, string PolymarketHome, string PolymarketAway, string? OddsApiHome, string?  OddsApiAway, double? CorrelationScore);
 
-    private record RegistryConfigurationItemModel(int Id, string Name);
+    private record RegistryConfigurationItemModel(int Id, string Name, bool Active);
     
     [HttpGet("registry")]
     public IActionResult GetRegistryItems()
@@ -31,7 +31,7 @@ public class RegistryController(IEventRegistry eventRegistry) : ControllerBase
     public IActionResult GetRegistryConfiguration()
     {
         var config = eventRegistry.GetConfiguration();
-        var models = config.Select(x => new RegistryConfigurationItemModel(x.Id, x.Name));
+        var models = config.Select(x => new RegistryConfigurationItemModel(x.Id, x.Name, x.Active));
         return Ok(models);
     }
     
