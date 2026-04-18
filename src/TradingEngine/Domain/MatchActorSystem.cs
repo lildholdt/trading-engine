@@ -4,28 +4,28 @@ using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Domain;
 
-public sealed class SportEventActorSystem(
+public sealed class MatchActorSystem(
     IEventBus eventBus, 
     IOddsProvider oddsProvider,
     IServiceProvider serviceProvider,
-    ILogger<SportEventActorSystem> logger) : ISportEventActorSystem
+    ILogger<MatchActorSystem> logger) : IMatchActorSystem
 {
-    private readonly ConcurrentDictionary<SportEventId, SportEventActor> _actors = new();
+    private readonly ConcurrentDictionary<MatchId, MatchActor> _actors = new();
 
-    public ValueTask SendAsync(ISportEventMessage message)
+    public ValueTask SendAsync(IMatchMessage message)
     {
-        _actors.TryGetValue(message.SportEventId, out var actor);
+        _actors.TryGetValue(message.MatchId, out var actor);
         return actor?.SendMessageAsync(message) ?? ValueTask.CompletedTask;
     }
 
     public void CreateAsync(EventRegistryItem entry)
     {
-        var actor = new SportEventActor(entry.Id, entry.HomeTeam, entry.AwayTeam, entry.StartTime, eventBus, oddsProvider, serviceProvider);
+        var actor = new MatchActor(entry.Id, entry.HomeTeam, entry.AwayTeam, entry.StartTime, eventBus, oddsProvider, serviceProvider);
         actor.StartAsync();
         _actors.GetOrAdd(entry.Id, actor);
     }
 
-    public async Task StopAsync(SportEventId id)
+    public async Task StopAsync(MatchId id)
     {
         _actors.TryGetValue(id, out var actor);
         if (actor == null)
@@ -38,13 +38,13 @@ public sealed class SportEventActorSystem(
         _actors.TryRemove(id, out _);
     }
 
-    public IReadOnlyCollection<SportEventActorState> GetStates()
+    public IReadOnlyCollection<MatchActorState> GetStates()
     {
         var sportEventActorStates = _actors.Values.Select(actor => actor.GetState()).ToArray();
         return sportEventActorStates;
     }
 
-    public SportEventActorState GetState(SportEventId id)
+    public MatchActorState GetState(MatchId id)
     {
         if (_actors.TryGetValue(id, out var actor))
         {

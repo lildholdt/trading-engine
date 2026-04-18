@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using TradingEngine.Clients.OddsApi;
+﻿using TradingEngine.Clients.OddsApi;
 using TradingEngine.Domain;
 using TradingEngine.Infrastructure.Registry;
 
@@ -15,7 +14,7 @@ public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOdd
         "pinnacle"
     ];
     
-    public async Task<IReadOnlyCollection<Bookmaker>> GetOdds(SportEventId id)
+    public async Task<IReadOnlyCollection<Bookmaker>> GetOdds(MatchId id)
     {
         var item = registry.Get(id);
         if (item?.OddsApiEvent == null) return [];

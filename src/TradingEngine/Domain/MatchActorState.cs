@@ -1,6 +1,6 @@
 ﻿namespace TradingEngine.Domain;
 
-public class SportEventActorState
+public class MatchActorState
 {
     public required string Id { get; init; }
     public required string HomeTeam { get; init; }

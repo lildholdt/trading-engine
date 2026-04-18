@@ -5,30 +5,30 @@ namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api")]
-public class SportEventsController(ISportEventActorSystem actorSystem) : ControllerBase
+public class MatchController(IMatchActorSystem actorSystem) : ControllerBase
 {
-    [HttpGet("events")]
-    public IActionResult GetEvents()
+    [HttpGet("matches")]
+    public IActionResult GetMatches()
     {
         var events = actorSystem.GetStates();
         return Ok(events);
     }
     
-    [HttpGet("events/{id}")]
+    [HttpGet("matches/{id}")]
     public IActionResult GetEvent(Guid id)
     {
         var events = actorSystem.GetState(id);
         return Ok(events);
     }
     
-    [HttpDelete("events/{id}")]
-    public IActionResult StopEvent(Guid id)
+    [HttpDelete("matches/{id}")]
+    public IActionResult StopMatch(Guid id)
     {
         actorSystem.StopAsync(id);
         return Ok();
     }
     
-    [HttpPost("events/reset")]
+    [HttpPost("matches/reset")]
     public IActionResult Reset()
     {
         actorSystem.Reset();

@@ -1,12 +1,12 @@
 ﻿using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Registry;
 
-namespace TradingEngine.Domain.CreateActor;
+namespace TradingEngine.Domain.CreateMatch;
 
 /// <summary>
 /// Handles registry correlation events by creating a sport event actor for the correlated item.
 /// </summary>
-public class ActorCreationHandler(ISportEventActorSystem actorSystem) :  IEventHandler<RegistryItemCorrelatedEvent>
+public class MatchCreationHandler(IMatchActorSystem actorSystem) :  IEventHandler<RegistryItemCorrelatedEvent>
 {
     /// <summary>
     /// Creates a sport event actor using the correlated registry item in the incoming event.

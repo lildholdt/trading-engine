@@ -4,8 +4,8 @@ using TradingEngine.Clients;
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.Polymarket;
 using TradingEngine.Domain;
-using TradingEngine.Domain.CreateActor;
-using TradingEngine.Domain.StopActor;
+using TradingEngine.Domain.CreateMatch;
+using TradingEngine.Domain.StopMatch;
 using TradingEngine.Domain.UpdateOdds;
 using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
@@ -37,8 +37,8 @@ public static class Application
         builder.Services.AddHostedService<EventBusWorker>();
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
-        builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  ActorCreationHandler>();
-        builder.Services.AddSingleton<IEventHandler<ActorStoppedEvent>, RegistryCleanupHandler>();
+        builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  MatchCreationHandler>();
+        builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>, RegistryCleanupHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OddsLoggingHandler>();
         
@@ -48,7 +48,7 @@ public static class Application
         builder.Services.AddSingleton<ICommandBus>(sp => sp.GetRequiredService<CommandBus>());
         
         // Register actor system
-        builder.Services.AddSingleton<ISportEventActorSystem,  SportEventActorSystem>();
+        builder.Services.AddSingleton<IMatchActorSystem,  MatchActorSystem>();
         
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));

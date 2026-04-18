@@ -13,7 +13,7 @@ public interface IEventRegistry
     /// Retrieves a sport event by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the sport event to retrieve.</param>
-    public EventRegistryItem? Get(SportEventId id);
+    public EventRegistryItem? Get(MatchId id);
 
     /// <summary>
     /// Retrieves all events currently stored in the registry.
@@ -50,7 +50,7 @@ public interface IEventRegistry
     /// Removes a sport event from the registry by its identifier.
     /// </summary>
     /// <param name="id">The identifier of the event to remove.</param>
-    public void Remove(SportEventId id);
+    public void Remove(MatchId id);
 
     /// <summary>
     /// Clears all events from the registry.

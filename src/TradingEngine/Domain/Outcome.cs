@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using System.Text.Json.Serialization;
-using TradingEngine.Infrastructure;
+﻿using TradingEngine.Infrastructure;
 
 namespace TradingEngine.Domain;
 

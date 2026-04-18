@@ -1,14 +1,14 @@
 using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.StartActor;
+namespace TradingEngine.Domain.ActivateMatch;
 
 /// <summary>
 /// Event published when a sport event actor has started processing.
 /// </summary>
-public class ActorStartedEvent : IEvent
+public class MatchActivated : IEvent
 {
     /// <summary>
     /// Gets the identifier of the actor that started.
     /// </summary>
-    public required SportEventId Id { get; init; }
+    public required MatchId Id { get; init; }
 }

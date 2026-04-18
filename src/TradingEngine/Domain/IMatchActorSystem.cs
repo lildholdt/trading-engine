@@ -6,7 +6,7 @@ namespace TradingEngine.Domain;
 /// Defines the contract for a system that manages sport event actors. 
 /// The system is responsible for creating, interacting with, and stopping actors that represent individual sport events.
 /// </summary>
-public interface ISportEventActorSystem
+public interface IMatchActorSystem
 {
     /// <summary>
     /// Sends a message to the appropriate actor for processing. 
@@ -14,7 +14,7 @@ public interface ISportEventActorSystem
     /// </summary>
     /// <param name="message">The message to be sent to a sport event actor.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous operation.</returns>
-    public ValueTask SendAsync(ISportEventMessage message);
+    public ValueTask SendAsync(IMatchMessage message);
 
     /// <summary>
     /// Creates a new sport event actor for the specified event registry entry. 
@@ -29,16 +29,16 @@ public interface ISportEventActorSystem
     /// </summary>
     /// <param name="id">The unique identifier of the sport event whose actor should be stopped.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous operation of stopping the actor.</returns>
-    Task StopAsync(SportEventId id);
+    Task StopAsync(MatchId id);
     
     /// <summary>
     /// Retrieves a read-only collection of the current states of all sport event actors managed by the system.
     /// Each state contains information such as the event ID, participating teams, start time, and current odds.
     /// </summary>
-    /// <returns>A read-only collection of <see cref="SportEventActorState"/> objects representing the state of each sport event actor.</returns>
-    IReadOnlyCollection<SportEventActorState> GetStates();
+    /// <returns>A read-only collection of <see cref="MatchActorState"/> objects representing the state of each sport event actor.</returns>
+    IReadOnlyCollection<MatchActorState> GetStates();
     
-    SportEventActorState GetState(SportEventId id);
+    MatchActorState GetState(MatchId id);
 
     /// <summary>
     /// Resets the state of the system, clearing all existing sport event actors and their associated states.

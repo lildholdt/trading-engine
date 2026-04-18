@@ -1,6 +1,4 @@
-﻿using TradingEngine.Clients.OddsApi.Models;
-
-namespace TradingEngine.Domain;
+﻿namespace TradingEngine.Domain;
 
 /// <summary>
 /// Defines the contract for a provider responsible for retrieving odds associated with a specific sport event.
@@ -15,5 +13,5 @@ public interface IOddsProvider
     /// A task that resolves to an <see cref="Outcome"/> object representing the odds for the specified sport event,
     /// or <c>null</c> if no odds are available for the provided event ID.
     /// </returns>
-    public Task<IReadOnlyCollection<Bookmaker>> GetOdds(SportEventId id);
+    public Task<IReadOnlyCollection<Bookmaker>> GetOdds(MatchId id);
 }

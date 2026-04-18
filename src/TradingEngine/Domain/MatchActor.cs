@@ -1,22 +1,21 @@
 ﻿using System.Collections.ObjectModel;
 using System.Threading.Channels;
-using TradingEngine.Domain.CreateActor;
-using TradingEngine.Domain.StopActor;
+using TradingEngine.Domain.StopMatch;
 using TradingEngine.Domain.UpdateOdds;
 using TradingEngine.Infrastructure.EventBus;
 
 namespace TradingEngine.Domain;
 
-public sealed class SportEventActor
+public sealed class MatchActor
 {
     // Dependencies
-    private readonly Channel<ISportEventMessage> _mailbox;
+    private readonly Channel<IMatchMessage> _mailbox;
     private readonly IEventBus _eventBus;
     private readonly IOddsProvider _oddsProvider;
-    private readonly ILogger<SportEventActor> _logger;
+    private readonly ILogger<MatchActor> _logger;
 
     // State
-    private SportEventId Id { get; }
+    private MatchId Id { get; }
     private string HomeTeam { get; }
     private string AwayTeam { get; }
     private DateTime StartTime { get; }
@@ -26,8 +25,8 @@ public sealed class SportEventActor
     private readonly List<Task> _runningTasks = [];
     private bool Started => _runningTasks.Count != 0;
     
-    public SportEventActor(
-        SportEventId id,
+    public MatchActor(
+        MatchId id,
         string homeTeam,
         string awayTeam,
         DateTime startTime,
@@ -41,9 +40,9 @@ public sealed class SportEventActor
         StartTime = startTime;
         _eventBus = eventBus;
         _oddsProvider = oddsProvider;
-        _logger = serviceProvider.GetRequiredService<ILogger<SportEventActor>>();
+        _logger = serviceProvider.GetRequiredService<ILogger<MatchActor>>();
         
-        _mailbox = Channel.CreateUnbounded<ISportEventMessage>(
+        _mailbox = Channel.CreateUnbounded<IMatchMessage>(
             new UnboundedChannelOptions
             {
                 SingleReader = true,
@@ -56,7 +55,7 @@ public sealed class SportEventActor
         );
     }
 
-    public SportEventActorState GetState() => new() {
+    public MatchActorState GetState() => new() {
         Id = Id,
         HomeTeam = HomeTeam,
         AwayTeam = AwayTeam,
@@ -64,7 +63,7 @@ public sealed class SportEventActor
         Odds = new ReadOnlyCollection<Bookmaker>(Odds)
     };
     
-    public ValueTask SendMessageAsync(ISportEventMessage message)
+    public ValueTask SendMessageAsync(IMatchMessage message)
         => !Started ? throw new InvalidOperationException("Actor not started") : _mailbox.Writer.WriteAsync(message);
     
     public void StartAsync()
@@ -122,6 +121,20 @@ public sealed class SportEventActor
 
         while (!ct.IsCancellationRequested)
         {
+            // Check if the match has ended
+            var timeUntilStart = StartTime - DateTime.UtcNow;
+            if (timeUntilStart.TotalMilliseconds < 0) break;
+                
+            // Calculate odds polling interval
+            var delayMilliseconds = timeUntilStart.TotalDays switch
+            {
+                > 3 => TimeSpan.FromMinutes(5).TotalMilliseconds, // More than 3 days: 5 minutes
+                > 2 => TimeSpan.FromMinutes(3).TotalMilliseconds, // 2-3 days: 3 minutes
+                > 1 => TimeSpan.FromMinutes(2).TotalMilliseconds, // 1-2 days: 2 minutes
+                _ when timeUntilStart.TotalHours > 6 => TimeSpan.FromMinutes(1).TotalMilliseconds, // 6-24 hours: 1 minute
+                _ => TimeSpan.FromSeconds(5).TotalMilliseconds // Less than 6 hours: 5 seconds
+            };
+            
             try
             {
                 // Get new odds via the provider
@@ -130,23 +143,9 @@ public sealed class SportEventActor
                 
                 await SendMessageAsync(new UpdateOddsMessage
                 {
-                    SportEventId = Id,
+                    MatchId = Id,
                     Bookmakers = odds
                 });
-                
-                // Check if the match has ended
-                var timeUntilStart = StartTime - DateTime.UtcNow;
-                if (timeUntilStart.TotalMilliseconds < 0) break;
-                
-                // Calculate odds polling interval
-                var delayMilliseconds = timeUntilStart.TotalDays switch
-                {
-                    > 3 => TimeSpan.FromMinutes(5).TotalMilliseconds, // More than 3 days: 5 minutes
-                    > 2 => TimeSpan.FromMinutes(3).TotalMilliseconds, // 2-3 days: 3 minutes
-                    > 1 => TimeSpan.FromMinutes(2).TotalMilliseconds, // 1-2 days: 2 minutes
-                    _ when timeUntilStart.TotalHours > 6 => TimeSpan.FromMinutes(1).TotalMilliseconds, // 6-24 hours: 1 minute
-                    _ => TimeSpan.FromSeconds(5).TotalMilliseconds // Less than 6 hours: 5 seconds
-                };
                 
                 _logger.LogDebug("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", Id, delayMilliseconds);
             
@@ -162,6 +161,8 @@ public sealed class SportEventActor
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while polling odds for EventId: {EventId}", Id);
+                // Use Task.Delay with cancellation support
+                await Task.Delay((int)delayMilliseconds, ct);
             }
         }
     }
@@ -236,7 +237,7 @@ public sealed class SportEventActor
         await _cts.CancelAsync();
 
         // Notify that actor has been stopped
-        await _eventBus.PublishAsync(new ActorStoppedEvent { Id = Id });
+        await _eventBus.PublishAsync(new MatchStoppedEvent { Id = Id });
         
         _logger.LogInformation("Actor stopped for EventId: {EventId}", Id);
     }

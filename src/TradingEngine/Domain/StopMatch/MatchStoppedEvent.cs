@@ -1,14 +1,14 @@
 using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.StopActor;
+namespace TradingEngine.Domain.StopMatch;
 
 /// <summary>
 /// Event published when a sport event actor has stopped.
 /// </summary>
-public class ActorStoppedEvent : IEvent
+public class MatchStoppedEvent : IEvent
 {
     /// <summary>
     /// Gets the identifier of the actor that stopped.
     /// </summary>
-    public required SportEventId Id { get; init; }
+    public required MatchId Id { get; init; }
 }

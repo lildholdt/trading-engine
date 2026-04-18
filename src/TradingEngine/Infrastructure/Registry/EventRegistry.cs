@@ -10,10 +10,10 @@ namespace TradingEngine.Infrastructure.Registry;
 
 public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus, ILogger<InMemoryEventRegistry> logger) : IEventRegistry
 {
-    private readonly ConcurrentDictionary<SportEventId, EventRegistryItem> _events = new();
+    private readonly ConcurrentDictionary<MatchId, EventRegistryItem> _events = new();
     private readonly EventRegistryConfiguration _configuration = new();
     
-    public EventRegistryItem? Get(SportEventId id)
+    public EventRegistryItem? Get(MatchId id)
     {
         return _events.TryGetValue(id, out var item) ? item : null;
     }
@@ -58,7 +58,7 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         // Create registry item
         var registryItem = new EventRegistryItem
         {
-            Id = SportEventId.New,
+            Id = MatchId.New,
             HomeTeam = home,
             AwayTeam = away,
             StartTime = @event.StartTime,
@@ -97,7 +97,7 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         }
     }
 
-    public void Remove(SportEventId id)
+    public void Remove(MatchId id)
     {
         _events.TryRemove(id, out _);
         logger.LogInformation("Removed event {Id}. from registry", id);

@@ -1,11 +1,11 @@
 ﻿namespace TradingEngine.Domain.UpdateOdds;
 
-public class UpdateOddsMessage : ISportEventMessage
+public class UpdateOddsMessage : IMatchMessage
 {
-    public required SportEventId SportEventId { get; init; }
+    public required MatchId MatchId { get; init; }
     public required IReadOnlyCollection<Bookmaker> Bookmakers { get; init; }
     
-    public async Task ApplyAsync(SportEventActor actor)
+    public async Task ApplyAsync(MatchActor actor)
     {
         await actor.ApplyOddsUpdate(Bookmakers);
     }

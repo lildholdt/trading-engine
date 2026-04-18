@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Serialization;
-using TradingEngine.Clients.OddsApi.Models;
+﻿using TradingEngine.Clients.OddsApi.Models;
 using TradingEngine.Clients.Polymarket.Models;
 using TradingEngine.Domain;
 using TradingEngine.Utils;
@@ -8,7 +7,7 @@ namespace TradingEngine.Infrastructure.Registry;
 
 public class EventRegistryItem
 {
-    public required SportEventId Id { get; init; }
+    public required MatchId Id { get; init; }
     public required string HomeTeam { get; init; }
     public required string AwayTeam { get; init; }
     public required DateTime StartTime { get; init; }
