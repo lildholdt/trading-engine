@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Options;
 using TradingEngine.Clients.OddsApi;
-using TradingEngine.Infrastructure.Registry;
+using TradingEngine.Domain.Registry;
 
 namespace TradingEngine.Services;
 
 public class OddsApiSyncService(
     IOddsApiClient oddsApiClient,
-    IMatchRegistry matchRegistry,
+    IRegistry registry,
     IOptions<ApplicationSettings> options,
     ILogger<OddsApiSyncService> logger) : BackgroundService
 {
@@ -18,13 +18,13 @@ public class OddsApiSyncService(
         {
             try
             {
-                var items = matchRegistry.GetConfiguration().Where(x => x.Active);
+                var items = registry.GetConfiguration().Where(x => x.Active);
                 foreach (var item in items)
                 {
                     var events = await oddsApiClient.GetOdds(item.OddsApiSportsType);
                     foreach (var @event in events)
                     {  
-                        await matchRegistry.AttachOddsApi(@event);
+                        await registry.AttachOddsApi(@event);
                     }    
                 }
             }

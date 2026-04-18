@@ -1,11 +1,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
-using TradingEngine.Domain;
-using TradingEngine.Domain.UpdateOdds;
+using TradingEngine.Domain.Matches;
+using TradingEngine.Domain.Matches.UpdateOdds;
 using TradingEngine.Infrastructure.EventBus;
 using Xunit;
-using Bookmaker = TradingEngine.Domain.Bookmaker;
+using Bookmaker = TradingEngine.Domain.Matches.Bookmaker;
+using Match = TradingEngine.Domain.Matches.Match;
 
 namespace TradingEngine.UnitTests.Domain;
 
@@ -20,11 +21,16 @@ public class MatchActorTests
         var services = new ServiceCollection();
         services.AddSingleton(_logger.Object);
 
+        var match = new Match
+        {
+            Id = MatchId.New,
+            HomeTeam = "Team1",
+            AwayTeam = "Team2",
+            StartTime = startTime ?? DateTime.UtcNow.AddHours(2)
+        };
+
         return new MatchActor(
-            MatchId.New,
-            "Team1",
-            "Team2",
-            startTime ?? DateTime.UtcNow.AddHours(2),
+            match,
             _eventBus.Object,
             _oddsProvider.Object,
             services.BuildServiceProvider());

@@ -1,20 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TradingEngine.Infrastructure.Registry;
+using TradingEngine.Domain.Registry;
 
 namespace TradingEngine.Controllers;
 
 [ApiController]
-[Route("api")]
-public class RegistryController(IMatchRegistry matchRegistry) : ControllerBase
+[Route("api/registry")]
+public class RegistryController(IRegistry registry) : ControllerBase
 {
     private record RegistryItemModel(Guid Id, string PolymarketHome, string PolymarketAway, string? OddsApiHome, string?  OddsApiAway, double? CorrelationScore);
 
     private record RegistryConfigurationItemModel(int Id, string Name, bool Active);
     
-    [HttpGet("registry")]
+    [HttpGet]
     public IActionResult GetRegistryItems()
     {
-        var items = matchRegistry.GetAll();
+        var items = registry.GetAll();
         var models = items.Select(x => 
             new RegistryItemModel(
                 x.Id.Value, 
@@ -26,18 +26,18 @@ public class RegistryController(IMatchRegistry matchRegistry) : ControllerBase
         return Ok(models);
     }
     
-    [HttpGet("registry/configuration")]
+    [HttpGet("configuration")]
     public IActionResult GetRegistryConfiguration()
     {
-        var config = matchRegistry.GetConfiguration();
+        var config = registry.GetConfiguration();
         var models = config.Select(x => new RegistryConfigurationItemModel(x.Id, x.Name, x.Active));
         return Ok(models);
     }
     
-    [HttpPost("registry/configuration/{id}")]
+    [HttpPost("configuration/{id}")]
     public IActionResult UpdateRegistryConfiguration(int id, bool state)
     {
-        matchRegistry.UpdateConfiguration(id, state);
+        registry.UpdateConfiguration(id, state);
         return Ok();
     }
 }

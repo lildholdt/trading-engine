@@ -1,10 +1,10 @@
 ﻿using TradingEngine.Clients.OddsApi;
-using TradingEngine.Domain;
-using TradingEngine.Infrastructure.Registry;
+using TradingEngine.Domain.Matches;
+using TradingEngine.Domain.Registry;
 
 namespace TradingEngine.Services;
 
-public class OddsProvider(IOddsApiClient client, IMatchRegistry registry) : IOddsProvider
+public class OddsProvider(IOddsApiClient client, IRegistry registry) : IOddsProvider
 {
     private readonly IEnumerable<string> _bookmakers = [ 
         "betfair_ex_uk", 

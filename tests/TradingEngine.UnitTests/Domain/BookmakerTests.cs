@@ -1,4 +1,4 @@
-﻿using TradingEngine.Domain;
+﻿using TradingEngine.Domain.Matches;
 using Xunit;
 
 namespace TradingEngine.UnitTests.Domain

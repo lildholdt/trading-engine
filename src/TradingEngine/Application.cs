@@ -3,15 +3,15 @@ using Serilog;
 using TradingEngine.Clients;
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.Polymarket;
-using TradingEngine.Domain;
-using TradingEngine.Domain.CreateMatch;
-using TradingEngine.Domain.StopMatch;
-using TradingEngine.Domain.UpdateOdds;
+using TradingEngine.Domain.Matches;
+using TradingEngine.Domain.Matches.CreateMatch;
+using TradingEngine.Domain.Matches.StopMatch;
+using TradingEngine.Domain.Matches.UpdateOdds;
+using TradingEngine.Domain.Registry;
 using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
-using TradingEngine.Infrastructure.Registry;
 using TradingEngine.Services;
 using TradingEngine.Utils;
 
@@ -41,6 +41,7 @@ public static class Application
         builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>, RegistryCleanupHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OddsLoggingHandler>();
+        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OddsPersistenceHandler>();
         
         // Register command bus
         builder.Services.AddHostedService<CommandBusWorker>();
@@ -52,7 +53,7 @@ public static class Application
         
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
-        builder.Services.AddSingleton<IOddsRepository, OddsRepository>();
+        builder.Services.AddSingleton<IMatchRepository, MatchRepository>();
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
@@ -69,7 +70,7 @@ public static class Application
         // Register services
         builder.Services.AddHostedService<OddsApiSyncService>();
         builder.Services.AddHostedService<PolymarketSyncService>();
-        builder.Services.AddSingleton<IMatchRegistry, InMemoryMatchRegistry>();
+        builder.Services.AddSingleton<IRegistry, InMemoryRegistry>();
         builder.Services.AddSingleton<IOddsProvider, OddsProvider>();
 
         // Configure Serilog
