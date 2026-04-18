@@ -23,7 +23,7 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
         return _events.Values.ToList().AsReadOnly();
     }
 
-    public IReadOnlyCollection<EventRegistryConfigurationItem> GetConfiguration()
+    public IReadOnlyCollection<EventRegistryMapping> GetConfiguration()
     {
         return _configuration.GetAll();
     }

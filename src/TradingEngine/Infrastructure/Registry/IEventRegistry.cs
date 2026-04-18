@@ -25,7 +25,7 @@ public interface IEventRegistry
     /// Retrieves the registry synchronization configuration entries.
     /// </summary>
     /// <returns>A read-only collection of configuration items.</returns>
-    public IReadOnlyCollection<EventRegistryConfigurationItem> GetConfiguration();
+    public IReadOnlyCollection<EventRegistryMapping> GetConfiguration();
 
     /// <summary>
     /// Updates the activation state of a configuration entry.
