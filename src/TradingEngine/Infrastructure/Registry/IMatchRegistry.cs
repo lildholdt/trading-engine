@@ -7,25 +7,25 @@ namespace TradingEngine.Infrastructure.Registry;
 /// <summary>
 /// Interface that defines methods for managing and interacting with events in an event registry.
 /// </summary>
-public interface IEventRegistry
+public interface IMatchRegistry
 {
     /// <summary>
     /// Retrieves a sport event by its unique identifier.
     /// </summary>
     /// <param name="id">The unique identifier of the sport event to retrieve.</param>
-    public EventRegistryItem? Get(MatchId id);
+    public MatchRegistryItem? Get(MatchId id);
 
     /// <summary>
     /// Retrieves all events currently stored in the registry.
     /// </summary>
     /// <returns>A read-only collection of registered events.</returns>
-    public IReadOnlyCollection<EventRegistryItem> GetAll();
+    public IReadOnlyCollection<MatchRegistryItem> GetAll();
 
     /// <summary>
     /// Retrieves the registry synchronization configuration entries.
     /// </summary>
     /// <returns>A read-only collection of configuration items.</returns>
-    public IReadOnlyCollection<EventRegistryMapping> GetConfiguration();
+    public IReadOnlyCollection<MatchRegistryMapping> GetConfiguration();
 
     /// <summary>
     /// Updates the activation state of a configuration entry.

@@ -22,7 +22,7 @@ public class Bookmaker : ValueObject
     /// <summary>
     /// Gets the timestamp of the last update for this bookmaker's odds.
     /// </summary>
-    public DateTime LastUpdate { get; }
+    public DateTime UpdatedAt { get; }
 
     /// <summary>
     /// Gets the odds for the home outcome.
@@ -33,7 +33,6 @@ public class Bookmaker : ValueObject
     /// Initializes a new instance of the <see cref="Bookmaker"/> class.
     /// </summary>
     /// <param name="name">The name of the bookmaker.</param>
-    /// <param name="lastUpdate">The timestamp of the last update.</param>
     /// <param name="outcome"></param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="name"/> is null or empty.</exception>
     /// <exception cref="ArgumentException">Thrown when any of the odds are not positive.</exception>
@@ -43,7 +42,7 @@ public class Bookmaker : ValueObject
             throw new ArgumentNullException(nameof(name), "Name cannot be null or empty.");
 
         Name = name;
-        LastUpdate = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
         Outcome = outcome;
     }
 
@@ -86,7 +85,7 @@ public class Bookmaker : ValueObject
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return Name;
-        yield return LastUpdate;
+        yield return UpdatedAt;
         yield return Outcome;
     }
 }

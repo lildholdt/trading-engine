@@ -9,7 +9,7 @@ namespace TradingEngine.Domain.UpdateOdds;
 /// </summary>
 public class OrderPlacementHandler(
     IPolymarketClient polymarketClient, 
-    IEventRegistry registry,
+    IMatchRegistry registry,
     ILogger<OrderPlacementHandler> logger) : IEventHandler<OddsUpdatedEvent>
 {
     /// <summary>

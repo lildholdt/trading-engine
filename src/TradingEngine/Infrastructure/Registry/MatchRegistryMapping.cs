@@ -3,7 +3,7 @@ using TradingEngine.Clients.Polymarket;
 
 namespace TradingEngine.Infrastructure.Registry;
 
-public record EventRegistryMapping
+public record MatchRegistryMapping
 {
     public required int Id { get; init; }
     public required string Name { get; init; }

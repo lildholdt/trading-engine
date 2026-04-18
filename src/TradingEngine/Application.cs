@@ -52,6 +52,7 @@ public static class Application
         
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
+        builder.Services.AddSingleton<IOddsRepository, OddsRepository>();
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));
@@ -68,7 +69,7 @@ public static class Application
         // Register services
         builder.Services.AddHostedService<OddsApiSyncService>();
         builder.Services.AddHostedService<PolymarketSyncService>();
-        builder.Services.AddSingleton<IEventRegistry, InMemoryEventRegistry>();
+        builder.Services.AddSingleton<IMatchRegistry, InMemoryMatchRegistry>();
         builder.Services.AddSingleton<IOddsProvider, OddsProvider>();
 
         // Configure Serilog

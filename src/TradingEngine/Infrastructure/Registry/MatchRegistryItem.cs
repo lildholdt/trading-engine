@@ -5,7 +5,7 @@ using TradingEngine.Utils;
 
 namespace TradingEngine.Infrastructure.Registry;
 
-public class EventRegistryItem
+public class MatchRegistryItem
 {
     public required MatchId Id { get; init; }
     public required string HomeTeam { get; init; }

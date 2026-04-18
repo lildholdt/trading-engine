@@ -18,11 +18,12 @@ public sealed class MatchActorSystem(
         return actor?.SendMessageAsync(message) ?? ValueTask.CompletedTask;
     }
 
-    public void CreateAsync(EventRegistryItem entry)
+    public MatchId CreateAsync(MatchRegistryItem entry)
     {
         var actor = new MatchActor(entry.Id, entry.HomeTeam, entry.AwayTeam, entry.StartTime, eventBus, oddsProvider, serviceProvider);
         actor.StartAsync();
         _actors.GetOrAdd(entry.Id, actor);
+        return actor.GetState().Id;
     }
 
     public async Task StopAsync(MatchId id)
@@ -38,13 +39,13 @@ public sealed class MatchActorSystem(
         _actors.TryRemove(id, out _);
     }
 
-    public IReadOnlyCollection<MatchActorState> GetStates()
+    public IReadOnlyCollection<MatchState> GetStates()
     {
         var sportEventActorStates = _actors.Values.Select(actor => actor.GetState()).ToArray();
         return sportEventActorStates;
     }
 
-    public MatchActorState GetState(MatchId id)
+    public MatchState GetState(MatchId id)
     {
         if (_actors.TryGetValue(id, out var actor))
         {

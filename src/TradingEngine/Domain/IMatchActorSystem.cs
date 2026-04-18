@@ -21,7 +21,7 @@ public interface IMatchActorSystem
     /// If an actor for the given event ID already exists, the existing actor is retained.
     /// </summary>
     /// <param name="entry">The event registry item containing information about the sport event.</param>
-    void CreateAsync(EventRegistryItem entry);
+    MatchId CreateAsync(MatchRegistryItem entry);
 
     /// <summary>
     /// Stops the sport event actor associated with the specified event ID and releases any resources it holds. 
@@ -35,10 +35,10 @@ public interface IMatchActorSystem
     /// Retrieves a read-only collection of the current states of all sport event actors managed by the system.
     /// Each state contains information such as the event ID, participating teams, start time, and current odds.
     /// </summary>
-    /// <returns>A read-only collection of <see cref="MatchActorState"/> objects representing the state of each sport event actor.</returns>
-    IReadOnlyCollection<MatchActorState> GetStates();
+    /// <returns>A read-only collection of <see cref="MatchState"/> objects representing the state of each sport event actor.</returns>
+    IReadOnlyCollection<MatchState> GetStates();
     
-    MatchActorState GetState(MatchId id);
+    MatchState GetState(MatchId id);
 
     /// <summary>
     /// Resets the state of the system, clearing all existing sport event actors and their associated states.

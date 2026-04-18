@@ -1,8 +1,8 @@
 ﻿namespace TradingEngine.Domain;
 
-public class MatchActorState
+public class MatchState
 {
-    public required string Id { get; init; }
+    public required MatchId Id { get; init; }
     public required string HomeTeam { get; init; }
     public required string AwayTeam { get; init; }
     public required DateTime StartTime { get; init; }

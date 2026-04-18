@@ -10,7 +10,7 @@ namespace TradingEngine.Domain.UpdateOdds;
 public class OddsLoggingHandler(
     IOddsWriter oddsWriter,
     IPolymarketClient polymarketClient,
-    IEventRegistry eventRegistry,
+    IMatchRegistry matchRegistry,
     ILogger<OddsLoggingHandler> logger) : IEventHandler<OddsUpdatedEvent>
 {
     /// <summary>
@@ -20,7 +20,7 @@ public class OddsLoggingHandler(
     /// <param name="cancellationToken">A token used to cancel the operation.</param>
     public async Task HandleAsync(OddsUpdatedEvent @event, CancellationToken cancellationToken = default)
     {
-        var item = eventRegistry.Get(@event.Id);
+        var item = matchRegistry.Get(@event.Id);
         if (item == null)
         {
             logger.LogError("Couldn't find event {id}", @event.Id);

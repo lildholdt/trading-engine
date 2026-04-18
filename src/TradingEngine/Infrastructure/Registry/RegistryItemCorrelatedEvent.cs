@@ -10,5 +10,5 @@ public class RegistryItemCorrelatedEvent : IEvent
     /// <summary>
     /// Gets the correlated registry item.
     /// </summary>
-    public required EventRegistryItem Item { get; init; }
+    public required MatchRegistryItem Item { get; init; }
 }

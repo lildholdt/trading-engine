@@ -6,7 +6,7 @@ namespace TradingEngine.Services;
 
 public class PolymarketSyncService(
     IPolymarketClient httpClient,
-    IEventRegistry eventRegistry,
+    IMatchRegistry matchRegistry,
     IOptions<ApplicationSettings> options,
     ILogger<PolymarketSyncService> logger) : BackgroundService
 {
@@ -18,10 +18,10 @@ public class PolymarketSyncService(
         {
             try
             {
-                var items = eventRegistry.GetConfiguration().Where(x => x.Active);
+                var items = matchRegistry.GetConfiguration().Where(x => x.Active);
                 foreach (var item in items)
                 {
-                    await httpClient.StreamEvents(item.PolymarketSeriesId, eventRegistry.RegisterPolymarket);    
+                    await httpClient.StreamEvents(item.PolymarketSeriesId, matchRegistry.RegisterPolymarket);    
                 }
             }
             catch (Exception ex)

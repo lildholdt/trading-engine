@@ -6,7 +6,7 @@ namespace TradingEngine.Domain.StopMatch;
 /// <summary>
 /// Handles actor stopped events by removing the corresponding event entry from the registry.
 /// </summary>
-public class RegistryCleanupHandler(IEventRegistry registry) : IEventHandler<MatchStoppedEvent>
+public class RegistryCleanupHandler(IMatchRegistry registry) : IEventHandler<MatchStoppedEvent>
 {
     /// <summary>
     /// Removes the stopped actor's event from the registry.

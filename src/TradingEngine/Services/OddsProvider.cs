@@ -4,7 +4,7 @@ using TradingEngine.Infrastructure.Registry;
 
 namespace TradingEngine.Services;
 
-public class OddsProvider(IOddsApiClient client, IEventRegistry registry) : IOddsProvider
+public class OddsProvider(IOddsApiClient client, IMatchRegistry registry) : IOddsProvider
 {
     private readonly IEnumerable<string> _bookmakers = [ 
         "betfair_ex_uk", 

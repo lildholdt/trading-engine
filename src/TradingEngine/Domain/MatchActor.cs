@@ -55,7 +55,7 @@ public sealed class MatchActor
         );
     }
 
-    public MatchActorState GetState() => new() {
+    public MatchState GetState() => new() {
         Id = Id,
         HomeTeam = HomeTeam,
         AwayTeam = AwayTeam,
@@ -160,8 +160,8 @@ public sealed class MatchActor
             }
             catch (Exception ex)
             {
+                // Exception occured, log it and wait for next retry
                 _logger.LogError(ex, "Error occurred while polling odds for EventId: {EventId}", Id);
-                // Use Task.Delay with cancellation support
                 await Task.Delay((int)delayMilliseconds, ct);
             }
         }

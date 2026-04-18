@@ -3,12 +3,12 @@ using TradingEngine.Clients.Polymarket;
 
 namespace TradingEngine.Infrastructure.Registry;
 
-public class EventRegistryConfiguration
+public class MatchRegistryConfiguration
 {
     private int _currentConfigurationId;
-    private readonly List<EventRegistryMapping> _config = [];
+    private readonly List<MatchRegistryMapping> _config = [];
 
-    public EventRegistryConfiguration()
+    public MatchRegistryConfiguration()
     {
         // =======================
         // EUROPE - Major Leagues
@@ -87,7 +87,7 @@ public class EventRegistryConfiguration
 
     private void AddConfiguration(string name, PolymarketSeries polymarketSeriesId, OddsApiSportsType oddsApiSportsType)
     {
-        _config.Add(new EventRegistryMapping
+        _config.Add(new MatchRegistryMapping
         {
             Id = ++_currentConfigurationId,
             Name = name,
@@ -96,7 +96,7 @@ public class EventRegistryConfiguration
         });
     }
 
-    public IReadOnlyList<EventRegistryMapping> GetAll()
+    public IReadOnlyList<MatchRegistryMapping> GetAll()
     {
         return _config.AsReadOnly();
     }
@@ -110,7 +110,7 @@ public class EventRegistryConfiguration
         }
 
         var current = _config[index];
-        _config[index] = new EventRegistryMapping
+        _config[index] = new MatchRegistryMapping
         {
             Id = current.Id,
             Name = current.Name,

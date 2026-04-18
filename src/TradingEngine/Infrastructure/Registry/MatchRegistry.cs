@@ -8,22 +8,22 @@ using TradingEngine.Utils;
 
 namespace TradingEngine.Infrastructure.Registry;
 
-public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus, ILogger<InMemoryEventRegistry> logger) : IEventRegistry
+public class InMemoryMatchRegistry(ITeamMatcher teamMatcher, IEventBus eventBus, ILogger<InMemoryMatchRegistry> logger) : IMatchRegistry
 {
-    private readonly ConcurrentDictionary<MatchId, EventRegistryItem> _events = new();
-    private readonly EventRegistryConfiguration _configuration = new();
+    private readonly ConcurrentDictionary<MatchId, MatchRegistryItem> _events = new();
+    private readonly MatchRegistryConfiguration _configuration = new();
     
-    public EventRegistryItem? Get(MatchId id)
+    public MatchRegistryItem? Get(MatchId id)
     {
         return _events.TryGetValue(id, out var item) ? item : null;
     }
     
-    public IReadOnlyCollection<EventRegistryItem> GetAll()
+    public IReadOnlyCollection<MatchRegistryItem> GetAll()
     {
         return _events.Values.ToList().AsReadOnly();
     }
 
-    public IReadOnlyCollection<EventRegistryMapping> GetConfiguration()
+    public IReadOnlyCollection<MatchRegistryMapping> GetConfiguration()
     {
         return _configuration.GetAll();
     }
@@ -56,7 +56,7 @@ public class InMemoryEventRegistry(ITeamMatcher teamMatcher, IEventBus eventBus,
             return;
         
         // Create registry item
-        var registryItem = new EventRegistryItem
+        var registryItem = new MatchRegistryItem
         {
             Id = MatchId.New,
             HomeTeam = home,

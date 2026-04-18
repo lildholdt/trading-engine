@@ -5,7 +5,7 @@ namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api")]
-public class RegistryController(IEventRegistry eventRegistry) : ControllerBase
+public class RegistryController(IMatchRegistry matchRegistry) : ControllerBase
 {
     private record RegistryItemModel(Guid Id, string PolymarketHome, string PolymarketAway, string? OddsApiHome, string?  OddsApiAway, double? CorrelationScore);
 
@@ -14,7 +14,7 @@ public class RegistryController(IEventRegistry eventRegistry) : ControllerBase
     [HttpGet("registry")]
     public IActionResult GetRegistryItems()
     {
-        var items = eventRegistry.GetAll();
+        var items = matchRegistry.GetAll();
         var models = items.Select(x => 
             new RegistryItemModel(
                 x.Id.Value, 
@@ -29,7 +29,7 @@ public class RegistryController(IEventRegistry eventRegistry) : ControllerBase
     [HttpGet("registry/configuration")]
     public IActionResult GetRegistryConfiguration()
     {
-        var config = eventRegistry.GetConfiguration();
+        var config = matchRegistry.GetConfiguration();
         var models = config.Select(x => new RegistryConfigurationItemModel(x.Id, x.Name, x.Active));
         return Ok(models);
     }
@@ -37,7 +37,7 @@ public class RegistryController(IEventRegistry eventRegistry) : ControllerBase
     [HttpPost("registry/configuration/{id}")]
     public IActionResult UpdateRegistryConfiguration(int id, bool state)
     {
-        eventRegistry.UpdateConfiguration(id, state);
+        matchRegistry.UpdateConfiguration(id, state);
         return Ok();
     }
 }
