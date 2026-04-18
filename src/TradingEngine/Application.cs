@@ -7,6 +7,7 @@ using TradingEngine.Domain.Matches;
 using TradingEngine.Domain.Matches.CreateMatch;
 using TradingEngine.Domain.Matches.StopMatch;
 using TradingEngine.Domain.Matches.UpdateOdds;
+using TradingEngine.Domain.Orders;
 using TradingEngine.Domain.Registry;
 using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
@@ -31,7 +32,7 @@ public static class Application
         
         // Register utils
         builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
-        builder.Services.AddSingleton<IOddsWriter>(_ => new OddsWriter("odds.csv"));
+        builder.Services.AddSingleton<IOddsWriter>(_ => new OrderWriter("odds.csv"));
 
         // Register event bus
         builder.Services.AddHostedService<EventBusWorker>();
@@ -40,8 +41,7 @@ public static class Application
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  MatchCreationHandler>();
         builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>, RegistryCleanupHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
-        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OddsLoggingHandler>();
-        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OddsPersistenceHandler>();
+        builder.Services.AddSingleton<IEventHandler<OrderPlacedEvent>, OrderLoggingHandler>();
         
         // Register command bus
         builder.Services.AddHostedService<CommandBusWorker>();

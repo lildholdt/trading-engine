@@ -9,7 +9,7 @@ namespace TradingEngine.Domain.Matches;
 public sealed class MatchActor
 {
     // Dependencies
-    private readonly Channel<IMatchMessage> _mailbox;
+    private readonly Channel<IMatchCommand> _mailbox;
     private readonly IEventBus _eventBus;
     private readonly IOddsProvider _oddsProvider;
     private readonly ILogger<MatchActor> _logger;
@@ -33,7 +33,7 @@ public sealed class MatchActor
         _oddsProvider = oddsProvider;
         _logger = serviceProvider.GetRequiredService<ILogger<MatchActor>>();
         
-        _mailbox = Channel.CreateUnbounded<IMatchMessage>(
+        _mailbox = Channel.CreateUnbounded<IMatchCommand>(
             new UnboundedChannelOptions
             {
                 SingleReader = true,
@@ -54,8 +54,8 @@ public sealed class MatchActor
         Odds = new ReadOnlyCollection<Bookmaker>(Odds)
     };
     
-    public ValueTask SendMessageAsync(IMatchMessage message)
-        => !Started ? throw new InvalidOperationException("Actor not started") : _mailbox.Writer.WriteAsync(message);
+    public ValueTask SendMessageAsync(IMatchCommand command)
+        => !Started ? throw new InvalidOperationException("Actor not started") : _mailbox.Writer.WriteAsync(command);
     
     public void StartAsync()
     {
@@ -132,7 +132,7 @@ public sealed class MatchActor
                 var odds = await _oddsProvider.GetOdds(Match.Id).WaitAsync(ct);
                 if (odds.Count == 0) continue;
                 
-                await SendMessageAsync(new UpdateOddsMessage
+                await SendMessageAsync(new UpdateOddsCommand
                 {
                     MatchId = Match.Id,
                     Bookmakers = odds

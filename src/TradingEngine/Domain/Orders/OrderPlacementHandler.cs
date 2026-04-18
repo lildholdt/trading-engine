@@ -1,9 +1,10 @@
 ﻿using TradingEngine.Clients.Polymarket;
-using TradingEngine.Domain.Matches.OrderPlaced;
+using TradingEngine.Domain.Matches;
+using TradingEngine.Domain.Matches.UpdateOdds;
 using TradingEngine.Domain.Registry;
 using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.Matches.UpdateOdds;
+namespace TradingEngine.Domain.Orders;
 
 /// <summary>
 /// Handles odds updates and evaluates order placement opportunities.
@@ -41,8 +42,15 @@ public class OrderPlacementHandler(
         }
         
         var polymarketEvent = await polymarketClient.GetEvent(item.PolymarketEvent.Id);
-        var polymarketHomeOutcome = polymarketEvent?.MoneyLineMarkets.Get(item.HomeTeam)?.Outcome;
-        var polymarketAwayOutcome = polymarketEvent?.MoneyLineMarkets.Get(item.AwayTeam)?.Outcome;
+        var markets = polymarketEvent?.MoneyLineMarkets;
+        
+        var homeMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.HomeTeam);
+        var awayMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.AwayTeam);
+        var drawMarket = markets?.FirstOrDefault(x => x.GroupItemTitle!.Contains("Draw"));
+
+        var homePrice = homeMarket?.Outcome.Price;
+        var awayPrice = awayMarket?.Outcome.Price;
+        var drawPrice = drawMarket?.Outcome.Price;
         
         var averageHome = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Home)) / @event.Odds.Count, 2);
         var averageAway = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Away)) / @event.Odds.Count, 2);
@@ -53,9 +61,13 @@ public class OrderPlacementHandler(
         var orderPlacedEvent = new OrderPlacedEvent
         {
             MatchId = @event.Id,
-            Home = averageHome,
-            Away = averageAway,
-            Draw = averageDraw,
+            Odds =  @event.Odds,
+            HomePrice = homePrice,
+            AwayPrice = awayPrice,
+            DrawPrice = drawPrice,
+            AverageHomeOdds = averageHome,
+            AverageAwayOdds = averageAway,
+            AverageDrawOdds = averageDraw,
         };
         await eventBus.PublishAsync(orderPlacedEvent, cancellationToken);
         

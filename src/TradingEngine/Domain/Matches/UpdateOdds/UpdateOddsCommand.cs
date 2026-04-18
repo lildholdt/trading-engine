@@ -1,6 +1,6 @@
 ﻿namespace TradingEngine.Domain.Matches.UpdateOdds;
 
-public class UpdateOddsMessage : IMatchMessage
+public class UpdateOddsCommand : IMatchCommand
 {
     public required MatchId MatchId { get; init; }
     public required IReadOnlyCollection<Bookmaker> Bookmakers { get; init; }

@@ -5,7 +5,7 @@ namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api/matches/active")]
-public class ManagementController(IMatchActorSystem actorSystem, IMatchRepository matchRepository) : ControllerBase
+public class ManagementController(IMatchActorSystem actorSystem) : ControllerBase
 {
     [HttpGet]
     public IActionResult GetMatches()

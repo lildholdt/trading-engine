@@ -12,10 +12,10 @@ public sealed class MatchActorSystem(
 {
     private readonly ConcurrentDictionary<MatchId, MatchActor> _actors = new();
 
-    public ValueTask SendAsync(IMatchMessage message)
+    public ValueTask SendAsync(IMatchCommand command)
     {
-        _actors.TryGetValue(message.MatchId, out var actor);
-        return actor?.SendMessageAsync(message) ?? ValueTask.CompletedTask;
+        _actors.TryGetValue(command.MatchId, out var actor);
+        return actor?.SendMessageAsync(command) ?? ValueTask.CompletedTask;
     }
 
     public MatchId CreateAsync(RegistryItem entry)

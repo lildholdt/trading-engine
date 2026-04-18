@@ -1,11 +1,16 @@
-﻿using TradingEngine.Infrastructure.EventBus;
+﻿using TradingEngine.Domain.Matches;
+using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.Matches.OrderPlaced;
+namespace TradingEngine.Domain.Orders;
 
 public class OrderPlacedEvent : IEvent
 {
-    public MatchId MatchId { get; init; }
-    public decimal Home { get; init; }
-    public decimal Away { get; init; }
-    public decimal Draw { get; init; }
+    public required MatchId MatchId { get; init; }
+    public IReadOnlyCollection<Bookmaker> Odds { get; init; }
+    public decimal? HomePrice { get; init; }
+    public decimal? AwayPrice { get; init; }
+    public decimal? DrawPrice { get; init; }
+    public decimal AverageHomeOdds { get; init; }
+    public decimal AverageAwayOdds { get; init; }
+    public decimal AverageDrawOdds { get; init; }
 }

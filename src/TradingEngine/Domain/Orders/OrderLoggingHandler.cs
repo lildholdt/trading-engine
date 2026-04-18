@@ -1,50 +1,27 @@
-﻿using TradingEngine.Clients.Polymarket;
+﻿using TradingEngine.Domain.Matches;
+using TradingEngine.Domain.Matches.UpdateOdds;
 using TradingEngine.Domain.Registry;
 using TradingEngine.Infrastructure.EventBus;
 
-namespace TradingEngine.Domain.Matches.UpdateOdds;
+namespace TradingEngine.Domain.Orders;
 
-/// <summary>
-/// Handles odds updates by enriching data and appending odds snapshots to the configured writer.
-/// </summary>
-public class OddsLoggingHandler(
+public class OrderLoggingHandler(
     IOddsWriter oddsWriter,
-    IPolymarketClient polymarketClient,
     IRegistry registry,
-    ILogger<OddsLoggingHandler> logger) : IEventHandler<OddsUpdatedEvent>
+    ILogger<OrderLoggingHandler> logger) : IEventHandler<OrderPlacedEvent>
 {
-    /// <summary>
-    /// Processes an odds update event, computes aggregates, and writes output records.
-    /// </summary>
-    /// <param name="event">The odds update event.</param>
-    /// <param name="cancellationToken">A token used to cancel the operation.</param>
-    public async Task HandleAsync(OddsUpdatedEvent @event, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(OrderPlacedEvent @event, CancellationToken cancellationToken = default)
     {
-        var item = registry.Get(@event.Id);
+        var item = registry.Get(@event.MatchId);
         if (item == null)
         {
-            logger.LogError("Couldn't find event {id}", @event.Id);
+            logger.LogError("Couldn't find event {id}", @event.MatchId);
             return;
         }
         
-        var polymarketEvent = await polymarketClient.GetEvent(item.PolymarketEvent.Id);
-        var markets = polymarketEvent?.MoneyLineMarkets;
-        
-        var homeMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.HomeTeam);
-        var awayMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.AwayTeam);
-        var drawMarket = markets?.FirstOrDefault(x => x.GroupItemTitle!.Contains("Draw"));
-
-        var homePrice = homeMarket?.Outcome.Price;
-        var awayPrice = awayMarket?.Outcome.Price;
-        var drawPrice = drawMarket?.Outcome.Price;
-
-        var averageHome = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Home)) / @event.Odds.Count, 2);
-        var averageAway = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Away)) / @event.Odds.Count, 2);
-        var averageDraw = Math.Round(@event.Odds.Sum(x => x.Outcome.CalculateTrueOdds(OutcomeType.Draw)) / @event.Odds.Count, 2);
-        
         var records = @event.Odds.Select(record => new OddsRecord
         {
-            Id = @event.Id,
+            Id = @event.MatchId,
             Home = item.HomeTeam,
             Away = item.AwayTeam,
             Bookmaker = record.Name,
@@ -57,12 +34,12 @@ public class OddsLoggingHandler(
             TrueOddsHome = record.Outcome.CalculateTrueOdds(OutcomeType.Home),
             TrueOddsDraw = record.Outcome.CalculateTrueOdds(OutcomeType.Draw),
             TrueOddsAway = record.Outcome.CalculateTrueOdds(OutcomeType.Away),
-            TrueOddsAverageHome = averageHome,
-            TrueOddsAverageDraw = averageDraw,
-            TrueOddsAverageAway = averageAway,
-            PolymarketOutcomeHome = homePrice ?? 0,
-            PolymarketOutcomeDraw = drawPrice ?? 0,
-            PolymarketOutcomeAway = awayPrice ?? 0,
+            TrueOddsAverageHome = @event.AverageHomeOdds,
+            TrueOddsAverageDraw = @event.AverageDrawOdds,
+            TrueOddsAverageAway = @event.AverageAwayOdds,
+            PolymarketOutcomeHome = @event.HomePrice ?? 0,
+            PolymarketOutcomeDraw = @event.DrawPrice ?? 0,
+            PolymarketOutcomeAway = @event.AwayPrice ?? 0,
         }).ToList();
 
         await oddsWriter.WriteRecords(records, cancellationToken);

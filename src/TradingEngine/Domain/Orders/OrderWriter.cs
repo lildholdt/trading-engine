@@ -17,7 +17,7 @@ public interface IOddsWriter
 /// <summary>
 /// CSV file implementation of <see cref="IOddsWriter"/>.
 /// </summary>
-public class OddsWriter(string filePath) : IOddsWriter
+public class OrderWriter(string filePath) : IOddsWriter
 {
     /// <summary>
     /// Writes records to a CSV file.

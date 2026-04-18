@@ -12,9 +12,9 @@ public interface IMatchActorSystem
     /// Sends a message to the appropriate actor for processing. 
     /// If no actor exists for the event in the message, the message will either be discarded or cause an error, depending on the implementation.
     /// </summary>
-    /// <param name="message">The message to be sent to a sport event actor.</param>
+    /// <param name="command">The message to be sent to a sport event actor.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous operation.</returns>
-    public ValueTask SendAsync(IMatchMessage message);
+    public ValueTask SendAsync(IMatchCommand command);
 
     /// <summary>
     /// Creates a new sport event actor for the specified event registry entry. 
