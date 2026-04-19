@@ -15,9 +15,23 @@ namespace TradingEngine.Controllers;
 public class MatchesController(IDispatcher dispatcher) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? search,
+        [FromQuery] DateTime? startTimeFromUtc,
+        [FromQuery] DateTime? startTimeToUtc,
+        [FromQuery] string? sortByStartTime = "asc",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
-        var matches = await dispatcher.Query(new GetMatchesQuery());
+        var matches = await dispatcher.Query(new GetMatchesQuery
+        {
+            Search = search,
+            StartTimeFromUtc = startTimeFromUtc,
+            StartTimeToUtc = startTimeToUtc,
+            SortByStartTime = sortByStartTime,
+            Page = page,
+            PageSize = pageSize
+        });
         return Ok(matches);
     }
     
