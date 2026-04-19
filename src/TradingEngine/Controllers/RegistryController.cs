@@ -1,43 +1,49 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using TradingEngine.Domain.Registry;
+using TradingEngine.Domain.Registry.GetRegistryConfiguration;
+using TradingEngine.Domain.Registry.GetRegistryItems;
+using TradingEngine.Domain.Registry.UpdateRegistryConfiguration;
+using TradingEngine.Infrastructure.Dispatcher;
 
 namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api/registry")]
-public class RegistryController(IRegistry registry) : ControllerBase
+public class RegistryController(IDispatcher dispatcher) : ControllerBase
 {
-    private record RegistryItemModel(Guid Id, string PolymarketHome, string PolymarketAway, string? OddsApiHome, string?  OddsApiAway, double? CorrelationScore);
-
-    private record RegistryConfigurationItemModel(int Id, string Name, bool Active);
-    
     [HttpGet]
-    public IActionResult GetRegistryItems()
+    public async Task<IActionResult> GetRegistryItems(
+        [FromQuery] string? search,
+        [FromQuery] string? sortBy = "home",
+        [FromQuery] string? sortDirection = "asc",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
     {
-        var items = registry.GetAll();
-        var models = items.Select(x => 
-            new RegistryItemModel(
-                x.Id.Value, 
-                x.HomeTeam, 
-                x.AwayTeam, 
-                x.OddsApiEvent?.HomeTeam, 
-                x.OddsApiEvent?.AwayTeam, 
-                x.CorrelationScore));
+        var models = await dispatcher.Query(new GetRegistryItemsQuery
+        {
+            Search = search,
+            SortBy = sortBy,
+            SortDirection = sortDirection,
+            Page = page,
+            PageSize = pageSize
+        });
         return Ok(models);
     }
     
     [HttpGet("configuration")]
-    public IActionResult GetRegistryConfiguration()
+    public async Task<IActionResult> GetRegistryConfiguration()
     {
-        var config = registry.GetConfiguration();
-        var models = config.Select(x => new RegistryConfigurationItemModel(x.Id, x.Name, x.Active));
+        var models = await dispatcher.Query(new GetRegistryConfigurationQuery());
         return Ok(models);
     }
     
     [HttpPost("configuration/{id}")]
-    public IActionResult UpdateRegistryConfiguration(int id, bool state)
+    public async Task<IActionResult> UpdateRegistryConfiguration(int id, bool state)
     {
-        registry.UpdateConfiguration(id, state);
+        await dispatcher.Send(new UpdateRegistryConfigurationCommand
+        {
+            Id = id,
+            State = state
+        });
         return Ok();
     }
 }

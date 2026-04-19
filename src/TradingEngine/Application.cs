@@ -13,6 +13,9 @@ using TradingEngine.Domain.Matches.UpdateOdds;
 using TradingEngine.Domain.Orders;
 using TradingEngine.Domain.Orders.GetOrders;
 using TradingEngine.Domain.Registry;
+using TradingEngine.Domain.Registry.GetRegistryConfiguration;
+using TradingEngine.Domain.Registry.GetRegistryItems;
+using TradingEngine.Domain.Registry.UpdateRegistryConfiguration;
 using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
 using TradingEngine.Infrastructure.Dispatcher;
@@ -56,9 +59,12 @@ public static class Application
         builder.Services.AddScoped<IDispatcher, Dispatcher>();
         builder.Services.AddScoped<ICommandHandler<StopMatchCommand, Unit>, StopMatchCommandHandler>();
         builder.Services.AddScoped<ICommandHandler<ResetMatchesCommand, Unit>, ResetMatchesCommandHandler>();
+            builder.Services.AddScoped<ICommandHandler<UpdateRegistryConfigurationCommand, Unit>, UpdateRegistryConfigurationCommandHandler>();
         builder.Services.AddScoped<IQueryHandler<GetMatchesQuery, IReadOnlyCollection<MatchReadModel>>, GetMatchesQueryHandler>();
         builder.Services.AddScoped<IQueryHandler<GetMatchOddsQuery, IReadOnlyCollection<OddsReadModel>>, GetMatchOddsQueryHandler>();
         builder.Services.AddScoped<IQueryHandler<GetOrdersQuery, IReadOnlyCollection<OrderReadModel>>, GetOrdersQueryHandler>();
+            builder.Services.AddScoped<IQueryHandler<GetRegistryItemsQuery, IReadOnlyCollection<RegistryItemReadModel>>, GetRegistryItemsQueryHandler>();
+            builder.Services.AddScoped<IQueryHandler<GetRegistryConfigurationQuery, IReadOnlyCollection<RegistryConfigurationItemReadModel>>, GetRegistryConfigurationQueryHandler>();
         
         // Register actor system
         builder.Services.AddSingleton<IMatchActorSystem,  MatchActorSystem>();
