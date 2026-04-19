@@ -4,11 +4,11 @@ using TradingEngine.Domain.Registry;
 
 namespace TradingEngine.Services;
 
-public class OddsApiSyncService(
+public class OddsApiMatchSyncService(
     IOddsApiClient oddsApiClient,
     IRegistry registry,
     IOptions<ApplicationSettings> options,
-    ILogger<OddsApiSyncService> logger) : BackgroundService
+    ILogger<OddsApiMatchSyncService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {

@@ -4,11 +4,11 @@ using TradingEngine.Domain.Registry;
 
 namespace TradingEngine.Services;
 
-public class PolymarketSyncService(
+public class PolymarketMatchSyncService(
     IPolymarketClient httpClient,
     IRegistry registry,
     IOptions<ApplicationSettings> options,
-    ILogger<PolymarketSyncService> logger) : BackgroundService
+    ILogger<PolymarketMatchSyncService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
