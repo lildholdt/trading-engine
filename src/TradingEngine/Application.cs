@@ -5,12 +5,17 @@ using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.Polymarket;
 using TradingEngine.Domain.Matches;
 using TradingEngine.Domain.Matches.CreateMatch;
+using TradingEngine.Domain.Matches.GetMatchOdds;
+using TradingEngine.Domain.Matches.GetMatches;
+using TradingEngine.Domain.Matches.Reset;
 using TradingEngine.Domain.Matches.StopMatch;
 using TradingEngine.Domain.Matches.UpdateOdds;
 using TradingEngine.Domain.Orders;
+using TradingEngine.Domain.Orders.GetOrders;
 using TradingEngine.Domain.Registry;
 using TradingEngine.Infrastructure;
 using TradingEngine.Infrastructure.CommandBus;
+using TradingEngine.Infrastructure.Dispatcher;
 using TradingEngine.Infrastructure.EventBus;
 using TradingEngine.Infrastructure.Hub;
 using TradingEngine.Services;
@@ -34,7 +39,7 @@ public static class Application
         builder.Services.AddSingleton<ITeamMatcher, DeterministicTeamMatcher>();
         builder.Services.AddSingleton<IOddsWriter>(_ => new OrderWriter("odds.csv"));
 
-        // Register event bus
+        // Register asynchronous event bus
         builder.Services.AddHostedService<EventBusWorker>();
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
@@ -42,10 +47,18 @@ public static class Application
         builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>, RegistryCleanupHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
         
-        // Register command bus
+        // Register asynchronous command bus
         builder.Services.AddHostedService<CommandBusWorker>();
         builder.Services.AddSingleton<CommandBus>();
         builder.Services.AddSingleton<ICommandBus>(sp => sp.GetRequiredService<CommandBus>());
+        
+        // Register synchronous dispatcher
+        builder.Services.AddScoped<IDispatcher, Dispatcher>();
+        builder.Services.AddScoped<ICommandHandler<StopMatchCommand, Unit>, StopMatchCommandHandler>();
+        builder.Services.AddScoped<ICommandHandler<ResetMatchesCommand, Unit>, ResetMatchesCommandHandler>();
+        builder.Services.AddScoped<IQueryHandler<GetMatchesQuery, IReadOnlyCollection<MatchReadModel>>, GetMatchesQueryHandler>();
+        builder.Services.AddScoped<IQueryHandler<GetMatchOddsQuery, IReadOnlyCollection<OddsReadModel>>, GetMatchOddsQueryHandler>();
+        builder.Services.AddScoped<IQueryHandler<GetOrdersQuery, IReadOnlyCollection<OrderReadModel>>, GetOrdersQueryHandler>();
         
         // Register actor system
         builder.Services.AddSingleton<IMatchActorSystem,  MatchActorSystem>();

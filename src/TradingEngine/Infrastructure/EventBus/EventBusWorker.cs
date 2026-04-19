@@ -1,11 +1,19 @@
 ﻿namespace TradingEngine.Infrastructure.EventBus;
 
+/// <summary>
+/// Background worker that consumes events from <see cref="EventBus"/>
+/// and dispatches them to all registered handlers.
+/// </summary>
 public class EventBusWorker(
     EventBus bus,
     IServiceProvider serviceProvider,
     ILogger<CommandBus.CommandBus> logger)
     : BackgroundService
 {
+    /// <summary>
+    /// Continuously reads events from the bus and invokes matching handlers.
+    /// </summary>
+    /// <param name="stoppingToken">Cancellation token used to stop the worker loop.</param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation($"{nameof(EventBus)} started");

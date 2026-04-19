@@ -1,43 +1,44 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Text;
-using TradingEngine.Domain.Matches;
-using TradingEngine.Domain.Orders;
+using TradingEngine.Domain.Matches.GetMatchOdds;
+using TradingEngine.Domain.Matches.GetMatches;
+using TradingEngine.Domain.Matches.Reset;
+using TradingEngine.Domain.Matches.StopMatch;
+using TradingEngine.Domain.Orders.GetOrders;
+using TradingEngine.Infrastructure.Dispatcher;
 
 namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api/matches")]
-public class MatchesController(
-    IMatchReadRepository matchRepository,
-    IOrdersRepository ordersRepository,
-    IMatchActorSystem actorSystem) : ControllerBase
+public class MatchesController(IDispatcher dispatcher) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var matches = await matchRepository.GetAllAsync();
+        var matches = await dispatcher.Query(new GetMatchesQuery());
         return Ok(matches);
     }
     
     [HttpGet("{id}/odds")]
     public async Task<IActionResult> GetOddsById(Guid id)
     {
-        var match = await matchRepository.GetOddsAsync(id);
+        var match = await dispatcher.Query(new GetMatchOddsQuery { MatchId = id });
         return Ok(match);
     }
     
     [HttpGet("{id}/orders")]
-    public IActionResult GetByMatchId(Guid id)
+    public async Task<IActionResult> GetOrders(Guid id)
     {
-        var orders = ordersRepository.GetOrders(id);
+        var orders = await dispatcher.Query(new GetOrdersQuery { MatchId = id });
         return Ok(orders);
     }
     
     [HttpGet("{id}/orders-csv")]
-    public IActionResult GetByMatchIdCsv(Guid id)
+    public async Task<IActionResult> GetByMatchIdCsv(Guid id)
     {
-        var orders = ordersRepository.GetOrders(id);
+        var orders = await dispatcher.Query(new GetOrdersQuery { MatchId = id });
 
         var csv = new StringBuilder();
         csv.AppendLine("Id,Bookmaker,SnapshotTime,HoursBefore,OddsHome,OddsDraw,OddsAway,TrueOddsHome,TrueOddsDraw,TrueOddsAway,TrueOddsAverageHome,TrueOddsAverageDraw,TrueOddsAverageAway,PolymarketOutcomeHome,PolymarketOutcomeDraw,PolymarketOutcomeAway");
@@ -74,16 +75,16 @@ public class MatchesController(
     }
     
     [HttpDelete("{id}")]
-    public IActionResult StopMatch(Guid id)
+    public async Task<IActionResult> StopMatch(Guid id)
     {
-        actorSystem.StopAsync(id);
+        await dispatcher.Send(new StopMatchCommand { MatchId = id });
         return Ok();
     }
     
     [HttpPost("reset")]
-    public IActionResult Reset()
+    public async Task<IActionResult> Reset()
     {
-        actorSystem.Reset();
+        await dispatcher.Send(new ResetMatchesCommand());
         return Ok();
     }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
 using TradingEngine.Domain.Matches.StopMatch;
 using TradingEngine.Domain.Matches.UpdateOdds;
 using TradingEngine.Infrastructure.EventBus;
