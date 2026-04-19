@@ -41,7 +41,6 @@ public static class Application
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  MatchCreationHandler>();
         builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>, RegistryCleanupHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
-        builder.Services.AddSingleton<IEventHandler<OrderPlacedEvent>, OrderLoggingHandler>();
         
         // Register command bus
         builder.Services.AddHostedService<CommandBusWorker>();
@@ -53,7 +52,11 @@ public static class Application
         
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
-        builder.Services.AddSingleton<IMatchRepository, MatchRepository>();
+        builder.Services.AddSingleton<MatchRepository>();
+        builder.Services.AddSingleton<IMatchRepository>(sp => sp.GetRequiredService<MatchRepository>());
+        builder.Services.AddSingleton<IMatchReadRepository>(sp => sp.GetRequiredService<MatchRepository>());
+        builder.Services.AddSingleton<IOddsRepository>(sp => sp.GetRequiredService<MatchRepository>());
+        builder.Services.AddSingleton<IOrdersRepository, OrdersRepository>();
         
         // Register SignalR hub publisher
         builder.Services.AddSingleton(typeof(IHubPublisher<>), typeof(HubPublisher<>));

@@ -24,7 +24,7 @@ public class OddsApiMatchSyncService(
                     var events = await oddsApiClient.GetOdds(item.OddsApiSportsType);
                     foreach (var @event in events)
                     {  
-                        await registry.AttachOddsApi(@event);
+                        await registry.TryAttachOddsApi(@event);
                     }    
                 }
             }

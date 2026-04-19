@@ -19,10 +19,7 @@ public class MatchCreationHandler(IMatchActorSystem actorSystem, IEventBus event
         // Create the match in the actor system
         var id = actorSystem.CreateAsync(@event.Item);
         
-        // Extract the state
-        var state = actorSystem.GetState(id);
-        
         // Publish event
-        await eventBus.PublishAsync(new MatchCreatedEvent { State = state }, cancellationToken);
+        await eventBus.PublishAsync(new MatchCreatedEvent { MatchId = id }, cancellationToken);
     }
 }

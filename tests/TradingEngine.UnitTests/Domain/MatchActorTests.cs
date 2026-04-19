@@ -14,6 +14,7 @@ public class MatchActorTests
 {
     private readonly Mock<IEventBus> _eventBus = new();
     private readonly Mock<IOddsProvider> _oddsProvider = new();
+    private readonly Mock<IMatchRepository> _matchRepository = new();
     private readonly Mock<ILogger<MatchActor>> _logger = new();
 
     private MatchActor CreateActor(DateTime? startTime = null)
@@ -33,6 +34,7 @@ public class MatchActorTests
             match,
             _eventBus.Object,
             _oddsProvider.Object,
+            _matchRepository.Object,
             services.BuildServiceProvider());
     }
 
@@ -50,8 +52,8 @@ public class MatchActorTests
 
         _eventBus.Verify(x => x.PublishAsync(
                 It.Is<OddsUpdatedEvent>(e =>
-                    e.Odds.Count == 1 &&
-                    e.Odds.First().Name == "bet365")),
+                    e.Match.Odds.Count == 1 &&
+                    e.Match.Odds.First().Name == "bet365")),
             Times.Once);
     }
 

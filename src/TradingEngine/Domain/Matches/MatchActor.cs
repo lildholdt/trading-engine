@@ -12,25 +12,27 @@ public sealed class MatchActor
     private readonly Channel<IMatchCommand> _mailbox;
     private readonly IEventBus _eventBus;
     private readonly IOddsProvider _oddsProvider;
+    private readonly IMatchRepository _matchRepository;
     private readonly ILogger<MatchActor> _logger;
 
     // State
-    private Match Match { get; init; }
-    private List<Bookmaker> Odds { get; set; } = [];
+    private Match State { get; init; }
     
     private readonly CancellationTokenSource _cts = new();
     private readonly List<Task> _runningTasks = [];
     private bool Started => _runningTasks.Count != 0;
     
     public MatchActor(
-        Match match,
+        Match state,
         IEventBus eventBus,
         IOddsProvider oddsProvider,
+        IMatchRepository matchRepository,
         IServiceProvider serviceProvider)
     {
-        Match = match;
+        State = state;
         _eventBus = eventBus;
         _oddsProvider = oddsProvider;
+        _matchRepository = matchRepository;
         _logger = serviceProvider.GetRequiredService<ILogger<MatchActor>>();
         
         _mailbox = Channel.CreateUnbounded<IMatchCommand>(
@@ -42,17 +44,9 @@ public sealed class MatchActor
         
         _logger.LogInformation(
             "Actor created. Id={Id}, HomeTeam={HomeTeam}, AwayTeam={AwayTeam}, StartTime={StartTime},",
-            match.Id, match.HomeTeam, match.AwayTeam, match.StartTime
+            state.Id, state.HomeTeam, state.AwayTeam, state.StartTime
         );
     }
-
-    public MatchState GetState() => new() {
-        Id = Match.Id,
-        HomeTeam = Match.HomeTeam,
-        AwayTeam = Match.AwayTeam,
-        StartTime = Match.StartTime,
-        Odds = new ReadOnlyCollection<Bookmaker>(Odds)
-    };
     
     public ValueTask SendMessageAsync(IMatchCommand command)
         => !Started ? throw new InvalidOperationException("Actor not started") : _mailbox.Writer.WriteAsync(command);
@@ -74,7 +68,7 @@ public sealed class MatchActor
         _runningTasks.Add(pollingTask);
         _runningTasks.Add(mailboxTask);
         
-        _logger.LogInformation("Actor started for EventId: {EventId}", Match.Id);
+        _logger.LogInformation("Actor started for EventId: {EventId}", State.Id);
     }
 
     private async Task ReadMessagesAsync(CancellationToken ct)
@@ -97,7 +91,7 @@ public sealed class MatchActor
         catch (OperationCanceledException)
         {
             // Gracefully handle cancellation
-            _logger.LogDebug("Message reading cancelled for eventId: {EventId}.", Match.Id);
+            _logger.LogDebug("Message reading cancelled for eventId: {EventId}.", State.Id);
         }
         catch (Exception ex)
         {
@@ -108,12 +102,12 @@ public sealed class MatchActor
     
     private async Task PollOddsAsync(CancellationToken ct)
     {
-        _logger.LogInformation("Starting odds polling for EventId: {EventId}", Match.Id);
+        _logger.LogInformation("Starting odds polling for EventId: {EventId}", State.Id);
 
         while (!ct.IsCancellationRequested)
         {
             // Check if the match has ended
-            var timeUntilStart = Match.StartTime - DateTime.UtcNow;
+            var timeUntilStart = State.StartTime - DateTime.UtcNow;
             if (timeUntilStart.TotalMilliseconds < 0) break;
                 
             // Calculate odds polling interval
@@ -129,16 +123,16 @@ public sealed class MatchActor
             try
             {
                 // Get new odds via the provider
-                var odds = await _oddsProvider.GetOdds(Match.Id).WaitAsync(ct);
+                var odds = await _oddsProvider.GetOdds(State.Id).WaitAsync(ct);
                 if (odds.Count == 0) continue;
                 
                 await SendMessageAsync(new UpdateOddsCommand
                 {
-                    MatchId = Match.Id,
+                    MatchId = State.Id,
                     Bookmakers = odds
                 });
                 
-                _logger.LogDebug("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", Match.Id, delayMilliseconds);
+                _logger.LogDebug("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", State.Id, delayMilliseconds);
             
                 // Use Task.Delay with cancellation support
                 await Task.Delay((int)delayMilliseconds, ct);
@@ -146,13 +140,13 @@ public sealed class MatchActor
             catch (OperationCanceledException)
             {
                 // Task.Delay was canceled, exit the loop gracefully
-                _logger.LogDebug("Polling task cancelled for EventId: {EventId}", Match.Id);
+                _logger.LogDebug("Polling task cancelled for EventId: {EventId}", State.Id);
                 return;
             }
             catch (Exception ex)
             {
                 // Exception occured, log it and wait for next retry
-                _logger.LogError(ex, "Error occurred while polling odds for EventId: {EventId}", Match.Id);
+                _logger.LogError(ex, "Error occurred while polling odds for EventId: {EventId}", State.Id);
                 await Task.Delay((int)delayMilliseconds, ct);
             }
         }
@@ -163,37 +157,37 @@ public sealed class MatchActor
     public async Task ApplyOddsUpdate(IReadOnlyCollection<Bookmaker> odds)
     {
         // If the object are completely identical, do nothing.
-        if (Equals(odds, Odds))
+        if (Equals(odds, State.Odds))
             return;
 
         // Flag to track if an update is needed
         var hasChanges = false;
 
         // Store the first odds update and notify
-        if (Odds.Count == 0)
+        if (State.Odds.Count == 0)
         {
-            Odds = odds.ToList();
+            State.Odds = odds.ToList();
             hasChanges = true; // Mark changes to ensure the event is fired
         }
         else
         {
             // Find all bookmakers that have changed by comparing the old and new collections
             var changedBookmakers = odds
-                .Where(newBookmaker => Odds.Any(existingBookmaker =>
+                .Where(newBookmaker => State.Odds.Any(existingBookmaker =>
                     existingBookmaker.Name == newBookmaker.Name && existingBookmaker.HasOutcomesChanged(newBookmaker)))
                 .ToList();
 
             // Update only the changed bookmakers in the Bookmakers collection
             foreach (var changedBookmaker in changedBookmakers)
             {
-                var existingBookmaker = Odds.FirstOrDefault(b => b.Name == changedBookmaker.Name);
+                var existingBookmaker = State.Odds.FirstOrDefault(b => b.Name == changedBookmaker.Name);
                 if (existingBookmaker != null)
                 {
                     // Replace the existing bookmaker with the new one
-                    Odds.Remove(existingBookmaker);
+                    State.Odds.Remove(existingBookmaker);
                 }
 
-                Odds.Add(changedBookmaker);
+                State.Odds.Add(changedBookmaker);
             }
 
             // If any bookmakers have changed, mark the update
@@ -201,18 +195,19 @@ public sealed class MatchActor
             {
                 hasChanges = true;
             }
-
         }
         
         // If there are no changes, do nothing
         if (!hasChanges)
             return;
-
+        
+        // Save current state
+        await _matchRepository.SaveAsync(State);
+        
         // Notify that odds has been updated
         await _eventBus.PublishAsync(new OddsUpdatedEvent
         {
-            Id = Match.Id,
-            Odds = Odds
+            Match = State
         });
     }
     
@@ -228,8 +223,8 @@ public sealed class MatchActor
         await _cts.CancelAsync();
 
         // Notify that actor has been stopped
-        await _eventBus.PublishAsync(new MatchStoppedEvent { Id = Match.Id });
+        await _eventBus.PublishAsync(new MatchStoppedEvent { Id = State.Id });
         
-        _logger.LogInformation("Actor stopped for EventId: {EventId}", Match.Id);
+        _logger.LogInformation("Actor stopped for EventId: {EventId}", State.Id);
     }
 }

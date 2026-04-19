@@ -7,8 +7,8 @@ namespace TradingEngine.Services;
 public class OddsProvider(IOddsApiClient client, IRegistry registry) : IOddsProvider
 {
     private readonly IEnumerable<string> _bookmakers = [ 
-        "betfair_ex_uk", 
-        "betfair_sb_uk", 
+        "betfair_ex_eu", 
+        "betfair_sb_eu", 
         "matchbook", 
         "smarkets",
         "pinnacle"

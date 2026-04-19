@@ -15,7 +15,7 @@ public class RegistryItem
     public Odds? OddsApiEvent { get; private set; } 
     public double? CorrelationScore { get; private set; }
 
-    public bool AttachOddsApiEvent(ITeamMatcher teamMatcher, Odds odds)
+    public bool TryAttachOddsApiEvent(ITeamMatcher teamMatcher, Odds odds)
     {
         // Only attach OddsAPI reference
         if (OddsApiEvent != null) return false;

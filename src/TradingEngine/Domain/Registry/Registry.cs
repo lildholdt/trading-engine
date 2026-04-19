@@ -69,12 +69,12 @@ public class InMemoryRegistry(ITeamMatcher teamMatcher, IEventBus eventBus, ILog
         _events.TryAdd(registryItem.Id, registryItem);
     }
 
-    public async Task AttachOddsApi(Odds odds)
+    public async Task TryAttachOddsApi(Odds odds)
     {
         var uncorrelatedItems = _events.Values.Where(e => e.OddsApiEvent == null);
         foreach (var item in uncorrelatedItems)
         {
-            var attached = item.AttachOddsApiEvent(teamMatcher, odds);
+            var attached = item.TryAttachOddsApiEvent(teamMatcher, odds);
             if (!attached) continue;
             
             // Log details about the correlation

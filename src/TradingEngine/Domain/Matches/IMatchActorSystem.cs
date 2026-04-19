@@ -30,15 +30,6 @@ public interface IMatchActorSystem
     /// <param name="id">The unique identifier of the sport event whose actor should be stopped.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous operation of stopping the actor.</returns>
     Task StopAsync(MatchId id);
-    
-    /// <summary>
-    /// Retrieves a read-only collection of the current states of all sport event actors managed by the system.
-    /// Each state contains information such as the event ID, participating teams, start time, and current odds.
-    /// </summary>
-    /// <returns>A read-only collection of <see cref="MatchState"/> objects representing the state of each sport event actor.</returns>
-    IReadOnlyCollection<MatchState> GetStates();
-    
-    MatchState GetState(MatchId id);
 
     /// <summary>
     /// Resets the state of the system, clearing all existing sport event actors and their associated states.

@@ -44,7 +44,7 @@ public interface IRegistry
     /// Attaches an OddsApi event to the registry, allowing it to be associated with other events.
     /// </summary>
     /// <param name="event">The OddsApi event to attach.</param>
-    public Task AttachOddsApi(Odds @event);
+    public Task TryAttachOddsApi(Odds @event);
     
     /// <summary>
     /// Removes a sport event from the registry by its identifier.

@@ -1,4 +1,4 @@
-﻿namespace TradingEngine.Domain.Matches.UpdateOdds;
+﻿namespace TradingEngine.Domain.Orders;
 
 /// <summary>
 /// Defines a writer abstraction for persisting odds records.

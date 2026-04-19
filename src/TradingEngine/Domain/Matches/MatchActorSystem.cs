@@ -8,6 +8,7 @@ public sealed class MatchActorSystem(
     IEventBus eventBus, 
     IOddsProvider oddsProvider,
     IServiceProvider serviceProvider,
+    IMatchRepository matchRepository,
     ILogger<MatchActorSystem> logger) : IMatchActorSystem
 {
     private readonly ConcurrentDictionary<MatchId, MatchActor> _actors = new();
@@ -20,6 +21,7 @@ public sealed class MatchActorSystem(
 
     public MatchId CreateAsync(RegistryItem entry)
     {
+        // Create the match object
         var match = new Match
         {
             Id = entry.Id, 
@@ -27,10 +29,15 @@ public sealed class MatchActorSystem(
             HomeTeam = entry.HomeTeam, 
             StartTime =  entry.StartTime
         };
-        var actor = new MatchActor(match, eventBus, oddsProvider, serviceProvider);
+        
+        // Store the state of the actor
+        matchRepository.SaveAsync(match);
+        
+        // Create and start the match actor
+        var actor = new MatchActor(match, eventBus, oddsProvider, matchRepository, serviceProvider);
         actor.StartAsync();
         _actors.GetOrAdd(entry.Id, actor);
-        return actor.GetState().Id;
+        return match.Id;
     }
 
     public async Task StopAsync(MatchId id)
@@ -44,23 +51,6 @@ public sealed class MatchActorSystem(
         
         await actor.StopAsync();
         _actors.TryRemove(id, out _);
-    }
-
-    public IReadOnlyCollection<MatchState> GetStates()
-    {
-        var sportEventActorStates = _actors.Values.Select(actor => actor.GetState()).ToArray();
-        return sportEventActorStates;
-    }
-
-    public MatchState GetState(MatchId id)
-    {
-        if (_actors.TryGetValue(id, out var actor))
-        {
-            return actor.GetState();
-        }
-
-        logger.LogInformation("Couldn't get actor state. ID: {Id} was not found", id);
-        throw new KeyNotFoundException($"Sport event actor with ID '{id}' was not found.");
     }
 
     public async Task Reset()

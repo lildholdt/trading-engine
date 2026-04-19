@@ -10,5 +10,5 @@ public class MatchCreatedEvent : IEvent
     /// <summary>
     /// Gets the initial state snapshot of the newly created actor.
     /// </summary>
-    public required MatchState State { get; init; }
+    public required MatchId MatchId { get; init; }
 }
