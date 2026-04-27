@@ -87,4 +87,12 @@ public class MatchRepository : IMatchRepository, IOddsRepository, IMatchReadRepo
         var history = _odds.GetOrAdd(match.Id, _ => new ConcurrentQueue<IReadOnlyCollection<Bookmaker>>());
         history.Enqueue([.. match.Odds]);
     }
+
+    public Task RemoveAsync(MatchId id, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        _matches.TryRemove(id, out _);
+        _odds.TryRemove(id, out _);
+        return Task.CompletedTask;
+    }
 }

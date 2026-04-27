@@ -1,6 +1,7 @@
 ﻿using TradingEngine.Clients.Polymarket;
 using TradingEngine.Domain.Matches;
 using TradingEngine.Domain.Matches.UpdateOdds;
+using TradingEngine.Domain.Orders.GetOrders;
 using TradingEngine.Domain.Registry;
 using TradingEngine.Infrastructure.EventBus;
 
@@ -61,30 +62,31 @@ public class OrderPlacementHandler(
         var polymarketOutcomeAway = awayMarket?.Outcome.Price;
         var polymarketOutcomeDraw = drawMarket?.Outcome.Price;
         
-        var records = @event.Match.Odds.Select(record => new OrderReadModel
+        var snapshotTime = DateTime.UtcNow;
+        var order = new OrderReadModel
         {
             Id = @event.Match.Id,
-            Bookmaker = record.Name,
-            SnapshotTime = DateTime.UtcNow,
-            HoursBefore = (int)(item.StartTime - DateTime.UtcNow).TotalHours,
-            OddsHome = record.Outcome.Home,
-            OddsDraw = record.Outcome.Draw,
-            OddsAway = record.Outcome.Away,
-            TrueOddsHome = record.Outcome.CalculateTrueOdds(OutcomeType.Home),
-            TrueOddsDraw = record.Outcome.CalculateTrueOdds(OutcomeType.Draw),
-            TrueOddsAway = record.Outcome.CalculateTrueOdds(OutcomeType.Away),
-            TrueOddsAverageHome = @event.Match.AverageOdds(OutcomeType.Home),
-            TrueOddsAverageDraw = @event.Match.AverageOdds(OutcomeType.Draw),
-            TrueOddsAverageAway = @event.Match.AverageOdds(OutcomeType.Away),
+            SnapshotTime = snapshotTime,
+            HoursBefore = (int)(item.StartTime - snapshotTime).TotalHours,
+            Bookmakers = @event.Match.Odds.Select(record => new OrderReadModel.Bookmaker
+            {
+                Name = record.Name,
+                OddsHome = record.Outcome.Home,
+                OddsDraw = record.Outcome.Draw,
+                OddsAway = record.Outcome.Away,
+                TrueOddsHome = record.Outcome.CalculateTrueOdds(OutcomeType.Home),
+                TrueOddsDraw = record.Outcome.CalculateTrueOdds(OutcomeType.Draw),
+                TrueOddsAway = record.Outcome.CalculateTrueOdds(OutcomeType.Away),
+            }).ToList(),
+            TrueOddsAverageHome = averageHome,
+            TrueOddsAverageDraw = averageDraw,
+            TrueOddsAverageAway = averageAway,
             PolymarketOutcomeHome = polymarketOutcomeHome ?? 0,
             PolymarketOutcomeDraw = polymarketOutcomeDraw ?? 0,
             PolymarketOutcomeAway = polymarketOutcomeAway ?? 0,
-        }).ToList();
+        };
 
-        foreach (var record in records)
-        {
-            ordersRepository.SaveOrder(record);
-        }
+        ordersRepository.SaveOrder(order);
         
         // TODO: Add logic to call order placement API in Polymarket
 

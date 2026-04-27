@@ -59,24 +59,27 @@ public class MatchesController(IDispatcher dispatcher) : ControllerBase
 
         foreach (var order in orders)
         {
-            csv.AppendLine(string.Join(",", [
-                CsvEscape(order.Id),
-                CsvEscape(order.Bookmaker),
-                CsvEscape(order.SnapshotTime.ToString("O", CultureInfo.InvariantCulture)),
-                CsvEscape(order.HoursBefore.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.OddsHome.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.OddsDraw.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.OddsAway.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.TrueOddsHome.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.TrueOddsDraw.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.TrueOddsAway.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.TrueOddsAverageHome.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.TrueOddsAverageDraw.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.TrueOddsAverageAway.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.PolymarketOutcomeHome.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.PolymarketOutcomeDraw.ToString(CultureInfo.CurrentCulture)),
-                CsvEscape(order.PolymarketOutcomeAway.ToString(CultureInfo.CurrentCulture))
-            ]));
+            foreach (var bookmaker in order.Bookmakers)
+            {
+                csv.AppendLine(string.Join(",", [
+                    CsvEscape(order.Id),
+                    CsvEscape(bookmaker.Name),
+                    CsvEscape(order.SnapshotTime.ToString("O", CultureInfo.InvariantCulture)),
+                    CsvEscape(order.HoursBefore.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(bookmaker.OddsHome.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(bookmaker.OddsDraw.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(bookmaker.OddsAway.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(bookmaker.TrueOddsHome.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(bookmaker.TrueOddsDraw.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(bookmaker.TrueOddsAway.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(order.TrueOddsAverageHome.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(order.TrueOddsAverageDraw.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(order.TrueOddsAverageAway.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(order.PolymarketOutcomeHome.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(order.PolymarketOutcomeDraw.ToString(CultureInfo.CurrentCulture)),
+                    CsvEscape(order.PolymarketOutcomeAway.ToString(CultureInfo.CurrentCulture))
+                ]));
+            }
         }
 
         return File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", $"orders-{id}.csv");

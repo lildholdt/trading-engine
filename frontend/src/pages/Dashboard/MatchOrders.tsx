@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import { formatEuropeanDateTime } from "../../utils/dateTime";
 
 type MatchItem = {
   id: string;
@@ -258,7 +259,7 @@ export default function MatchOrders() {
                       {order.bookmaker}
                     </TableCell>
                     <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                      {new Date(order.snapshotTime).toLocaleString()}
+                      {formatEuropeanDateTime(order.snapshotTime)}
                     </TableCell>
                     <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                       {order.hoursBefore}

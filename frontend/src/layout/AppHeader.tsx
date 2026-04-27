@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import UserDropdown from "../components/header/UserDropdown";
+import { SettingsIcon } from "../icons";
 
 const AppHeader: React.FC = () => {
+  const navigate = useNavigate();
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -16,6 +18,10 @@ const AppHeader: React.FC = () => {
     } else {
       toggleMobileSidebar();
     }
+  };
+
+  const handleSettingsClick = () => {
+    navigate("/registry/configuration");
   };
 
   const toggleApplicationMenu = () => {
@@ -156,9 +162,17 @@ const AppHeader: React.FC = () => {
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
+            {/* <!-- Settings Button --> */}
+            <button
+              onClick={handleSettingsClick}
+              className="relative flex items-center justify-center text-gray-500 transition-colors bg-white border border-gray-200 rounded-full hover:text-dark-900 h-11 w-11 hover:bg-gray-100 hover:text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
+              aria-label="Settings"
+              title="Settings"
+            >
+              <SettingsIcon className="w-5 h-5" />
+            </button>
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
-            {/* <!-- Dark Mode Toggler --> */}
           </div>
           {/* <!-- User Area --> */}
           <UserDropdown />

@@ -21,18 +21,12 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Matches",
-    subItems: [
-      { name: "List", path: "/", pro: false },
-      { name: "Orders", path: "/matches/orders", pro: false },
-    ],
+    path: "/",
   },
   {
     icon: <ListIcon />,
     name: "Registry",
-    subItems: [
-      { name: "List", path: "/registry", pro: false },
-      { name: "Configuration", path: "/registry/configuration", pro: false },
-    ],
+    path: "/registry",
   },
 ];
 
@@ -45,6 +39,19 @@ const AppSidebar: React.FC = () => {
     {}
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const navItems: NavItem[] = [
+    {
+      icon: <GridIcon />,
+      name: "Matches",
+      path: "/",
+    },
+    {
+      icon: <ListIcon />,
+      name: "Registry",
+      path: "/registry",
+    },
+  ];
 
   // const isActive = (path: string) => location.pathname === path;
   const isActive = useCallback(
@@ -63,7 +70,7 @@ const AppSidebar: React.FC = () => {
           }
         });
       }
-      });
+    });
 
     if (!submenuMatched) {
       setOpenSubmenu(null);

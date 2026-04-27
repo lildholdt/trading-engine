@@ -27,6 +27,7 @@ import { ReactComponent as AngleRightIcon } from "./angle-right.svg?react";
 import { ReactComponent as PencilIcon } from "./pencil.svg?react";
 import { ReactComponent as CheckLineIcon } from "./check-line.svg?react";
 import { ReactComponent as CloseLineIcon } from "./close-line.svg?react";
+import { ReactComponent as SettingsIcon } from "./settings.svg?react";
 import { ReactComponent as ChevronDownIcon } from "./chevron-down.svg?react";
 import { ReactComponent as ChevronUpIcon } from "./chevron-up.svg?react";
 import { ReactComponent as PaperPlaneIcon } from "./paper-plane.svg?react";
@@ -86,6 +87,7 @@ export {
   PencilIcon,
   CheckLineIcon,
   CloseLineIcon,
+  SettingsIcon,
   ChevronDownIcon,
   PaperPlaneIcon,
   EnvelopeIcon,

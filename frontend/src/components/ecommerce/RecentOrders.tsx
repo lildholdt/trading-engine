@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { formatEuropeanDateTime } from "../../utils/dateTime";
 
 
 // Define the TypeScript interface for the table rows
@@ -168,15 +169,7 @@ export default function SportEvents() {
                   {sportEvent.team1} vs {sportEvent.team2}
                 </TableCell>              
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {sportEvent.dateTime.toLocaleString('en-GB', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      second: '2-digit',
-                    })}
+                  {formatEuropeanDateTime(sportEvent.dateTime, true)}
                 </TableCell>
                 <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                   {sportEvent.sport}

@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { useLocation, useParams } from "react-router";
+import Chart from "react-apexcharts";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import {
@@ -9,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import { formatEuropeanDateTime } from "../../utils/dateTime";
 
 type MatchItem = {
   id: string;
@@ -17,17 +19,21 @@ type MatchItem = {
   startTime: string;
 };
 
-type OrderItem = {
-  id: string;
-  bookmaker: string;
-  snapshotTime: string;
-  hoursBefore: number;
+type OrderBookmaker = {
+  name: string;
   oddsHome: number;
   oddsDraw: number;
   oddsAway: number;
   trueOddsHome: number;
   trueOddsDraw: number;
   trueOddsAway: number;
+};
+
+type OrderItem = {
+  id: string;
+  snapshotTime: string;
+  hoursBefore: number;
+  bookmakers: OrderBookmaker[];
   trueOddsAverageHome: number;
   trueOddsAverageDraw: number;
   trueOddsAverageAway: number;
@@ -47,6 +53,9 @@ export default function MatchDetails() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
+  const [chartOptions, setChartOptions] = useState<any>(null);
+  const [chartSeries, setChartSeries] = useState<any>(null);
 
   useEffect(() => {
     if (!id) {
@@ -120,7 +129,10 @@ export default function MatchDetails() {
           throw new Error("Orders endpoint not found.");
         }
 
-        setOrders(resolvedOrders);
+        const sorted = [...resolvedOrders].sort(
+          (a, b) => new Date(b.snapshotTime).getTime() - new Date(a.snapshotTime).getTime()
+        );
+        setOrders(sorted);
       } catch (requestError) {
         if (requestError instanceof DOMException && requestError.name === "AbortError") {
           return;
@@ -140,6 +152,106 @@ export default function MatchDetails() {
     };
   }, [id, match]);
 
+  useEffect(() => {
+    if (orders.length === 0) {
+      return;
+    }
+
+    // Sort orders by snapshot time
+    const sortedOrders = [...orders].sort((a, b) => 
+      new Date(a.snapshotTime).getTime() - new Date(b.snapshotTime).getTime()
+    );
+
+    // Create accumulated data
+    const timeLabels: string[] = [];
+    const accumulatedCounts: number[] = [];
+    let cumulative = 0;
+
+    sortedOrders.forEach((order) => {
+      const time = formatEuropeanDateTime(order.snapshotTime);
+      timeLabels.push(time);
+      cumulative += 1;
+      accumulatedCounts.push(cumulative);
+    });
+
+    setChartOptions({
+      chart: {
+        type: "line",
+        toolbar: {
+          show: false,
+        },
+      },
+      stroke: {
+        curve: "straight",
+        width: 2,
+      },
+      markers: {
+        size: 5,
+        colors: "#3b82f6",
+        strokeWidth: 0,
+        hover: {
+          size: 7,
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      colors: ["#3b82f6"],
+      xaxis: {
+        type: "category",
+        categories: timeLabels,
+        axisBorder: {
+          show: false,
+        },
+        axisTicks: {
+          show: false,
+        },
+        labels: {
+          show: true,
+          style: {
+            fontSize: "12px",
+          },
+        },
+      },
+      yaxis: {
+        title: {
+          text: "Accumulated Orders",
+        },
+      },
+      grid: {
+        show: true,
+        borderColor: "#e5e7eb",
+        strokeDashArray: 0,
+        position: "back",
+      },
+      tooltip: {
+        theme: "light",
+        y: {
+          formatter: (value: number) => `${value} orders`,
+        },
+      },
+    });
+
+    setChartSeries([
+      {
+        name: "Accumulated Orders",
+        data: accumulatedCounts,
+      },
+    ]);
+  }, [orders]);
+
+  const toggleExpandedOrder = (orderKey: string) => {
+    setExpandedOrderIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderKey)) {
+        next.delete(orderKey);
+      } else {
+        next.add(orderKey);
+      }
+      return next;
+    });
+  };
+
   return (
     <>
       <PageMeta title="Match Details | Trading Engine" description="Match details page for Trading Engine." />
@@ -150,13 +262,19 @@ export default function MatchDetails() {
           <div className="rounded-xl border border-gray-200 p-3 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400">Match</p>
             <p className="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
-              {match ? `${match.home} vs ${match.away}` : "-"}
+              {match ? (
+                <>
+                  {match.home}<span className="mx-3 text-blue-500">vs</span>{match.away}
+                </>
+              ) : (
+                "-"
+              )}
             </p>
           </div>
           <div className="rounded-xl border border-gray-200 p-3 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400">Start Time</p>
             <p className="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
-              {match?.startTime ? new Date(match.startTime).toLocaleString() : "-"}
+              {match?.startTime ? formatEuropeanDateTime(match.startTime) : "-"}
             </p>
           </div>
           <div className="rounded-xl border border-gray-200 p-3 dark:border-gray-700">
@@ -175,12 +293,19 @@ export default function MatchDetails() {
           </div>
         )}
 
+        {chartOptions && chartSeries && (
+          <div className="mb-5 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
+            <h3 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">Orders Timeline</h3>
+            <Chart options={chartOptions} series={chartSeries} type="line" height={300} />
+          </div>
+        )}
+
         <div className="max-w-full overflow-x-auto">
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
               <TableRow>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
-                  Bookmaker
+                  Details
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
                   Snapshot Time
@@ -189,40 +314,151 @@ export default function MatchDetails() {
                   Hours Before
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
-                  Odds (H/D/A)
+                  Bookmakers
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
-                  True Odds (H/D/A)
+                  True Odds Avg (H/D/A)
+                </TableCell>
+                <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
+                  Polymarket (H/D/A)
                 </TableCell>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {loading ? (
                 <TableRow>
-                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={5}>
+                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
                     Loading orders...
                   </TableCell>
                 </TableRow>
+              ) : orders.length === 0 ? (
+                <TableRow>
+                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
+                    No orders available for this match.
+                  </TableCell>
+                </TableRow>
               ) : (
-                orders.map((order, index) => (
-                  <TableRow key={`${order.id}-${index}`}>
-                    <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
-                      {order.bookmaker}
-                    </TableCell>
-                    <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                      {new Date(order.snapshotTime).toLocaleString()}
-                    </TableCell>
-                    <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                      {order.hoursBefore}
-                    </TableCell>
-                    <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                      {order.oddsHome} / {order.oddsDraw} / {order.oddsAway}
-                    </TableCell>
-                    <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                      {order.trueOddsHome} / {order.trueOddsDraw} / {order.trueOddsAway}
-                    </TableCell>
-                  </TableRow>
-                ))
+                orders.map((order, index) => {
+                  const orderKey = `${order.snapshotTime}-${index}`;
+                  const isExpanded = expandedOrderIds.has(orderKey);
+
+                  return (
+                    <Fragment key={orderKey}>
+                      <TableRow className="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          <button
+                            type="button"
+                            aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                            onClick={() => toggleExpandedOrder(orderKey)}
+                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
+                          >
+                            <svg
+                              className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M5 8L10 13L15 8"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                          </button>
+                        </TableCell>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          {formatEuropeanDateTime(order.snapshotTime)}
+                        </TableCell>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          {order.hoursBefore}
+                        </TableCell>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          {order.bookmakers.length}
+                        </TableCell>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          {order.trueOddsAverageHome} / {order.trueOddsAverageDraw} / {order.trueOddsAverageAway}
+                        </TableCell>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          {order.polymarketOutcomeHome} / {order.polymarketOutcomeDraw} / {order.polymarketOutcomeAway}
+                        </TableCell>
+                      </TableRow>
+
+                      {isExpanded && (
+                        <TableRow>
+                          <TableCell className="bg-gray-50/60 px-5 py-4 dark:bg-white/[0.02]" colSpan={6}>
+                            {order.bookmakers.length === 0 ? (
+                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                No bookmaker details available for this snapshot.
+                              </p>
+                            ) : (
+                              <div className="overflow-x-auto">
+                                <table className="min-w-full">
+                                  <thead>
+                                    <tr>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        Bookmaker
+                                      </th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        Odds Home
+                                      </th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        Odds Draw
+                                      </th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        Odds Away
+                                      </th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        True Home
+                                      </th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        True Draw
+                                      </th>
+                                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                                        True Away
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {order.bookmakers.map((bookmaker, bookmakerIndex) => (
+                                      <tr
+                                        key={`${bookmaker.name}-${bookmakerIndex}`}
+                                        className="border-t border-gray-100 dark:border-white/[0.05]"
+                                      >
+                                        <td className="px-3 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                          {bookmaker.name}
+                                        </td>
+                                        <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                          {bookmaker.oddsHome}
+                                        </td>
+                                        <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                          {bookmaker.oddsDraw}
+                                        </td>
+                                        <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                          {bookmaker.oddsAway}
+                                        </td>
+                                        <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                          {bookmaker.trueOddsHome}
+                                        </td>
+                                        <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                          {bookmaker.trueOddsDraw}
+                                        </td>
+                                        <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                          {bookmaker.trueOddsAway}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </Fragment>
+                  );
+                })
               )}
             </TableBody>
           </Table>

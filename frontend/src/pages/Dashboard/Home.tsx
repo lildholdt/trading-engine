@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import { formatEuropeanDateTime } from "../../utils/dateTime";
 
 type MatchItem = {
   id: string;
@@ -36,6 +37,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stoppingId, setStoppingId] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
   const [expandedMatchIds, setExpandedMatchIds] = useState<Set<string>>(new Set());
 
   const [searchInput, setSearchInput] = useState("");
@@ -162,6 +164,42 @@ export default function Home() {
     }
   };
 
+  const handleReset = async () => {
+    setIsResetting(true);
+    setError(null);
+
+    try {
+      const endpointCandidates = API_BASE_URL
+        ? [`${API_BASE_URL}/api/matches/reset`, `/api/matches/reset`]
+        : [`/api/matches/reset`];
+
+      let resetSuccess = false;
+      for (const endpoint of endpointCandidates) {
+        const response = await fetch(endpoint, { method: "POST" });
+        if (response.ok) {
+          resetSuccess = true;
+          break;
+        }
+        if (response.status !== 404) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+      }
+
+      if (!resetSuccess) {
+        throw new Error("Reset endpoint not found.");
+      }
+
+      setMatches([]);
+      setPage(1);
+      setSearch("");
+      setSearchInput("");
+    } catch {
+      setError("Failed to reset matches.");
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const hasNextPage = matches.length === PAGE_SIZE;
 
   const toggleExpandedRow = (matchId: string) => {
@@ -202,7 +240,14 @@ export default function Home() {
             </button>
           </form>
 
-          <div className="text-sm text-gray-500 dark:text-gray-400">Page {page}</div>
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={isResetting}
+            className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
+          >
+            {isResetting ? "Resetting..." : "Reset"}
+          </button>
         </div>
 
         {error && (
@@ -304,7 +349,7 @@ export default function Home() {
                           {match.away}
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                          {new Date(match.startTime).toLocaleString()}
+                          {formatEuropeanDateTime(match.startTime)}
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {match.odds?.length ?? 0}
@@ -375,7 +420,7 @@ export default function Home() {
                                           {oddsItem.away}
                                         </td>
                                         <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                                          {new Date(oddsItem.updatedAt).toLocaleString()}
+                                          {formatEuropeanDateTime(oddsItem.updatedAt)}
                                         </td>
                                       </tr>
                                     ))}
@@ -403,6 +448,8 @@ export default function Home() {
           >
             Previous
           </button>
+
+          <div className="text-sm text-gray-500 dark:text-gray-400">Page {page}</div>
 
           <button
             type="button"
