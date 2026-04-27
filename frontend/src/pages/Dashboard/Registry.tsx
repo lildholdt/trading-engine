@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import { getAuthHeaders } from "../../utils/auth";
 
 type RegistryItem = {
   id: string;
@@ -54,6 +55,7 @@ export default function Registry() {
 
         for (const endpoint of endpointCandidates) {
           const candidateResponse = await fetch(`${endpoint}?${params.toString()}`, {
+            headers: getAuthHeaders(),
             signal: controller.signal,
           });
 

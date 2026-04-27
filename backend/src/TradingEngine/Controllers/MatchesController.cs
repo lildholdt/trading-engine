@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Text;
 using TradingEngine.Domain.Matches.GetMatchOdds;
@@ -12,6 +13,7 @@ namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api/matches")]
+[Authorize]
 public class MatchesController(IDispatcher dispatcher) : ControllerBase
 {
     [HttpGet]

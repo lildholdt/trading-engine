@@ -1,5 +1,8 @@
 ﻿using Microsoft.OpenApi;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Text;
 using TradingEngine.Clients;
 using TradingEngine.Clients.OddsApi;
 using TradingEngine.Clients.Polymarket;
@@ -60,12 +63,12 @@ public static class Application
         builder.Services.AddScoped<IDispatcher, Dispatcher>();
         builder.Services.AddScoped<ICommandHandler<StopMatchCommand, Unit>, StopMatchCommandHandler>();
         builder.Services.AddScoped<ICommandHandler<ResetMatchesCommand, Unit>, ResetMatchesCommandHandler>();
-            builder.Services.AddScoped<ICommandHandler<UpdateRegistryConfigurationCommand, Unit>, UpdateRegistryConfigurationCommandHandler>();
+        builder.Services.AddScoped<ICommandHandler<UpdateRegistryConfigurationCommand, Unit>, UpdateRegistryConfigurationCommandHandler>();
         builder.Services.AddScoped<IQueryHandler<GetMatchesQuery, IReadOnlyCollection<MatchReadModel>>, GetMatchesQueryHandler>();
         builder.Services.AddScoped<IQueryHandler<GetMatchOddsQuery, IReadOnlyCollection<OddsReadModel>>, GetMatchOddsQueryHandler>();
         builder.Services.AddScoped<IQueryHandler<GetOrdersQuery, IReadOnlyCollection<OrderReadModel>>, GetOrdersQueryHandler>();
-            builder.Services.AddScoped<IQueryHandler<GetRegistryItemsQuery, IReadOnlyCollection<RegistryItemReadModel>>, GetRegistryItemsQueryHandler>();
-            builder.Services.AddScoped<IQueryHandler<GetRegistryConfigurationQuery, IReadOnlyCollection<RegistryConfigurationItemReadModel>>, GetRegistryConfigurationQueryHandler>();
+        builder.Services.AddScoped<IQueryHandler<GetRegistryItemsQuery, IReadOnlyCollection<RegistryItemReadModel>>, GetRegistryItemsQueryHandler>();
+        builder.Services.AddScoped<IQueryHandler<GetRegistryConfigurationQuery, IReadOnlyCollection<RegistryConfigurationItemReadModel>>, GetRegistryConfigurationQueryHandler>();
         
         // Register actor system
         builder.Services.AddSingleton<IMatchActorSystem,  MatchActorSystem>();
@@ -86,6 +89,29 @@ public static class Application
         builder.Services.AddTransient<LoggingHandler>();
         builder.Services.AddPolymarketClient(builder.Configuration);
         builder.Services.AddOddsApiClient(builder.Configuration);
+
+        var jwtKey = builder.Configuration["Auth:JwtKey"] ?? "SuperSecretChangeMe1234567890123456";
+        var jwtIssuer = builder.Configuration["Auth:Issuer"] ?? "TradingEngine";
+        var jwtAudience = builder.Configuration["Auth:Audience"] ?? "TradingEngine.Client";
+
+        builder.Services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+                    ClockSkew = TimeSpan.FromMinutes(1)
+                };
+            });
+
+        builder.Services.AddAuthorization();
         
         builder.Services.AddControllers();
         builder.Services.AddSignalR();
@@ -113,6 +139,17 @@ public static class Application
                 Version = "v1",
                 Description = "Automatic sports betting"
             });
+
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter JWT token in the format: Bearer {token}"
+            });
+
         });
         
         // Add CORS services and configure the allowed origins
@@ -152,6 +189,7 @@ public static class Application
         app.UseCors("AllowAll");
         
         app.UseRouting();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
         app.MapHub<GenericEventHub>("/hubs/trading");

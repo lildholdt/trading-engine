@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { formatEuropeanDateTime } from "../../utils/dateTime";
+import { getAuthHeaders } from "../../utils/auth";
 
 type MatchItem = {
   id: string;
@@ -50,7 +51,10 @@ export default function MatchOrders() {
     const controller = new AbortController();
 
     const fetchJsonArray = async (endpoint: string): Promise<unknown[] | null> => {
-      const response = await fetch(endpoint, { signal: controller.signal });
+      const response = await fetch(endpoint, {
+        headers: getAuthHeaders(),
+        signal: controller.signal,
+      });
       if (!response.ok) {
         if (response.status === 404) {
           return null;

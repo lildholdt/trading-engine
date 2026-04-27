@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { formatEuropeanDateTime } from "../../utils/dateTime";
+import { getAuthHeaders } from "../../utils/auth";
 
 type MatchItem = {
   id: string;
@@ -70,6 +71,7 @@ export default function Home() {
 
         for (const endpoint of endpointCandidates) {
           const response = await fetch(`${endpoint}?${params.toString()}`, {
+            headers: getAuthHeaders(),
             signal: controller.signal,
           });
 
@@ -143,7 +145,7 @@ export default function Home() {
 
       let stopped = false;
       for (const endpoint of endpointCandidates) {
-        const response = await fetch(endpoint, { method: "DELETE" });
+        const response = await fetch(endpoint, { method: "DELETE", headers: getAuthHeaders() });
         if (response.ok) {
           stopped = true;
           break;
@@ -175,7 +177,7 @@ export default function Home() {
 
       let resetSuccess = false;
       for (const endpoint of endpointCandidates) {
-        const response = await fetch(endpoint, { method: "POST" });
+        const response = await fetch(endpoint, { method: "POST", headers: getAuthHeaders() });
         if (response.ok) {
           resetSuccess = true;
           break;

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TradingEngine.Domain.Registry.GetRegistryConfiguration;
 using TradingEngine.Domain.Registry.GetRegistryItems;
 using TradingEngine.Domain.Registry.UpdateRegistryConfiguration;
@@ -8,6 +9,7 @@ namespace TradingEngine.Controllers;
 
 [ApiController]
 [Route("api/registry")]
+[Authorize]
 public class RegistryController(IDispatcher dispatcher) : ControllerBase
 {
     [HttpGet]

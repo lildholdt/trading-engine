@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
+import { getAuthHeaders } from "../../utils/auth";
 
 type RegistryConfigurationItem = {
   id: number;
@@ -39,7 +40,10 @@ export default function RegistryConfiguration() {
         let resolvedData: RegistryConfigurationItem[] | null = null;
 
         for (const endpoint of endpointCandidates) {
-          const response = await fetch(endpoint, { signal: controller.signal });
+          const response = await fetch(endpoint, {
+            headers: getAuthHeaders(),
+            signal: controller.signal,
+          });
           if (!response.ok) {
             if (response.status === 404) {
               continue;
@@ -102,7 +106,7 @@ export default function RegistryConfiguration() {
 
       let updated = false;
       for (const endpoint of endpointCandidates) {
-        const response = await fetch(endpoint, { method: "POST" });
+        const response = await fetch(endpoint, { method: "POST", headers: getAuthHeaders() });
         if (response.ok) {
           updated = true;
           break;
