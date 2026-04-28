@@ -137,10 +137,6 @@ export default function Registry() {
               Search
             </button>
           </form>
-
-          <div className="text-sm text-gray-500 dark:text-gray-400">
-            Page {page}
-          </div>
         </div>
 
         {error && (
@@ -229,6 +225,8 @@ export default function Registry() {
           >
             Previous
           </button>
+
+          <div className="text-sm text-gray-500 dark:text-gray-400">Page {page}</div>
 
           <button
             type="button"
