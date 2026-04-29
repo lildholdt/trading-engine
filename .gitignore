@@ -108,8 +108,6 @@ TestResults/
 
 # ASP.NET
 wwwroot/
-appsettings.json
-appsettings.*.json
 
 # NuGet files
 *.nupkg
