@@ -5,7 +5,7 @@ import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
-import { getAuthToken, setAuthToken } from "../../utils/auth";
+import { getAuthToken, setAuthToken, setAuthUsername } from "../../utils/auth";
 
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
@@ -58,12 +58,13 @@ export default function SignInForm() {
           throw new Error(`Request failed with status ${response.status}`);
         }
 
-        const payload = (await response.json()) as { token?: string };
+        const payload = (await response.json()) as { token?: string; username?: string };
         if (!payload.token) {
           throw new Error("No token returned by login endpoint.");
         }
 
         setAuthToken(payload.token);
+        setAuthUsername(payload.username ?? username);
         navigate("/", { replace: true });
         loginSucceeded = true;
         break;
