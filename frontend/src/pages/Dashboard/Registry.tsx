@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import {
@@ -19,6 +19,14 @@ type RegistryItem = {
   correlationScore: number | null;
 };
 
+type RegistrySortKey =
+  | "polymarketHome"
+  | "polymarketAway"
+  | "oddsApiHome"
+  | "oddsApiAway"
+  | "correlationScore";
+type SortDirection = "asc" | "desc";
+
 const PAGE_SIZE = 20;
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 
@@ -30,6 +38,8 @@ export default function Registry() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [sortKey, setSortKey] = useState<RegistrySortKey>("correlationScore");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -112,6 +122,40 @@ export default function Registry() {
 
   const hasNextPage = items.length === PAGE_SIZE;
 
+  const sortedItems = useMemo(() => {
+    const directionMultiplier = sortDirection === "asc" ? 1 : -1;
+
+    return [...items].sort((left, right) => {
+      if (sortKey === "correlationScore") {
+        const leftValue = left.correlationScore ?? Number.NEGATIVE_INFINITY;
+        const rightValue = right.correlationScore ?? Number.NEGATIVE_INFINITY;
+        return (leftValue - rightValue) * directionMultiplier;
+      }
+
+      const leftValue = left[sortKey] ?? "";
+      const rightValue = right[sortKey] ?? "";
+      return leftValue.localeCompare(rightValue) * directionMultiplier;
+    });
+  }, [items, sortDirection, sortKey]);
+
+  const handleSort = (nextSortKey: RegistrySortKey) => {
+    if (sortKey === nextSortKey) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortKey(nextSortKey);
+    setSortDirection(nextSortKey === "correlationScore" ? "desc" : "asc");
+  };
+
+  const getSortIndicator = (columnKey: RegistrySortKey) => {
+    if (sortKey !== columnKey) {
+      return "";
+    }
+
+    return sortDirection === "asc" ? " \u2191" : " \u2193";
+  };
+
   return (
     <div>
       <PageMeta
@@ -153,31 +197,61 @@ export default function Registry() {
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Polymarket Home
+                  <button
+                    type="button"
+                    onClick={() => handleSort("polymarketHome")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Polymarket Home{getSortIndicator("polymarketHome")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Polymarket Away
+                  <button
+                    type="button"
+                    onClick={() => handleSort("polymarketAway")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Polymarket Away{getSortIndicator("polymarketAway")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Odds API Home
+                  <button
+                    type="button"
+                    onClick={() => handleSort("oddsApiHome")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Odds API Home{getSortIndicator("oddsApiHome")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Odds API Away
+                  <button
+                    type="button"
+                    onClick={() => handleSort("oddsApiAway")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Odds API Away{getSortIndicator("oddsApiAway")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Correlation
+                  <button
+                    type="button"
+                    onClick={() => handleSort("correlationScore")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Correlation{getSortIndicator("correlationScore")}
+                  </button>
                 </TableCell>
               </TableRow>
             </TableHeader>
@@ -190,7 +264,7 @@ export default function Registry() {
                   </TableCell>
                 </TableRow>
               ) : (
-                items.map((item) => (
+                sortedItems.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
                       {item.polymarketHome}

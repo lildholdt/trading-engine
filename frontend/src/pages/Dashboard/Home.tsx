@@ -1,4 +1,4 @@
-import { FormEvent, Fragment, useEffect, useState } from "react";
+import { FormEvent, Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
@@ -29,6 +29,9 @@ type BookmakerOdds = {
   updatedAt: string;
 };
 
+type MatchSortKey = "home" | "away" | "series" | "startTime" | "bookmakers";
+type SortDirection = "asc" | "desc";
+
 const PAGE_SIZE = 20;
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
@@ -44,6 +47,8 @@ export default function Home() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [sortKey, setSortKey] = useState<MatchSortKey>("startTime");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -168,6 +173,43 @@ export default function Home() {
 
   const hasNextPage = matches.length === PAGE_SIZE;
 
+  const sortedMatches = useMemo(() => {
+    const directionMultiplier = sortDirection === "asc" ? 1 : -1;
+
+    return [...matches].sort((left, right) => {
+      if (sortKey === "bookmakers") {
+        return ((left.odds?.length ?? 0) - (right.odds?.length ?? 0)) * directionMultiplier;
+      }
+
+      if (sortKey === "startTime") {
+        return (
+          (new Date(left.startTime).getTime() - new Date(right.startTime).getTime()) *
+          directionMultiplier
+        );
+      }
+
+      return left[sortKey].localeCompare(right[sortKey]) * directionMultiplier;
+    });
+  }, [matches, sortDirection, sortKey]);
+
+  const handleSort = (nextSortKey: MatchSortKey) => {
+    if (sortKey === nextSortKey) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortKey(nextSortKey);
+    setSortDirection(nextSortKey === "startTime" ? "asc" : "asc");
+  };
+
+  const getSortIndicator = (columnKey: MatchSortKey) => {
+    if (sortKey !== columnKey) {
+      return "";
+    }
+
+    return sortDirection === "asc" ? " \u2191" : " \u2193";
+  };
+
   const toggleExpandedRow = (matchId: string) => {
     setExpandedMatchIds((prev) => {
       const next = new Set(prev);
@@ -227,31 +269,61 @@ export default function Home() {
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Home
+                  <button
+                    type="button"
+                    onClick={() => handleSort("home")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Home{getSortIndicator("home")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Away
+                  <button
+                    type="button"
+                    onClick={() => handleSort("away")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Away{getSortIndicator("away")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Series
+                  <button
+                    type="button"
+                    onClick={() => handleSort("series")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Series{getSortIndicator("series")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Start Time
+                  <button
+                    type="button"
+                    onClick={() => handleSort("startTime")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Start Time{getSortIndicator("startTime")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Bookmakers
+                  <button
+                    type="button"
+                    onClick={() => handleSort("bookmakers")}
+                    className="inline-flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-200"
+                  >
+                    Bookmakers{getSortIndicator("bookmakers")}
+                  </button>
                 </TableCell>
                 <TableCell
                   isHeader
@@ -270,7 +342,7 @@ export default function Home() {
                   </TableCell>
                 </TableRow>
               ) : (
-                matches.map((match) => {
+                sortedMatches.map((match) => {
                   const isExpanded = expandedMatchIds.has(match.id);
 
                   return (
