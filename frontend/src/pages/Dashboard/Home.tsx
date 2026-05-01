@@ -38,7 +38,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stoppingId, setStoppingId] = useState<string | null>(null);
-  const [isResetting, setIsResetting] = useState(false);
   const [expandedMatchIds, setExpandedMatchIds] = useState<Set<string>>(new Set());
 
   const [searchInput, setSearchInput] = useState("");
@@ -166,42 +165,6 @@ export default function Home() {
     }
   };
 
-  const handleReset = async () => {
-    setIsResetting(true);
-    setError(null);
-
-    try {
-      const endpointCandidates = API_BASE_URL
-        ? [`${API_BASE_URL}/api/matches/reset`, `/api/matches/reset`]
-        : [`/api/matches/reset`];
-
-      let resetSuccess = false;
-      for (const endpoint of endpointCandidates) {
-        const response = await fetch(endpoint, { method: "POST", headers: getAuthHeaders() });
-        if (response.ok) {
-          resetSuccess = true;
-          break;
-        }
-        if (response.status !== 404) {
-          throw new Error(`Request failed with status ${response.status}`);
-        }
-      }
-
-      if (!resetSuccess) {
-        throw new Error("Reset endpoint not found.");
-      }
-
-      setMatches([]);
-      setPage(1);
-      setSearch("");
-      setSearchInput("");
-    } catch {
-      setError("Failed to reset matches.");
-    } finally {
-      setIsResetting(false);
-    }
-  };
-
   const hasNextPage = matches.length === PAGE_SIZE;
 
   const toggleExpandedRow = (matchId: string) => {
@@ -241,15 +204,6 @@ export default function Home() {
               Search
             </button>
           </form>
-
-          <button
-            type="button"
-            onClick={handleReset}
-            disabled={isResetting}
-            className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
-          >
-            {isResetting ? "Resetting..." : "Reset"}
-          </button>
         </div>
 
         {error && (

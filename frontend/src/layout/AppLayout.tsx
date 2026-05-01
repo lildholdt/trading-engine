@@ -1,13 +1,14 @@
 import { SidebarProvider, useSidebar } from "../context/SidebarContext";
 import { Outlet, useNavigate } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import AppHeader from "./AppHeader";
 import AppSidebar from "./AppSidebar";
 import { getAuthToken } from "../utils/auth";
 
 const LayoutContent: React.FC = () => {
   const navigate = useNavigate();
-  const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+  const { isExpanded, isHovered, isMobileOpen, toggleMobileSidebar } = useSidebar();
+  const sidebarRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!getAuthToken()) {
@@ -15,9 +16,23 @@ const LayoutContent: React.FC = () => {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isMobileOpen && sidebarRef.current && !sidebarRef.current.contains(target)) {
+        // Don't close if clicking the toggle button
+        if (!target.closest('[data-sidebar-toggle]')) {
+          toggleMobileSidebar();
+        }
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMobileOpen, toggleMobileSidebar]);
+
   return (
     <div className="min-h-screen xl:flex">
-      <div>
+      <div ref={sidebarRef}>
         <AppSidebar />
       </div>
       <div
