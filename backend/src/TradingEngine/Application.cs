@@ -50,8 +50,6 @@ public static class Application
         builder.Services.AddSingleton<EventBus>();
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  MatchCreationHandler>();
-        builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>, RegistryCleanupHandler>();
-        builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>, MatchRepositoryCleanupHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
         
         // Register asynchronous command bus
