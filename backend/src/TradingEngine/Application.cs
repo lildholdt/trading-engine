@@ -144,14 +144,12 @@ public static class Application
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
-                Name = "Authorization",
-                Type = SecuritySchemeType.Http,
-                Scheme = "bearer",
-                BearerFormat = "JWT",
+                Name = "Authorization", 
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = JwtBearerDefaults.AuthenticationScheme,
                 In = ParameterLocation.Header,
                 Description = "Enter JWT token in the format: Bearer {token}"
             });
-
         });
         
         // Add CORS services and configure the allowed origins
