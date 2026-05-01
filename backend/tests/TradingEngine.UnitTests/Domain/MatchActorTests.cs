@@ -27,6 +27,7 @@ public class MatchActorTests
             Id = MatchId.New,
             HomeTeam = "Team1",
             AwayTeam = "Team2",
+            Series = "Test Series",
             StartTime = startTime ?? DateTime.UtcNow.AddHours(2)
         };
 
