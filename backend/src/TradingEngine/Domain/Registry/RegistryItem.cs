@@ -10,6 +10,7 @@ public class RegistryItem
     public required MatchId Id { get; init; }
     public required string HomeTeam { get; init; }
     public required string AwayTeam { get; init; }
+    public required string Series { get; init; }
     public required DateTime StartTime { get; init; }
     public required Event PolymarketEvent { get; init; }
     public Odds? OddsApiEvent { get; private set; } 

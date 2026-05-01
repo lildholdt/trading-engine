@@ -16,6 +16,7 @@ type MatchItem = {
   id: string;
   home: string;
   away: string;
+  series: string;
   startTime: string;
   odds: BookmakerOdds[];
 };
@@ -238,6 +239,12 @@ export default function Home() {
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
+                  Series
+                </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                >
                   Start Time
                 </TableCell>
                 <TableCell
@@ -258,7 +265,7 @@ export default function Home() {
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {loading ? (
                 <TableRow>
-                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
+                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={7}>
                     Loading matches...
                   </TableCell>
                 </TableRow>
@@ -304,6 +311,9 @@ export default function Home() {
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
                           {match.away}
                         </TableCell>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
+                          {match.series}
+                        </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {formatEuropeanDateTime(match.startTime)}
                         </TableCell>
@@ -329,7 +339,7 @@ export default function Home() {
                         <TableRow>
                           <TableCell
                             className="bg-gray-50/60 px-5 py-4 dark:bg-white/[0.02]"
-                            colSpan={6}
+                            colSpan={7}
                           >
                             {match.odds.length === 0 ? (
                               <p className="text-sm text-gray-500 dark:text-gray-400">

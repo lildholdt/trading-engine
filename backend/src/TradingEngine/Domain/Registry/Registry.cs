@@ -50,6 +50,7 @@ public class InMemoryRegistry(ITeamMatcher teamMatcher, IEventBus eventBus, ILog
         
         var home = @event.Teams.FirstOrDefault()?.Name ?? teams[0];
         var away = @event.Teams.LastOrDefault()?.Name ?? teams[1];
+        var series = @event.Series.FirstOrDefault()?.Title ?? "Unknown";
                        
         // Do not consider events where the game is already started
         if (@event.StartTime < DateTime.Now)
@@ -61,6 +62,7 @@ public class InMemoryRegistry(ITeamMatcher teamMatcher, IEventBus eventBus, ILog
             Id = MatchId.New,
             HomeTeam = home,
             AwayTeam = away,
+            Series = series,
             StartTime = @event.StartTime,
             PolymarketEvent = @event
         };

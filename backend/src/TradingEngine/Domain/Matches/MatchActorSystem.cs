@@ -27,6 +27,7 @@ public sealed class MatchActorSystem(
             Id = entry.Id, 
             AwayTeam = entry.AwayTeam, 
             HomeTeam = entry.HomeTeam, 
+            Series = entry.Series,
             StartTime =  entry.StartTime
         };
         

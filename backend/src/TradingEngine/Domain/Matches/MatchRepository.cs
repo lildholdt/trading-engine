@@ -4,7 +4,7 @@ using TradingEngine.Domain.Matches.UpdateOdds;
 namespace TradingEngine.Domain.Matches;
 
 public record OddsReadModel(string Name, decimal Home, decimal Away, decimal Draw, DateTime UpdatedAt);
-public record MatchReadModel(Guid Id, string Home, string Away, DateTime StartTime, IReadOnlyCollection<OddsReadModel> Odds);
+public record MatchReadModel(Guid Id, string Home, string Away, string Series, DateTime StartTime, IReadOnlyCollection<OddsReadModel> Odds);
 
 public class MatchRepository : IMatchRepository, IOddsRepository, IMatchReadRepository
 {
@@ -44,6 +44,7 @@ public class MatchRepository : IMatchRepository, IOddsRepository, IMatchReadRepo
                 match.Id.Value,
                 match.HomeTeam,
                 match.AwayTeam,
+                match.Series,
                 match.StartTime,
                 _odds.TryGetValue(match.Id, out var history)
                     ? history
