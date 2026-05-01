@@ -1,13 +1,71 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Link, useNavigate } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
 import UserDropdown from "../components/header/UserDropdown";
 import { SettingsIcon } from "../icons";
+import { getAuthHeaders } from "../utils/auth";
+
+const API_BASE_URL =
+  (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 
 const AppHeader: React.FC = () => {
   const navigate = useNavigate();
+  const [systemRunning, setSystemRunning] = useState<boolean>(false);
+  const [systemToggling, setSystemToggling] = useState(false);
+
+  const fetchSystemStatus = useCallback(async () => {
+    try {
+      const endpoints = API_BASE_URL
+        ? [`${API_BASE_URL}/api/system/status`, "/api/system/status"]
+        : ["/api/system/status"];
+      for (const endpoint of endpoints) {
+        const res = await fetch(endpoint, { headers: getAuthHeaders() });
+        if (res.ok) {
+          const data = (await res.json()) as { isRunning: boolean };
+          setSystemRunning(data.isRunning);
+          return;
+        }
+      }
+    } catch {
+      // silently ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchSystemStatus();
+  }, [fetchSystemStatus]);
+
+  const handleSystemToggle = async () => {
+    if (systemToggling) return;
+    setSystemToggling(true);
+    const action = systemRunning ? "stop" : "start";
+    const optimisticState = !systemRunning;
+    setSystemRunning(optimisticState);
+    try {
+      const endpoints = API_BASE_URL
+        ? [`${API_BASE_URL}/api/system/${action}`, `/api/system/${action}`]
+        : [`/api/system/${action}`];
+      let success = false;
+      for (const endpoint of endpoints) {
+        const res = await fetch(endpoint, { method: "POST", headers: getAuthHeaders() });
+        if (res.ok) {
+          const data = (await res.json()) as { isRunning: boolean };
+          setSystemRunning(data.isRunning);
+          success = true;
+          break;
+        }
+      }
+      if (!success) {
+        setSystemRunning(!optimisticState);
+      }
+    } catch {
+      setSystemRunning(!optimisticState);
+    } finally {
+      setSystemToggling(false);
+    }
+  };
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -162,6 +220,29 @@ const AppHeader: React.FC = () => {
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
+            {/* <!-- System Start/Stop Toggle --> */}
+            <button
+                onClick={() => { void handleSystemToggle(); }}
+                disabled={systemToggling}
+                className={`relative flex items-center justify-center h-11 w-11 rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${
+                  systemRunning
+                    ? "border-green-400 bg-green-50 text-green-600 hover:bg-green-100 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40"
+                    : "border-red-400 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-700 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                }`}
+                aria-label={systemRunning ? "Stop system" : "Start system"}
+                title={systemRunning ? "Stop system" : "Start system"}
+              >
+                {systemRunning ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                    <rect x="6" y="5" width="4" height="14" rx="1" />
+                    <rect x="14" y="5" width="4" height="14" rx="1" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                    <path d="M8 5.14v14l11-7-11-7z" />
+                  </svg>
+                )}
+              </button>
             {/* <!-- Settings Button --> */}
             <button
               onClick={handleSettingsClick}

@@ -8,6 +8,7 @@ public class OddsApiMatchSyncService(
     IOddsApiClient oddsApiClient,
     IRegistry registry,
     IOptions<ApplicationSettings> options,
+    ISystemState systemState,
     ILogger<OddsApiMatchSyncService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -16,6 +17,12 @@ public class OddsApiMatchSyncService(
         
         while (!cancellationToken.IsCancellationRequested)
         {
+            if (!systemState.IsRunning)
+            {
+                await Task.Delay(options.Value.EventPollingIntervalInMs, cancellationToken);
+                continue;
+            }
+
             try
             {
                 var items = registry.GetConfiguration().Where(x => x.Active);

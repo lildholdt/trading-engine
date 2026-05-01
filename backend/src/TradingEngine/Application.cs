@@ -114,6 +114,10 @@ public static class Application
         builder.Services.AddControllers();
         builder.Services.AddSignalR();
         
+        // Register system state
+        builder.Services.AddSingleton<SystemState>();
+        builder.Services.AddSingleton<ISystemState>(sp => sp.GetRequiredService<SystemState>());
+
         // Register services
         builder.Services.AddHostedService<OddsApiMatchSyncService>();
         builder.Services.AddHostedService<PolymarketMatchSyncService>();
