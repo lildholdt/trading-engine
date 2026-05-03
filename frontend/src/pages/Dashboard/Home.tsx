@@ -161,6 +161,7 @@ export default function Home() {
   const [togglingPauseId, setTogglingPauseId] = useState<string | null>(null);
   const [resettingAll, setResettingAll] = useState(false);
   const [expandedMatchIds, setExpandedMatchIds] = useState<Set<string>>(new Set());
+  const [highlightedMatchIds, setHighlightedMatchIds] = useState<Set<string>>(new Set());
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -280,6 +281,16 @@ export default function Home() {
         };
         return next;
       });
+
+      // Highlight the updated row
+      setHighlightedMatchIds((prev) => new Set([...prev, normalizedMatch.id]));
+      setTimeout(() => {
+        setHighlightedMatchIds((prev) => {
+          const next = new Set(prev);
+          next.delete(normalizedMatch.id);
+          return next;
+        });
+      }, 1500);
     };
 
     const handleMatchRemoved = (payload: MatchStopedHubEvent | Record<string, unknown>) => {
@@ -682,7 +693,11 @@ export default function Home() {
                   return (
                     <Fragment key={match.id}>
                       <TableRow
-                        className="cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                        className={`cursor-pointer transition-colors ${
+                          highlightedMatchIds.has(match.id)
+                            ? "bg-yellow-100 dark:bg-yellow-900/20"
+                            : "hover:bg-gray-50 dark:hover:bg-white/[0.02]"
+                        }`}
                         onClick={() => navigate(`/matches/${match.id}`, { state: { match, viewMode } })}
                       >
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">

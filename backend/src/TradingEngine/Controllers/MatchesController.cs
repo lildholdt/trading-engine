@@ -9,6 +9,7 @@ using TradingEngine.Domain.Matches.PauseMatch;
 using TradingEngine.Domain.Matches.Reset;
 using TradingEngine.Domain.Matches.ResumeMatch;
 using TradingEngine.Domain.Matches.StopMatch;
+using TradingEngine.Domain.Matches.UpdateOdds;
 using TradingEngine.Domain.Orders.GetOrders;
 using TradingEngine.Infrastructure.Dispatcher;
 
@@ -186,4 +187,71 @@ public class MatchesController(IDispatcher dispatcher, IMatchActorSystem actorSy
         await dispatcher.Send(new ResetMatchesCommand());
         return Ok();
     }
+
+    [HttpPost("live/{id:guid}/test-update-odds")]
+    public async Task<IActionResult> TestUpdateOdds(Guid id, [FromBody] UpdateOddsRequest request)
+    {
+        if (request?.Bookmakers == null || request.Bookmakers.Count == 0)
+        {
+            return BadRequest("Bookmakers list cannot be empty.");
+        }
+
+        var bookmakers = new List<Bookmaker>();
+        foreach (var bookmakerDto in request.Bookmakers)
+        {
+            if (string.IsNullOrWhiteSpace(bookmakerDto.Name))
+            {
+                return BadRequest("Bookmaker name cannot be empty.");
+            }
+
+            if (bookmakerDto.Outcome == null)
+            {
+                return BadRequest("Bookmaker outcome cannot be null.");
+            }
+
+            var outcome = new Outcome
+            {
+                Home = bookmakerDto.Outcome.Home,
+                Away = bookmakerDto.Outcome.Away,
+                Draw = bookmakerDto.Outcome.Draw
+            };
+
+            if (outcome.Home <= 0 || outcome.Away <= 0 || outcome.Draw < 0)
+            {
+                return BadRequest("Odds values must be positive.");
+            }
+
+            var bookmaker = new Bookmaker(bookmakerDto.Name, outcome);
+            bookmakers.Add(bookmaker);
+        }
+
+        await dispatcher.Send(new UpdateOddsCommand
+        {
+            MatchId = new MatchId(id),
+            Bookmakers = bookmakers.AsReadOnly()
+        });
+
+        return Ok();
+    }
+}
+
+/// <summary>
+/// Request model for testing odds updates.
+/// </summary>
+public class UpdateOddsRequest
+{
+    public required List<UpdateOddsBookmakerDto> Bookmakers { get; init; }
+}
+
+public class UpdateOddsBookmakerDto
+{
+    public required string Name { get; init; }
+    public required OutcomeDto Outcome { get; init; }
+}
+
+public class OutcomeDto
+{
+    public required decimal Home { get; init; }
+    public required decimal Away { get; init; }
+    public decimal Draw { get; init; } = 0;
 }

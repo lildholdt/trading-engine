@@ -73,6 +73,7 @@ public static class Application
         builder.Services.AddScoped<ICommandHandler<ResumeMatchCommand, Unit>, ResumeMatchCommandHandler>();
         builder.Services.AddScoped<ICommandHandler<StopMatchCommand, Unit>, StopMatchCommandHandler>();
         builder.Services.AddScoped<ICommandHandler<ResetMatchesCommand, Unit>, ResetMatchesCommandHandler>();
+        builder.Services.AddScoped<ICommandHandler<UpdateOddsCommand, Unit>, UpdateOddsCommandHandler>();
         builder.Services.AddScoped<ICommandHandler<UpdateRegistryConfigurationCommand, Unit>, UpdateRegistryConfigurationCommandHandler>();
         builder.Services.AddScoped<IQueryHandler<GetMatchesQuery, IReadOnlyCollection<MatchReadModel>>, GetMatchesQueryHandler>();
         builder.Services.AddScoped<IQueryHandler<GetMatchOddsQuery, IReadOnlyCollection<OddsReadModel>>, GetMatchOddsQueryHandler>();

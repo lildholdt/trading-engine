@@ -1,6 +1,8 @@
-﻿namespace TradingEngine.Domain.Matches.UpdateOdds;
+﻿using TradingEngine.Infrastructure.Dispatcher;
 
-public class UpdateOddsCommand : IMatchCommand
+namespace TradingEngine.Domain.Matches.UpdateOdds;
+
+public class UpdateOddsCommand : IMatchCommand, ICommand<Unit>
 {
     public required MatchId MatchId { get; init; }
     public required IReadOnlyCollection<Bookmaker> Bookmakers { get; init; }
