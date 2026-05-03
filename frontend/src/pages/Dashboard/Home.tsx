@@ -690,6 +690,7 @@ export default function Home() {
               ) : (
                 sortedMatches.map((match) => {
                   const isExpanded = expandedMatchIds.has(match.id);
+                  const isPaused = Boolean(match.isPaused);
 
                   return (
                     <Fragment key={match.id}>
@@ -730,19 +731,29 @@ export default function Home() {
                           </TableCell>
                         )}
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
+                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}>
                           {match.home}
+                          </span>
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
+                        <TableCell className="px-5 py-3 text-start text-theme-sm">
+                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}>
                           {match.away}
+                          </span>
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
+                        <TableCell className="px-5 py-3 text-start text-theme-sm">
+                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}>
                           {match.series}
+                          </span>
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                        <TableCell className="px-5 py-3 text-start text-theme-sm">
+                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-500 dark:text-gray-400"}>
                           {formatEuropeanDateTime(match.startTime)}
+                          </span>
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                        <TableCell className="px-5 py-3 text-start text-theme-sm">
+                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-500 dark:text-gray-400"}>
                           {match.odds?.length ?? 0}
+                          </span>
                         </TableCell>
                         {viewMode === "live" && (
                           <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
