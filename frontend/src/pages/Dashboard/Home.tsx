@@ -18,8 +18,13 @@ type MatchItem = {
   away: string;
   series: string;
   startTime: string;
+  isPaused?: boolean;
+  isActive?: boolean;
+  stoppedAtUtc?: string | null;
   odds: BookmakerOdds[];
 };
+
+type MatchViewMode = "live" | "history";
 
 type BookmakerOdds = {
   name: string;
@@ -42,11 +47,13 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stoppingId, setStoppingId] = useState<string | null>(null);
+  const [togglingPauseId, setTogglingPauseId] = useState<string | null>(null);
   const [expandedMatchIds, setExpandedMatchIds] = useState<Set<string>>(new Set());
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [viewMode, setViewMode] = useState<MatchViewMode>("live");
   const [sortKey, setSortKey] = useState<MatchSortKey>("startTime");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
@@ -68,9 +75,10 @@ export default function Home() {
           params.set("search", search.trim());
         }
 
+        const endpointPath = viewMode === "live" ? "/api/matches/live" : "/api/matches/history";
         const endpointCandidates = API_BASE_URL
-          ? [`${API_BASE_URL}/api/matches`, "/api/matches"]
-          : ["/api/matches"];
+          ? [`${API_BASE_URL}${endpointPath}`, endpointPath]
+          : [endpointPath];
 
         let resolvedData: MatchItem[] | null = null;
 
@@ -123,12 +131,22 @@ export default function Home() {
     return () => {
       controller.abort();
     };
-  }, [page, search]);
+  }, [page, search, viewMode]);
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setPage(1);
     setSearch(searchInput);
+  };
+
+  const handleViewModeChange = (nextMode: MatchViewMode) => {
+    if (viewMode === nextMode) {
+      return;
+    }
+
+    setPage(1);
+    setExpandedMatchIds(new Set());
+    setViewMode(nextMode);
   };
 
   const handleStopMatch = async (id: string) => {
@@ -168,6 +186,45 @@ export default function Home() {
       setError("Failed to stop match.");
     } finally {
       setStoppingId(null);
+    }
+  };
+
+  const handlePauseToggle = async (id: string, nextPausedState: boolean) => {
+    setTogglingPauseId(id);
+    setError(null);
+
+    const previousMatches = matches;
+    setMatches((prev) =>
+      prev.map((match) => (match.id === id ? { ...match, isPaused: nextPausedState } : match))
+    );
+
+    try {
+      const actionPath = nextPausedState ? "pause" : "resume";
+      const endpointCandidates = API_BASE_URL
+        ? [`${API_BASE_URL}/api/matches/${id}/${actionPath}`, `/api/matches/${id}/${actionPath}`]
+        : [`/api/matches/${id}/${actionPath}`];
+
+      let updated = false;
+      for (const endpoint of endpointCandidates) {
+        const response = await fetch(endpoint, { method: "POST", headers: getAuthHeaders() });
+        if (response.ok) {
+          updated = true;
+          break;
+        }
+
+        if (response.status !== 404) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+      }
+
+      if (!updated) {
+        throw new Error("Pause/resume endpoint not found.");
+      }
+    } catch {
+      setMatches(previousMatches);
+      setError("Failed to update match pause state.");
+    } finally {
+      setTogglingPauseId(null);
     }
   };
 
@@ -247,6 +304,31 @@ export default function Home() {
               Search
             </button>
           </form>
+
+          <div className="inline-flex rounded-lg border border-gray-300 p-1 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={() => handleViewModeChange("live")}
+              className={`rounded-md px-3 py-1.5 text-sm ${
+                viewMode === "live"
+                  ? "bg-brand-500 text-white"
+                  : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+              }`}
+            >
+              Live
+            </button>
+            <button
+              type="button"
+              onClick={() => handleViewModeChange("history")}
+              className={`rounded-md px-3 py-1.5 text-sm ${
+                viewMode === "history"
+                  ? "bg-brand-500 text-white"
+                  : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+              }`}
+            >
+              History
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -327,17 +409,28 @@ export default function Home() {
                 </TableCell>
                 <TableCell
                   isHeader
-                  className="px-5 py-3 text-end text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                  className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                 >
-                  Actions
+                  Status
                 </TableCell>
+                {viewMode === "live" && (
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 text-end text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                  >
+                    Actions
+                  </TableCell>
+                )}
               </TableRow>
             </TableHeader>
 
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {loading ? (
                 <TableRow>
-                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={7}>
+                  <TableCell
+                    className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400"
+                    colSpan={viewMode === "live" ? 8 : 7}
+                  >
                     Loading matches...
                   </TableCell>
                 </TableRow>
@@ -349,7 +442,7 @@ export default function Home() {
                     <Fragment key={match.id}>
                       <TableRow
                         className="cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.02]"
-                        onClick={() => navigate(`/matches/${match.id}`, { state: { match } })}
+                        onClick={() => navigate(`/matches/${match.id}`, { state: { match, viewMode } })}
                       >
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           <button
@@ -392,26 +485,68 @@ export default function Home() {
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {match.odds?.length ?? 0}
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-end text-theme-sm text-gray-500 dark:text-gray-400">
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              void handleStopMatch(match.id);
-                            }}
-                            disabled={stoppingId === match.id}
-                            className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
-                          >
-                            {stoppingId === match.id ? "Stopping..." : "Stop"}
-                          </button>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          {viewMode === "live" ? (
+                            <span
+                              className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                                match.isPaused
+                                  ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                                  : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                              }`}
+                            >
+                              {match.isPaused ? "Paused" : "Live"}
+                            </span>
+                          ) : (
+                            <span
+                              className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                                match.isActive
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                  : "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                              }`}
+                            >
+                              {match.isActive ? "Active" : "Stopped"}
+                            </span>
+                          )}
                         </TableCell>
+                        {viewMode === "live" && (
+                          <TableCell className="px-5 py-3 text-end text-theme-sm text-gray-500 dark:text-gray-400">
+                            <div className="inline-flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void handlePauseToggle(match.id, !Boolean(match.isPaused));
+                                }}
+                                disabled={togglingPauseId === match.id}
+                                className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/20"
+                              >
+                                {togglingPauseId === match.id
+                                  ? "Updating..."
+                                  : match.isPaused
+                                    ? "Resume"
+                                    : "Pause"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void handleStopMatch(match.id);
+                                }}
+                                disabled={stoppingId === match.id}
+                                className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
+                              >
+                                {stoppingId === match.id ? "Stopping..." : "Stop"}
+                              </button>
+                            </div>
+                          </TableCell>
+                        )}
                       </TableRow>
 
                       {isExpanded && (
                         <TableRow>
                           <TableCell
                             className="bg-gray-50/60 px-5 py-4 dark:bg-white/[0.02]"
-                            colSpan={7}
+                            colSpan={viewMode === "live" ? 8 : 7}
                           >
                             {match.odds.length === 0 ? (
                               <p className="text-sm text-gray-500 dark:text-gray-400">

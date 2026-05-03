@@ -11,4 +11,9 @@ public class OddsUpdatedEvent : IEvent
     /// Gets the identifier of the sport event whose odds were updated.
     /// </summary>
     public required Match Match { get; init; }
+
+    /// <summary>
+    /// Gets the UTC timestamp when this odds update event was emitted.
+    /// </summary>
+    public required DateTime UpdatedAtUtc { get; init; }
 }

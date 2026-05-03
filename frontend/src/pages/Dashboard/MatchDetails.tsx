@@ -17,8 +17,12 @@ type MatchItem = {
   id: string;
   home: string;
   away: string;
+  series?: string;
   startTime: string;
+  isActive?: boolean;
 };
+
+type MatchViewMode = "live" | "history";
 
 type OrderBookmaker = {
   name: string;
@@ -49,8 +53,10 @@ const API_BASE_URL =
 export default function MatchDetails() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
+  const locationState = (location.state as { match?: MatchItem; viewMode?: MatchViewMode } | null) ?? null;
 
-  const [match, setMatch] = useState<MatchItem | null>((location.state as { match?: MatchItem } | null)?.match ?? null);
+  const [match, setMatch] = useState<MatchItem | null>(locationState?.match ?? null);
+  const viewMode: MatchViewMode = locationState?.viewMode ?? "live";
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,26 +96,50 @@ export default function MatchDetails() {
       return data;
     };
 
+    const fetchJsonObject = async (endpoint: string): Promise<Record<string, unknown> | null> => {
+      const response = await fetch(endpoint, {
+        headers: getAuthHeaders(),
+        signal: controller.signal,
+      });
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        return null;
+      }
+
+      const data = (await response.json()) as unknown;
+      if (typeof data !== "object" || data === null || Array.isArray(data)) {
+        return null;
+      }
+
+      return data as Record<string, unknown>;
+    };
+
     const loadDetails = async () => {
       setLoading(true);
       setError(null);
 
       try {
         if (!match) {
+          const detailsEndpoint =
+            viewMode === "live" ? `/api/matches/live/${id}` : `/api/matches/history/${id}`;
           const matchEndpoints = API_BASE_URL
-            ? [`${API_BASE_URL}/api/matches?page=1&pageSize=500`, "/api/matches?page=1&pageSize=500"]
-            : ["/api/matches?page=1&pageSize=500"];
+            ? [`${API_BASE_URL}${detailsEndpoint}`, detailsEndpoint]
+            : [detailsEndpoint];
 
           for (const endpoint of matchEndpoints) {
-            const data = await fetchJsonArray(endpoint);
+            const data = await fetchJsonObject(endpoint);
             if (!data) {
               continue;
             }
 
-            const found = (data as MatchItem[]).find((item) => item.id === id) ?? null;
-            if (found) {
-              setMatch(found);
-            }
+            setMatch(data as unknown as MatchItem);
             break;
           }
         }
@@ -154,7 +184,7 @@ export default function MatchDetails() {
     return () => {
       controller.abort();
     };
-  }, [id, match]);
+  }, [id, match, viewMode]);
 
   useEffect(() => {
     if (orders.length === 0) {

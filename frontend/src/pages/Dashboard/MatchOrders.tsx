@@ -118,8 +118,8 @@ export default function MatchOrders() {
 
         // Fallback for current backend: load matches page then fetch each match's orders.
         const matchesEndpoints = API_BASE_URL
-          ? [`${API_BASE_URL}/api/matches?${params.toString()}`, `/api/matches?${params.toString()}`]
-          : [`/api/matches?${params.toString()}`];
+          ? [`${API_BASE_URL}/api/matches/history?${params.toString()}`, `/api/matches/history?${params.toString()}`]
+          : [`/api/matches/history?${params.toString()}`];
 
         let matches: MatchItem[] | null = null;
         for (const endpoint of matchesEndpoints) {

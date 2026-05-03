@@ -6,7 +6,7 @@ namespace TradingEngine.Domain.Matches.CreateMatch;
 /// <summary>
 /// Handles registry correlation events by creating a sport event actor for the correlated item.
 /// </summary>
-public class MatchCreationHandler(IMatchActorSystem actorSystem, IEventBus eventBus) :  IEventHandler<RegistryItemCorrelatedEvent>
+public class MatchCreationHandler(IMatchActorSystem actorSystem) :  IEventHandler<RegistryItemCorrelatedEvent>
 {
     /// <summary>
     /// Creates a sport event actor using the correlated registry item in the incoming event.
@@ -17,9 +17,6 @@ public class MatchCreationHandler(IMatchActorSystem actorSystem, IEventBus event
     public async Task HandleAsync(RegistryItemCorrelatedEvent @event, CancellationToken cancellationToken = default)
     { 
         // Create the match in the actor system
-        var id = actorSystem.CreateAsync(@event.Item);
-        
-        // Publish event
-        await eventBus.PublishAsync(new MatchCreatedEvent { MatchId = id }, cancellationToken);
+        await actorSystem.CreateAsync(@event.Item);
     }
 }

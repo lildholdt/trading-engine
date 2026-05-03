@@ -10,6 +10,7 @@ using TradingEngine.Domain.Matches;
 using TradingEngine.Domain.Matches.CreateMatch;
 using TradingEngine.Domain.Matches.GetMatchOdds;
 using TradingEngine.Domain.Matches.GetMatches;
+using TradingEngine.Domain.Matches.PauseMatch;
 using TradingEngine.Domain.Matches.Reset;
 using TradingEngine.Domain.Matches.StopMatch;
 using TradingEngine.Domain.Matches.UpdateOdds;
@@ -51,6 +52,10 @@ public static class Application
         builder.Services.AddSingleton<IEventBus>(sp => sp.GetRequiredService<EventBus>());
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  MatchCreationHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
+        builder.Services.AddSingleton<InMemoryMatchReadRepository>();
+        builder.Services.AddSingleton<IEventHandler<MatchCreatedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
+        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
+        builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
         
         // Register asynchronous command bus
         builder.Services.AddHostedService<CommandBusWorker>();
@@ -59,6 +64,8 @@ public static class Application
         
         // Register synchronous dispatcher
         builder.Services.AddScoped<IDispatcher, Dispatcher>();
+        builder.Services.AddScoped<ICommandHandler<PauseMatchCommand, Unit>, PauseMatchCommandHandler>();
+        builder.Services.AddScoped<ICommandHandler<ResumeMatchCommand, Unit>, ResumeMatchCommandHandler>();
         builder.Services.AddScoped<ICommandHandler<StopMatchCommand, Unit>, StopMatchCommandHandler>();
         builder.Services.AddScoped<ICommandHandler<ResetMatchesCommand, Unit>, ResetMatchesCommandHandler>();
         builder.Services.AddScoped<ICommandHandler<UpdateRegistryConfigurationCommand, Unit>, UpdateRegistryConfigurationCommandHandler>();
@@ -75,8 +82,7 @@ public static class Application
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
         builder.Services.AddSingleton<MatchRepository>();
         builder.Services.AddSingleton<IMatchRepository>(sp => sp.GetRequiredService<MatchRepository>());
-        builder.Services.AddSingleton<IMatchReadRepository>(sp => sp.GetRequiredService<MatchRepository>());
-        builder.Services.AddSingleton<IOddsRepository>(sp => sp.GetRequiredService<MatchRepository>());
+        builder.Services.AddSingleton<IMatchReadRepository>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
         builder.Services.AddSingleton<IOrdersRepository, OrdersRepository>();
         
         // Register SignalR hub publisher

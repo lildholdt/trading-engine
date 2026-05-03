@@ -2,6 +2,7 @@
 
 public interface IMatchRepository
 {
+    Task<IReadOnlyCollection<Match>> GetAllAsync(CancellationToken cancellationToken = default);
     Task SaveAsync(Match match, CancellationToken cancellationToken = default);
     Task<Match?> GetById(MatchId id, CancellationToken cancellationToken = default);
     Task RemoveAsync(MatchId id, CancellationToken cancellationToken = default);

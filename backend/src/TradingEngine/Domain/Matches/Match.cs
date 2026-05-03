@@ -7,6 +7,7 @@ public class Match
     public required string AwayTeam { get; init; }
     public required string Series { get; init; }
     public required DateTime StartTime { get; init; }
+    public bool IsPaused { get; set; }
     public List<Bookmaker> Odds { get; set; } = [];
 
     public decimal AverageOdds(OutcomeType outcomeType) => 

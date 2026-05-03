@@ -118,6 +118,12 @@ public sealed class MatchActor
                 _ when timeUntilStart.TotalHours > 6 => TimeSpan.FromMinutes(1).TotalMilliseconds, // 6-24 hours: 1 minute
                 _ => TimeSpan.FromSeconds(5).TotalMilliseconds // Less than 6 hours: 5 seconds
             };
+
+            if (State.IsPaused)
+            {
+                await Task.Delay((int)TimeSpan.FromSeconds(1).TotalMilliseconds, ct);
+                continue;
+            }
             
             try
             {
@@ -206,8 +212,29 @@ public sealed class MatchActor
         // Notify that odds has been updated
         await _eventBus.PublishAsync(new OddsUpdatedEvent
         {
-            Match = State
+            Match = State,
+            UpdatedAtUtc = DateTime.UtcNow
         });
+    }
+
+    public async Task PauseAsync()
+    {
+        if (State.IsPaused)
+            return;
+
+        State.IsPaused = true;
+        await _matchRepository.SaveAsync(State);
+        _logger.LogInformation("Actor paused for EventId: {EventId}", State.Id);
+    }
+
+    public async Task ResumeAsync()
+    {
+        if (!State.IsPaused)
+            return;
+
+        State.IsPaused = false;
+        await _matchRepository.SaveAsync(State);
+        _logger.LogInformation("Actor resumed for EventId: {EventId}", State.Id);
     }
     
     public async Task StopAsync()
@@ -222,7 +249,11 @@ public sealed class MatchActor
         await _cts.CancelAsync();
 
         // Notify that actor has been stopped
-        await _eventBus.PublishAsync(new MatchStoppedEvent { Id = State.Id });
+        await _eventBus.PublishAsync(new MatchStoppedEvent
+        {
+            Id = State.Id,
+            StoppedAtUtc = DateTime.UtcNow
+        });
         
         _logger.LogInformation("Actor stopped for EventId: {EventId}", State.Id);
     }

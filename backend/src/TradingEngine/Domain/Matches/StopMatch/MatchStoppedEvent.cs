@@ -11,4 +11,9 @@ public class MatchStoppedEvent : IEvent
     /// Gets the identifier of the actor that stopped.
     /// </summary>
     public required MatchId Id { get; init; }
+
+    /// <summary>
+    /// Gets the UTC timestamp when the actor stopped.
+    /// </summary>
+    public required DateTime StoppedAtUtc { get; init; }
 }

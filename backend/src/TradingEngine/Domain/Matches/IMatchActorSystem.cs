@@ -21,7 +21,7 @@ public interface IMatchActorSystem
     /// If an actor for the given event ID already exists, the existing actor is retained.
     /// </summary>
     /// <param name="entry">The event registry item containing information about the sport event.</param>
-    MatchId CreateAsync(RegistryItem entry);
+    Task<MatchId> CreateAsync(RegistryItem entry);
 
     /// <summary>
     /// Stops the sport event actor associated with the specified event ID and releases any resources it holds. 
@@ -30,6 +30,20 @@ public interface IMatchActorSystem
     /// <param name="id">The unique identifier of the sport event whose actor should be stopped.</param>
     /// <returns>A <see cref="Task"/> that represents the asynchronous operation of stopping the actor.</returns>
     Task StopAsync(MatchId id);
+
+    /// <summary>
+    /// Pauses odds polling for the specified match actor.
+    /// </summary>
+    /// <param name="id">The unique identifier of the sport event actor to pause.</param>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
+    Task PauseAsync(MatchId id);
+
+    /// <summary>
+    /// Resumes odds polling for the specified paused match actor.
+    /// </summary>
+    /// <param name="id">The unique identifier of the sport event actor to resume.</param>
+    /// <returns>A <see cref="Task"/> that represents the asynchronous operation.</returns>
+    Task ResumeAsync(MatchId id);
 
     /// <summary>
     /// Resets the state of the system, clearing all existing sport event actors and their associated states.

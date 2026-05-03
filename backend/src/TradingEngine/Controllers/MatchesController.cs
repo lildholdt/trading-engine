@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Globalization;
 using System.Text;
+using TradingEngine.Domain.Matches;
 using TradingEngine.Domain.Matches.GetMatchOdds;
 using TradingEngine.Domain.Matches.GetMatches;
+using TradingEngine.Domain.Matches.PauseMatch;
 using TradingEngine.Domain.Matches.Reset;
 using TradingEngine.Domain.Matches.StopMatch;
 using TradingEngine.Domain.Orders.GetOrders;
@@ -14,10 +16,122 @@ namespace TradingEngine.Controllers;
 [ApiController]
 [Route("api/matches")]
 [Authorize]
-public class MatchesController(IDispatcher dispatcher) : ControllerBase
+public class MatchesController(IDispatcher dispatcher, IMatchRepository matchRepository) : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> GetAll(
+    [HttpGet("live")]
+    public async Task<IActionResult> GetLive(
+        [FromQuery] string? search,
+        [FromQuery] DateTime? startTimeFromUtc,
+        [FromQuery] DateTime? startTimeToUtc,
+        [FromQuery] string? sortByStartTime = "asc",
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 50)
+    {
+        var matches = await matchRepository.GetAllAsync();
+        IEnumerable<Match> filtered = matches;
+
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var normalized = search.Trim();
+            filtered = filtered.Where(m =>
+                m.HomeTeam.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
+                m.AwayTeam.Contains(normalized, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (startTimeFromUtc.HasValue)
+        {
+            filtered = filtered.Where(m => m.StartTime >= startTimeFromUtc.Value);
+        }
+
+        if (startTimeToUtc.HasValue)
+        {
+            filtered = filtered.Where(m => m.StartTime <= startTimeToUtc.Value);
+        }
+
+        var sortDesc = string.Equals(sortByStartTime, "desc", StringComparison.OrdinalIgnoreCase);
+        filtered = sortDesc
+            ? filtered.OrderByDescending(m => m.StartTime)
+            : filtered.OrderBy(m => m.StartTime);
+
+        var normalizedPage = page < 1 ? 1 : page;
+        var normalizedPageSize = pageSize < 1 ? 50 : pageSize;
+
+        var result = filtered
+            .Skip((normalizedPage - 1) * normalizedPageSize)
+            .Take(normalizedPageSize)
+            .Select(match => new
+            {
+                id = match.Id.Value,
+                home = match.HomeTeam,
+                away = match.AwayTeam,
+                series = match.Series,
+                startTime = match.StartTime,
+                isPaused = match.IsPaused,
+                odds = match.Odds.Select(bookmaker => new
+                {
+                    name = bookmaker.Name,
+                    home = bookmaker.Outcome.Home,
+                    away = bookmaker.Outcome.Away,
+                    draw = bookmaker.Outcome.Draw,
+                    updatedAt = bookmaker.UpdatedAt
+                })
+            })
+            .ToList();
+
+        return Ok(result);
+    }
+
+    [HttpGet("live/{id:guid}")]
+    public async Task<IActionResult> GetLiveById(Guid id)
+    {
+        var match = await matchRepository.GetById(id);
+        if (match == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(new
+        {
+            id = match.Id.Value,
+            home = match.HomeTeam,
+            away = match.AwayTeam,
+            series = match.Series,
+            startTime = match.StartTime,
+            isPaused = match.IsPaused,
+            odds = match.Odds.Select(bookmaker => new
+            {
+                name = bookmaker.Name,
+                home = bookmaker.Outcome.Home,
+                away = bookmaker.Outcome.Away,
+                draw = bookmaker.Outcome.Draw,
+                updatedAt = bookmaker.UpdatedAt
+            })
+        });
+    }
+
+    [HttpPost("live/{id}/pause")]
+    public async Task<IActionResult> PauseMatch(Guid id)
+    {
+        await dispatcher.Send(new PauseMatchCommand { MatchId = id });
+        return Ok();
+    }
+
+    [HttpPost("live/{id}/resume")]
+    public async Task<IActionResult> ResumeMatch(Guid id)
+    {
+        await dispatcher.Send(new ResumeMatchCommand { MatchId = id });
+        return Ok();
+    }
+    
+    [HttpDelete("live/{id}")]
+    public async Task<IActionResult> StopMatch(Guid id)
+    {
+        await dispatcher.Send(new StopMatchCommand { MatchId = id });
+        return Ok();
+    }
+
+    [HttpGet("history")]
+    public async Task<IActionResult> GetHistory(
         [FromQuery] string? search,
         [FromQuery] DateTime? startTimeFromUtc,
         [FromQuery] DateTime? startTimeToUtc,
@@ -34,9 +148,23 @@ public class MatchesController(IDispatcher dispatcher) : ControllerBase
             Page = page,
             PageSize = pageSize
         });
+
         return Ok(matches);
     }
-    
+
+    [HttpGet("history/{id:guid}")]
+    public async Task<IActionResult> GetHistoryById(Guid id)
+    {
+        var matches = await dispatcher.Query(new GetMatchesQuery
+        {
+            Page = 1,
+            PageSize = int.MaxValue
+        });
+
+        var match = matches.FirstOrDefault(m => m.Id == id);
+        return match == null ? NotFound() : Ok(match);
+    }
+
     [HttpGet("{id}/odds")]
     public async Task<IActionResult> GetOddsById(Guid id)
     {
@@ -49,55 +177,6 @@ public class MatchesController(IDispatcher dispatcher) : ControllerBase
     {
         var orders = await dispatcher.Query(new GetOrdersQuery { MatchId = id });
         return Ok(orders);
-    }
-    
-    [HttpGet("{id}/orders-csv")]
-    public async Task<IActionResult> GetByMatchIdCsv(Guid id)
-    {
-        var orders = await dispatcher.Query(new GetOrdersQuery { MatchId = id });
-
-        var csv = new StringBuilder();
-        csv.AppendLine("Id,Bookmaker,SnapshotTime,HoursBefore,OddsHome,OddsDraw,OddsAway,TrueOddsHome,TrueOddsDraw,TrueOddsAway,TrueOddsAverageHome,TrueOddsAverageDraw,TrueOddsAverageAway,PolymarketOutcomeHome,PolymarketOutcomeDraw,PolymarketOutcomeAway");
-
-        foreach (var order in orders)
-        {
-            foreach (var bookmaker in order.Bookmakers)
-            {
-                csv.AppendLine(string.Join(",", [
-                    CsvEscape(order.Id),
-                    CsvEscape(bookmaker.Name),
-                    CsvEscape(order.SnapshotTime.ToString("O", CultureInfo.InvariantCulture)),
-                    CsvEscape(order.HoursBefore.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(bookmaker.OddsHome.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(bookmaker.OddsDraw.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(bookmaker.OddsAway.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(bookmaker.TrueOddsHome.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(bookmaker.TrueOddsDraw.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(bookmaker.TrueOddsAway.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(order.TrueOddsAverageHome.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(order.TrueOddsAverageDraw.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(order.TrueOddsAverageAway.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(order.PolymarketOutcomeHome.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(order.PolymarketOutcomeDraw.ToString(CultureInfo.CurrentCulture)),
-                    CsvEscape(order.PolymarketOutcomeAway.ToString(CultureInfo.CurrentCulture))
-                ]));
-            }
-        }
-
-        return File(Encoding.UTF8.GetBytes(csv.ToString()), "text/csv", $"orders-{id}.csv");
-    }
-
-    private static string CsvEscape(string value)
-    {
-        // Always quote values to reduce Excel auto-conversion surprises.
-        return $"\"{value.Replace("\"", "\"\"")}\"";
-    }
-    
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> StopMatch(Guid id)
-    {
-        await dispatcher.Send(new StopMatchCommand { MatchId = id });
-        return Ok();
     }
     
     [HttpPost("reset")]
