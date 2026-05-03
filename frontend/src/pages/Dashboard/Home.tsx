@@ -161,8 +161,9 @@ function MatchActionIcon({ name }: { name: MatchActionIconName }) {
   }
 
   return (
-    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <rect x="6" y="6" width="12" height="12" rx="1.5" />
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M7 7L17 17" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M17 7L7 17" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
     </svg>
   );
 }
