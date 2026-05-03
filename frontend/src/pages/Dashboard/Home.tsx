@@ -90,6 +90,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [stoppingId, setStoppingId] = useState<string | null>(null);
   const [togglingPauseId, setTogglingPauseId] = useState<string | null>(null);
+  const [resettingAll, setResettingAll] = useState(false);
   const [expandedMatchIds, setExpandedMatchIds] = useState<Set<string>>(new Set());
 
   const [searchInput, setSearchInput] = useState("");
@@ -270,6 +271,47 @@ export default function Home() {
     }
   };
 
+  const handleStopAllMatches = async () => {
+    setResettingAll(true);
+    setError(null);
+
+    const previousMatches = matches;
+    const previousExpandedMatchIds = expandedMatchIds;
+
+    setMatches([]);
+    setExpandedMatchIds(new Set());
+
+    try {
+      const endpointCandidates = API_BASE_URL
+        ? [`${API_BASE_URL}/api/matches/reset`, "/api/matches/reset"]
+        : ["/api/matches/reset"];
+
+      let reset = false;
+
+      for (const endpoint of endpointCandidates) {
+        const response = await fetch(endpoint, { method: "POST", headers: getAuthHeaders() });
+        if (response.ok) {
+          reset = true;
+          break;
+        }
+
+        if (response.status !== 404) {
+          throw new Error(`Request failed with status ${response.status}`);
+        }
+      }
+
+      if (!reset) {
+        throw new Error("Reset endpoint not found.");
+      }
+    } catch {
+      setMatches(previousMatches);
+      setExpandedMatchIds(previousExpandedMatchIds);
+      setError("Failed to stop all live matches.");
+    } finally {
+      setResettingAll(false);
+    }
+  };
+
   const hasNextPage = matches.length === PAGE_SIZE;
 
   const sortedMatches = useMemo(() => {
@@ -347,29 +389,45 @@ export default function Home() {
             </button>
           </form>
 
-          <div className="inline-flex rounded-lg border border-gray-300 p-1 dark:border-gray-700">
-            <button
-              type="button"
-              onClick={() => handleViewModeChange("live")}
-              className={`rounded-md px-3 py-1.5 text-sm ${
-                viewMode === "live"
-                  ? "bg-brand-500 text-white"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-              }`}
-            >
-              Live
-            </button>
-            <button
-              type="button"
-              onClick={() => handleViewModeChange("history")}
-              className={`rounded-md px-3 py-1.5 text-sm ${
-                viewMode === "history"
-                  ? "bg-brand-500 text-white"
-                  : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-              }`}
-            >
-              History
-            </button>
+          <div className="inline-flex items-center gap-2">
+            {viewMode === "live" && (
+              <button
+                type="button"
+                onClick={() => {
+                  void handleStopAllMatches();
+                }}
+                disabled={resettingAll}
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-red-300 px-3 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
+              >
+                <MatchActionIcon name={resettingAll ? "loading" : "stop"} />
+                {resettingAll ? "Stopping all..." : "Stop All"}
+              </button>
+            )}
+
+            <div className="inline-flex rounded-lg border border-gray-300 p-1 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={() => handleViewModeChange("live")}
+                className={`rounded-md px-3 py-1.5 text-sm ${
+                  viewMode === "live"
+                    ? "bg-brand-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                }`}
+              >
+                Live
+              </button>
+              <button
+                type="button"
+                onClick={() => handleViewModeChange("history")}
+                className={`rounded-md px-3 py-1.5 text-sm ${
+                  viewMode === "history"
+                    ? "bg-brand-500 text-white"
+                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                }`}
+              >
+                History
+              </button>
+            </div>
           </div>
         </div>
 
