@@ -147,7 +147,7 @@ function MatchActionIcon({ name }: { name: MatchActionIconName }) {
 
   return (
     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <rect x="6" y="6" width="12" height="12" rx="1.5" />
+      <path d="M6.22 7.28a.75.75 0 0 1 1.06 0L12 12l4.72-4.72a.75.75 0 1 1 1.06 1.06L13.06 13l4.72 4.72a.75.75 0 1 1-1.06 1.06L12 14.06l-4.72 4.72a.75.75 0 1 1-1.06-1.06L10.94 13 6.22 8.34a.75.75 0 0 1 0-1.06Z" />
     </svg>
   );
 }
@@ -547,9 +547,8 @@ export default function Home() {
                   void handleStopAllMatches();
                 }}
                 disabled={resettingAll}
-                className="inline-flex h-10 items-center gap-2 rounded-lg border border-red-300 px-3 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
+                className="h-10 rounded-lg bg-red-600 px-3 text-sm font-medium text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-red-700 dark:hover:bg-red-800"
               >
-                <MatchActionIcon name={resettingAll ? "loading" : "stop"} />
                 {resettingAll ? "Stopping all..." : "Stop All"}
               </button>
             )}
@@ -782,7 +781,7 @@ export default function Home() {
                                       ? "Resume match"
                                       : "Pause match"
                                 }
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/20"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-amber-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:text-amber-300 dark:hover:bg-white/5"
                               >
                                 <MatchActionIcon
                                   name={
@@ -803,7 +802,7 @@ export default function Home() {
                                 disabled={stoppingId === match.id}
                                 aria-label={stoppingId === match.id ? "Stopping match" : "Stop match"}
                                 title={stoppingId === match.id ? "Stopping match" : "Stop match"}
-                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-300 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-300 text-red-700 hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:text-red-300 dark:hover:bg-white/5"
                               >
                                 <MatchActionIcon name={stoppingId === match.id ? "loading" : "stop"} />
                               </button>
