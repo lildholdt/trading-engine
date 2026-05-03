@@ -41,6 +41,48 @@ const PAGE_SIZE = 20;
 const API_BASE_URL =
   (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") ?? "";
 
+type MatchActionIconName = "pause" | "resume" | "stop" | "loading";
+
+function MatchActionIcon({ name }: { name: MatchActionIconName }) {
+  if (name === "loading") {
+    return (
+      <svg
+        className="h-4 w-4 animate-spin"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity="0.25" />
+        <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+
+  if (name === "pause") {
+    return (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <rect x="6" y="5" width="4" height="14" rx="1" />
+        <rect x="14" y="5" width="4" height="14" rx="1" />
+      </svg>
+    );
+  }
+
+  if (name === "resume") {
+    return (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10-6.86a1 1 0 0 0 0-1.7l-10-6.86A1 1 0 0 0 8 5.14Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <rect x="6" y="6" width="12" height="12" rx="1.5" />
+    </svg>
+  );
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const [matches, setMatches] = useState<MatchItem[]>([]);
@@ -418,7 +460,7 @@ export default function Home() {
                 {viewMode === "live" && (
                   <TableCell
                     isHeader
-                    className="w-40 px-5 py-3 text-end text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                    className="w-28 px-5 py-3 text-end text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                   >
                     Actions
                   </TableCell>
@@ -501,8 +543,8 @@ export default function Home() {
                           </TableCell>
                         )}
                         {viewMode === "live" && (
-                          <TableCell className="w-40 px-5 py-3 text-end text-theme-sm text-gray-500 dark:text-gray-400">
-                            <div className="inline-flex items-center gap-2">
+                          <TableCell className="w-28 px-5 py-3 text-end text-theme-sm text-gray-500 dark:text-gray-400">
+                            <div className="inline-flex items-center justify-end gap-2">
                               <button
                                 type="button"
                                 onClick={(event) => {
@@ -510,13 +552,31 @@ export default function Home() {
                                   void handlePauseToggle(match.id, !Boolean(match.isPaused));
                                 }}
                                 disabled={togglingPauseId === match.id}
-                                className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/20"
+                                aria-label={
+                                  togglingPauseId === match.id
+                                    ? "Updating match"
+                                    : match.isPaused
+                                      ? "Resume match"
+                                      : "Pause match"
+                                }
+                                title={
+                                  togglingPauseId === match.id
+                                    ? "Updating match"
+                                    : match.isPaused
+                                      ? "Resume match"
+                                      : "Pause match"
+                                }
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-amber-300 text-amber-700 hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/20"
                               >
-                                {togglingPauseId === match.id
-                                  ? "Updating..."
-                                  : match.isPaused
-                                    ? "Resume"
-                                    : "Pause"}
+                                <MatchActionIcon
+                                  name={
+                                    togglingPauseId === match.id
+                                      ? "loading"
+                                      : match.isPaused
+                                        ? "resume"
+                                        : "pause"
+                                  }
+                                />
                               </button>
                               <button
                                 type="button"
@@ -525,9 +585,11 @@ export default function Home() {
                                   void handleStopMatch(match.id);
                                 }}
                                 disabled={stoppingId === match.id}
-                                className="rounded-lg border border-red-300 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
+                                aria-label={stoppingId === match.id ? "Stopping match" : "Stop match"}
+                                title={stoppingId === match.id ? "Stopping match" : "Stop match"}
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-red-300 text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-red-800 dark:text-red-300 dark:hover:bg-red-900/20"
                               >
-                                {stoppingId === match.id ? "Stopping..." : "Stop"}
+                                <MatchActionIcon name={stoppingId === match.id ? "loading" : "stop"} />
                               </button>
                             </div>
                           </TableCell>
