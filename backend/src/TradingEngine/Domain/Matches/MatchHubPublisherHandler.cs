@@ -6,7 +6,7 @@ using TradingEngine.Infrastructure.Hub;
 
 namespace TradingEngine.Domain.Matches;
 
-public sealed class MatchLiveHubPublisherHandler(
+public sealed class MatchHubPublisherHandler(
     IHubPublisher<MatchUpsertedHubEvent> upsertPublisher,
     IHubPublisher<MatchRemovedHubEvent> removedPublisher)
     : IEventHandler<MatchCreatedEvent>,
@@ -15,35 +15,23 @@ public sealed class MatchLiveHubPublisherHandler(
 {
     public Task HandleAsync(MatchCreatedEvent @event, CancellationToken cancellationToken = default)
     {
-        var live = new LiveMatchReadModel(
-            @event.MatchId.Value,
-            @event.HomeTeam,
-            @event.AwayTeam,
-            @event.Series,
-            @event.StartTime,
-            false,
-            []);
+        var live = new Match
+        {
+            Id = @event.MatchId,
+            HomeTeam = @event.HomeTeam,
+            AwayTeam = @event.AwayTeam,
+            Series = @event.Series,
+            StartTime = @event.StartTime,
+            IsPaused = false,
+            Odds = []
+        };
 
         return upsertPublisher.PublishAsync(new MatchUpsertedHubEvent(live, @event.CreatedAtUtc), cancellationToken);
     }
 
     public Task HandleAsync(OddsUpdatedEvent @event, CancellationToken cancellationToken = default)
     {
-        var live = new LiveMatchReadModel(
-            @event.Match.Id.Value,
-            @event.Match.HomeTeam,
-            @event.Match.AwayTeam,
-            @event.Match.Series,
-            @event.Match.StartTime,
-            @event.Match.IsPaused,
-            @event.Match.Odds
-                .Select(bookmaker => new LiveOddsReadModel(
-                    bookmaker.Name,
-                    bookmaker.Outcome.Home,
-                    bookmaker.Outcome.Away,
-                    bookmaker.Outcome.Draw,
-                    bookmaker.UpdatedAt))
-                .ToList());
+        var live = @event.Match;
 
         return upsertPublisher.PublishAsync(new MatchUpsertedHubEvent(live, @event.UpdatedAtUtc), cancellationToken);
     }

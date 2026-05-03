@@ -11,7 +11,6 @@ public sealed class MatchActor
     private readonly Channel<IMatchCommand> _mailbox;
     private readonly IEventBus _eventBus;
     private readonly IOddsProvider _oddsProvider;
-    private readonly IMatchRepository _matchRepository;
     private readonly ILogger<MatchActor> _logger;
 
     // State
@@ -25,13 +24,11 @@ public sealed class MatchActor
         Match state,
         IEventBus eventBus,
         IOddsProvider oddsProvider,
-        IMatchRepository matchRepository,
         IServiceProvider serviceProvider)
     {
         State = state;
         _eventBus = eventBus;
         _oddsProvider = oddsProvider;
-        _matchRepository = matchRepository;
         _logger = serviceProvider.GetRequiredService<ILogger<MatchActor>>();
         
         _mailbox = Channel.CreateUnbounded<IMatchCommand>(
@@ -206,9 +203,6 @@ public sealed class MatchActor
         if (!hasChanges)
             return;
         
-        // Save current state
-        await _matchRepository.SaveAsync(State);
-        
         // Notify that odds has been updated
         await _eventBus.PublishAsync(new OddsUpdatedEvent
         {
@@ -223,7 +217,6 @@ public sealed class MatchActor
             return;
 
         State.IsPaused = true;
-        await _matchRepository.SaveAsync(State);
         _logger.LogInformation("Actor paused for MatchId: {MatchId}", State.Id);
     }
 
@@ -233,29 +226,21 @@ public sealed class MatchActor
             return;
 
         State.IsPaused = false;
-        await _matchRepository.SaveAsync(State);
         _logger.LogInformation("Actor resumed for MatchId: {MatchId}", State.Id);
     }
 
-    public LiveMatchReadModel GetLiveReadModel()
+    public Match GetLiveReadModel()
     {
-        var odds = State.Odds
-            .Select(bookmaker => new LiveOddsReadModel(
-                bookmaker.Name,
-                bookmaker.Outcome.Home,
-                bookmaker.Outcome.Away,
-                bookmaker.Outcome.Draw,
-                bookmaker.UpdatedAt))
-            .ToList();
-
-        return new LiveMatchReadModel(
-            State.Id.Value,
-            State.HomeTeam,
-            State.AwayTeam,
-            State.Series,
-            State.StartTime,
-            State.IsPaused,
-            odds);
+        return new Match
+        {
+            Id = State.Id,
+            HomeTeam = State.HomeTeam,
+            AwayTeam = State.AwayTeam,
+            Series = State.Series,
+            StartTime = State.StartTime,
+            IsPaused = State.IsPaused,
+            Odds = [..State.Odds]
+        };
     }
     
     public async Task StopAsync()

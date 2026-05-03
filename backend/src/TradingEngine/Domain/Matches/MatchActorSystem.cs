@@ -9,27 +9,26 @@ public sealed class MatchActorSystem(
     IEventBus eventBus, 
     IOddsProvider oddsProvider,
     IServiceProvider serviceProvider,
-    IMatchRepository matchRepository,
     ILogger<MatchActorSystem> logger) : IMatchActorSystem
 {
     private readonly ConcurrentDictionary<MatchId, MatchActor> _actors = new();
 
-    public Task<IReadOnlyCollection<LiveMatchReadModel>> GetAllLiveAsync(CancellationToken cancellationToken = default)
+    public Task<IReadOnlyCollection<Match>> GetAllLiveAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var live = _actors.Values.Select(actor => actor.GetLiveReadModel()).ToList();
-        return Task.FromResult<IReadOnlyCollection<LiveMatchReadModel>>(live);
+        return Task.FromResult<IReadOnlyCollection<Match>>(live);
     }
 
-    public Task<LiveMatchReadModel?> GetLiveByIdAsync(MatchId id, CancellationToken cancellationToken = default)
+    public Task<Match?> GetByIdAsync(MatchId id, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (!_actors.TryGetValue(id, out var actor))
         {
-            return Task.FromResult<LiveMatchReadModel?>(null);
+            return Task.FromResult<Match?>(null);
         }
 
-        return Task.FromResult<LiveMatchReadModel?>(actor.GetLiveReadModel());
+        return Task.FromResult<Match?>(actor.GetLiveReadModel());
     }
 
     public ValueTask SendAsync(IMatchCommand command)
@@ -51,11 +50,9 @@ public sealed class MatchActorSystem(
             Series = entry.Series,
             StartTime =  entry.StartTime
         };
-
-        await matchRepository.SaveAsync(match);
         
         // Create and start the match actor
-        var actor = new MatchActor(match, eventBus, oddsProvider, matchRepository, serviceProvider);
+        var actor = new MatchActor(match, eventBus, oddsProvider, serviceProvider);
         actor.StartAsync();
         _actors.GetOrAdd(entry.Id, actor);
 

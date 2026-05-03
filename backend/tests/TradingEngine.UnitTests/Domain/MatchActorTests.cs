@@ -14,7 +14,6 @@ public class MatchActorTests
 {
     private readonly Mock<IEventBus> _eventBus = new();
     private readonly Mock<IOddsProvider> _oddsProvider = new();
-    private readonly Mock<IMatchRepository> _matchRepository = new();
     private readonly Mock<ILogger<MatchActor>> _logger = new();
 
     private MatchActor CreateActor(DateTime? startTime = null)
@@ -35,7 +34,6 @@ public class MatchActorTests
             match,
             _eventBus.Object,
             _oddsProvider.Object,
-            _matchRepository.Object,
             services.BuildServiceProvider());
     }
 

@@ -30,14 +30,14 @@ public class MatchesController(IDispatcher dispatcher, IMatchActorSystem actorSy
         [FromQuery] int pageSize = 50)
     {
         var matches = await actorSystem.GetAllLiveAsync();
-        IEnumerable<LiveMatchReadModel> filtered = matches;
+        IEnumerable<Match> filtered = matches;
 
         if (!string.IsNullOrWhiteSpace(search))
         {
             var normalized = search.Trim();
             filtered = filtered.Where(m =>
-                m.Home.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
-                m.Away.Contains(normalized, StringComparison.OrdinalIgnoreCase));
+                m.HomeTeam.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
+                m.AwayTeam.Contains(normalized, StringComparison.OrdinalIgnoreCase));
         }
 
         if (startTimeFromUtc.HasValue)
@@ -63,18 +63,18 @@ public class MatchesController(IDispatcher dispatcher, IMatchActorSystem actorSy
             .Take(normalizedPageSize)
             .Select(match => new
             {
-                id = match.Id,
-                home = match.Home,
-                away = match.Away,
+                id = match.Id.Value,
+                home = match.HomeTeam,
+                away = match.AwayTeam,
                 series = match.Series,
                 startTime = match.StartTime,
                 isPaused = match.IsPaused,
                 odds = match.Odds.Select(bookmaker => new
                 {
                     name = bookmaker.Name,
-                    home = bookmaker.Home,
-                    away = bookmaker.Away,
-                    draw = bookmaker.Draw,
+                    home = bookmaker.Outcome.Home,
+                    away = bookmaker.Outcome.Away,
+                    draw = bookmaker.Outcome.Draw,
                     updatedAt = bookmaker.UpdatedAt
                 })
             })
@@ -86,7 +86,7 @@ public class MatchesController(IDispatcher dispatcher, IMatchActorSystem actorSy
     [HttpGet("live/{id:guid}")]
     public async Task<IActionResult> GetLiveById(Guid id)
     {
-        var match = await actorSystem.GetLiveByIdAsync(id);
+        var match = await actorSystem.GetByIdAsync(id);
         if (match == null)
         {
             return NotFound();
@@ -94,18 +94,18 @@ public class MatchesController(IDispatcher dispatcher, IMatchActorSystem actorSy
 
         return Ok(new
         {
-            id = match.Id,
-            home = match.Home,
-            away = match.Away,
+            id = match.Id.Value,
+            home = match.HomeTeam,
+            away = match.AwayTeam,
             series = match.Series,
             startTime = match.StartTime,
             isPaused = match.IsPaused,
             odds = match.Odds.Select(bookmaker => new
             {
                 name = bookmaker.Name,
-                home = bookmaker.Home,
-                away = bookmaker.Away,
-                draw = bookmaker.Draw,
+                home = bookmaker.Outcome.Home,
+                away = bookmaker.Outcome.Away,
+                draw = bookmaker.Outcome.Draw,
                 updatedAt = bookmaker.UpdatedAt
             })
         });

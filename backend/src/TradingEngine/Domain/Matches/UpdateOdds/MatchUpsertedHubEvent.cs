@@ -1,3 +1,3 @@
 namespace TradingEngine.Domain.Matches.UpdateOdds;
 
-public record MatchUpsertedHubEvent(LiveMatchReadModel Match, DateTime ChangedAtUtc);
+public record MatchUpsertedHubEvent(Match Match, DateTime ChangedAtUtc);

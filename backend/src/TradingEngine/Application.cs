@@ -54,13 +54,13 @@ public static class Application
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  MatchCreationHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
         builder.Services.AddSingleton<InMemoryMatchReadRepository>();
-        builder.Services.AddSingleton<MatchLiveHubPublisherHandler>();
+        builder.Services.AddSingleton<MatchHubPublisherHandler>();
         builder.Services.AddSingleton<IEventHandler<MatchCreatedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
-        builder.Services.AddSingleton<IEventHandler<MatchCreatedEvent>>(sp => sp.GetRequiredService<MatchLiveHubPublisherHandler>());
+        builder.Services.AddSingleton<IEventHandler<MatchCreatedEvent>>(sp => sp.GetRequiredService<MatchHubPublisherHandler>());
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
-        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>>(sp => sp.GetRequiredService<MatchLiveHubPublisherHandler>());
+        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>>(sp => sp.GetRequiredService<MatchHubPublisherHandler>());
         builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
-        builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>>(sp => sp.GetRequiredService<MatchLiveHubPublisherHandler>());
+        builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>>(sp => sp.GetRequiredService<MatchHubPublisherHandler>());
         
         // Register asynchronous command bus
         builder.Services.AddHostedService<CommandBusWorker>();
@@ -86,8 +86,6 @@ public static class Application
         
         // Register repositories for entities
         builder.Services.AddSingleton(typeof(IRepository<,>), typeof(InMemoryRepository<,>));
-        builder.Services.AddSingleton<MatchRepository>();
-        builder.Services.AddSingleton<IMatchRepository>(sp => sp.GetRequiredService<MatchRepository>());
         builder.Services.AddSingleton<IMatchReadRepository>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
         builder.Services.AddSingleton<IOrdersRepository, OrdersRepository>();
         

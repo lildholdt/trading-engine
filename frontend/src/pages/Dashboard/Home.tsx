@@ -45,15 +45,29 @@ type MatchStopedHubEvent = {
   stoppedAtUtc: string;
 };
 
+const normalizeMatchId = (value: unknown): string | null => {
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value;
+  }
+
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const raw = value as Record<string, unknown>;
+  const nested = raw.value ?? raw.Value;
+  return typeof nested === "string" && nested.trim().length > 0 ? nested : null;
+};
+
 const normalizeLiveMatch = (input: unknown): MatchItem | null => {
   if (!input || typeof input !== "object") {
     return null;
   }
 
   const raw = input as Record<string, unknown>;
-  const id = (raw.id ?? raw.Id) as string | undefined;
-  const home = (raw.home ?? raw.Home) as string | undefined;
-  const away = (raw.away ?? raw.Away) as string | undefined;
+  const id = normalizeMatchId(raw.id ?? raw.Id);
+  const home = (raw.home ?? raw.Home ?? raw.homeTeam ?? raw.HomeTeam) as string | undefined;
+  const away = (raw.away ?? raw.Away ?? raw.awayTeam ?? raw.AwayTeam) as string | undefined;
   const series = (raw.series ?? raw.Series) as string | undefined;
   const startTime = (raw.startTime ?? raw.StartTime) as string | undefined;
   const isPaused = (raw.isPaused ?? raw.IsPaused) as boolean | undefined;
@@ -72,9 +86,10 @@ const normalizeLiveMatch = (input: unknown): MatchItem | null => {
 
           const rawOdds = item as Record<string, unknown>;
           const name = (rawOdds.name ?? rawOdds.Name) as string | undefined;
-          const homeValue = Number(rawOdds.home ?? rawOdds.Home);
-          const awayValue = Number(rawOdds.away ?? rawOdds.Away);
-          const drawValue = Number(rawOdds.draw ?? rawOdds.Draw);
+          const outcome = (rawOdds.outcome ?? rawOdds.Outcome) as Record<string, unknown> | undefined;
+          const homeValue = Number(rawOdds.home ?? rawOdds.Home ?? outcome?.home ?? outcome?.Home);
+          const awayValue = Number(rawOdds.away ?? rawOdds.Away ?? outcome?.away ?? outcome?.Away);
+          const drawValue = Number(rawOdds.draw ?? rawOdds.Draw ?? outcome?.draw ?? outcome?.Draw);
           const updatedAt = (rawOdds.updatedAt ?? rawOdds.UpdatedAt) as string | undefined;
 
           if (!name || Number.isNaN(homeValue) || Number.isNaN(awayValue) || Number.isNaN(drawValue) || !updatedAt) {
@@ -218,7 +233,12 @@ export default function Home() {
             continue;
           }
 
-          resolvedData = data as MatchItem[];
+          resolvedData =
+            viewMode === "live"
+              ? data
+                  .map((item) => normalizeLiveMatch(item))
+                  .filter((item): item is MatchItem => item !== null)
+              : (data as MatchItem[]);
           break;
         }
 
@@ -295,7 +315,7 @@ export default function Home() {
 
     const handleMatchRemoved = (payload: MatchStopedHubEvent | Record<string, unknown>) => {
       const rawPayload = payload as Record<string, unknown>;
-      const id = (rawPayload.id ?? rawPayload.Id) as string | undefined;
+      const id = normalizeMatchId(rawPayload.id ?? rawPayload.Id);
       if (!id) {
         return;
       }

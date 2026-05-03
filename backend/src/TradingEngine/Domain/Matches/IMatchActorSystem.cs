@@ -21,7 +21,7 @@ public interface IMatchActorSystem
     /// </summary>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A read-only collection of live actor snapshots.</returns>
-    Task<IReadOnlyCollection<LiveMatchReadModel>> GetAllLiveAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<Match>> GetAllLiveAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets a live snapshot for a specific active match actor.
@@ -29,7 +29,7 @@ public interface IMatchActorSystem
     /// <param name="id">The unique identifier of the target match actor.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>The live actor snapshot if found; otherwise null.</returns>
-    Task<LiveMatchReadModel?> GetLiveByIdAsync(MatchId id, CancellationToken cancellationToken = default);
+    Task<Match?> GetByIdAsync(MatchId id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a new sport event actor for the specified event registry entry. 
