@@ -163,8 +163,8 @@ export default function Home() {
 
     try {
       const endpointCandidates = API_BASE_URL
-        ? [`${API_BASE_URL}/api/matches/${id}`, `/api/matches/${id}`]
-        : [`/api/matches/${id}`];
+        ? [`${API_BASE_URL}/api/matches/live/${id}`, `/api/matches/live/${id}`]
+        : [`/api/matches/live/${id}`];
 
       let stopped = false;
       for (const endpoint of endpointCandidates) {
@@ -201,8 +201,8 @@ export default function Home() {
     try {
       const actionPath = nextPausedState ? "pause" : "resume";
       const endpointCandidates = API_BASE_URL
-        ? [`${API_BASE_URL}/api/matches/${id}/${actionPath}`, `/api/matches/${id}/${actionPath}`]
-        : [`/api/matches/${id}/${actionPath}`];
+        ? [`${API_BASE_URL}/api/matches/live/${id}/${actionPath}`, `/api/matches/live/${id}/${actionPath}`]
+        : [`/api/matches/live/${id}/${actionPath}`];
 
       let updated = false;
       for (const endpoint of endpointCandidates) {
@@ -407,16 +407,18 @@ export default function Home() {
                     Bookmakers{getSortIndicator("bookmakers")}
                   </button>
                 </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-                >
-                  Status
-                </TableCell>
                 {viewMode === "live" && (
                   <TableCell
                     isHeader
-                    className="px-5 py-3 text-end text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                    className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                  >
+                    Status
+                  </TableCell>
+                )}
+                {viewMode === "live" && (
+                  <TableCell
+                    isHeader
+                    className="w-40 px-5 py-3 text-end text-theme-xs font-medium text-gray-500 dark:text-gray-400"
                   >
                     Actions
                   </TableCell>
@@ -429,7 +431,7 @@ export default function Home() {
                 <TableRow>
                   <TableCell
                     className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400"
-                    colSpan={viewMode === "live" ? 8 : 7}
+                    colSpan={viewMode === "live" ? 8 : 6}
                   >
                     Loading matches...
                   </TableCell>
@@ -485,8 +487,8 @@ export default function Home() {
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {match.odds?.length ?? 0}
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                          {viewMode === "live" ? (
+                        {viewMode === "live" && (
+                          <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                             <span
                               className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
                                 match.isPaused
@@ -496,20 +498,10 @@ export default function Home() {
                             >
                               {match.isPaused ? "Paused" : "Live"}
                             </span>
-                          ) : (
-                            <span
-                              className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                                match.isActive
-                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-                                  : "bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                              }`}
-                            >
-                              {match.isActive ? "Active" : "Stopped"}
-                            </span>
-                          )}
-                        </TableCell>
+                          </TableCell>
+                        )}
                         {viewMode === "live" && (
-                          <TableCell className="px-5 py-3 text-end text-theme-sm text-gray-500 dark:text-gray-400">
+                          <TableCell className="w-40 px-5 py-3 text-end text-theme-sm text-gray-500 dark:text-gray-400">
                             <div className="inline-flex items-center gap-2">
                               <button
                                 type="button"
@@ -546,7 +538,7 @@ export default function Home() {
                         <TableRow>
                           <TableCell
                             className="bg-gray-50/60 px-5 py-4 dark:bg-white/[0.02]"
-                            colSpan={viewMode === "live" ? 8 : 7}
+                            colSpan={viewMode === "live" ? 8 : 6}
                           >
                             {match.odds.length === 0 ? (
                               <p className="text-sm text-gray-500 dark:text-gray-400">

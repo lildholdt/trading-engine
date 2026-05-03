@@ -16,7 +16,7 @@ namespace TradingEngine.Controllers;
 [ApiController]
 [Route("api/matches")]
 [Authorize]
-public class MatchesController(IDispatcher dispatcher, IMatchRepository matchRepository) : ControllerBase
+public class MatchesController(IDispatcher dispatcher, IMatchActorSystem actorSystem) : ControllerBase
 {
     [HttpGet("live")]
     public async Task<IActionResult> GetLive(
@@ -27,15 +27,15 @@ public class MatchesController(IDispatcher dispatcher, IMatchRepository matchRep
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 50)
     {
-        var matches = await matchRepository.GetAllAsync();
-        IEnumerable<Match> filtered = matches;
+        var matches = await actorSystem.GetAllLiveAsync();
+        IEnumerable<LiveMatchReadModel> filtered = matches;
 
         if (!string.IsNullOrWhiteSpace(search))
         {
             var normalized = search.Trim();
             filtered = filtered.Where(m =>
-                m.HomeTeam.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
-                m.AwayTeam.Contains(normalized, StringComparison.OrdinalIgnoreCase));
+                m.Home.Contains(normalized, StringComparison.OrdinalIgnoreCase) ||
+                m.Away.Contains(normalized, StringComparison.OrdinalIgnoreCase));
         }
 
         if (startTimeFromUtc.HasValue)
@@ -61,18 +61,18 @@ public class MatchesController(IDispatcher dispatcher, IMatchRepository matchRep
             .Take(normalizedPageSize)
             .Select(match => new
             {
-                id = match.Id.Value,
-                home = match.HomeTeam,
-                away = match.AwayTeam,
+                id = match.Id,
+                home = match.Home,
+                away = match.Away,
                 series = match.Series,
                 startTime = match.StartTime,
                 isPaused = match.IsPaused,
                 odds = match.Odds.Select(bookmaker => new
                 {
                     name = bookmaker.Name,
-                    home = bookmaker.Outcome.Home,
-                    away = bookmaker.Outcome.Away,
-                    draw = bookmaker.Outcome.Draw,
+                    home = bookmaker.Home,
+                    away = bookmaker.Away,
+                    draw = bookmaker.Draw,
                     updatedAt = bookmaker.UpdatedAt
                 })
             })
@@ -84,7 +84,7 @@ public class MatchesController(IDispatcher dispatcher, IMatchRepository matchRep
     [HttpGet("live/{id:guid}")]
     public async Task<IActionResult> GetLiveById(Guid id)
     {
-        var match = await matchRepository.GetById(id);
+        var match = await actorSystem.GetLiveByIdAsync(id);
         if (match == null)
         {
             return NotFound();
@@ -92,18 +92,18 @@ public class MatchesController(IDispatcher dispatcher, IMatchRepository matchRep
 
         return Ok(new
         {
-            id = match.Id.Value,
-            home = match.HomeTeam,
-            away = match.AwayTeam,
+            id = match.Id,
+            home = match.Home,
+            away = match.Away,
             series = match.Series,
             startTime = match.StartTime,
             isPaused = match.IsPaused,
             odds = match.Odds.Select(bookmaker => new
             {
                 name = bookmaker.Name,
-                home = bookmaker.Outcome.Home,
-                away = bookmaker.Outcome.Away,
-                draw = bookmaker.Outcome.Draw,
+                home = bookmaker.Home,
+                away = bookmaker.Away,
+                draw = bookmaker.Draw,
                 updatedAt = bookmaker.UpdatedAt
             })
         });

@@ -14,6 +14,24 @@ public sealed class MatchActorSystem(
 {
     private readonly ConcurrentDictionary<MatchId, MatchActor> _actors = new();
 
+    public Task<IReadOnlyCollection<LiveMatchReadModel>> GetAllLiveAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var live = _actors.Values.Select(actor => actor.GetLiveReadModel()).ToList();
+        return Task.FromResult<IReadOnlyCollection<LiveMatchReadModel>>(live);
+    }
+
+    public Task<LiveMatchReadModel?> GetLiveByIdAsync(MatchId id, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!_actors.TryGetValue(id, out var actor))
+        {
+            return Task.FromResult<LiveMatchReadModel?>(null);
+        }
+
+        return Task.FromResult<LiveMatchReadModel?>(actor.GetLiveReadModel());
+    }
+
     public ValueTask SendAsync(IMatchCommand command)
     {
         _actors.TryGetValue(command.MatchId, out var actor);

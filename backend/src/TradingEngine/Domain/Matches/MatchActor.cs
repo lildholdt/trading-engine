@@ -236,6 +236,27 @@ public sealed class MatchActor
         await _matchRepository.SaveAsync(State);
         _logger.LogInformation("Actor resumed for EventId: {EventId}", State.Id);
     }
+
+    public LiveMatchReadModel GetLiveReadModel()
+    {
+        var odds = State.Odds
+            .Select(bookmaker => new LiveOddsReadModel(
+                bookmaker.Name,
+                bookmaker.Outcome.Home,
+                bookmaker.Outcome.Away,
+                bookmaker.Outcome.Draw,
+                bookmaker.UpdatedAt))
+            .ToList();
+
+        return new LiveMatchReadModel(
+            State.Id.Value,
+            State.HomeTeam,
+            State.AwayTeam,
+            State.Series,
+            State.StartTime,
+            State.IsPaused,
+            odds);
+    }
     
     public async Task StopAsync()
     {
