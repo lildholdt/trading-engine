@@ -338,9 +338,6 @@ export default function MatchDetails() {
                   Snapshot Time
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
-                  Hours Before
-                </TableCell>
-                <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
                   Bookmakers
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
@@ -354,13 +351,13 @@ export default function MatchDetails() {
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {loading ? (
                 <TableRow>
-                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
+                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={5}>
                     Loading orders...
                   </TableCell>
                 </TableRow>
               ) : orders.length === 0 ? (
                 <TableRow>
-                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
+                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={5}>
                     No orders available for this match.
                   </TableCell>
                 </TableRow>
@@ -399,9 +396,6 @@ export default function MatchDetails() {
                           {formatDateTimeWithMonthName(order.snapshotTime)}
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                          {order.hoursBefore}
-                        </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {order.bookmakers.length}
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
@@ -414,7 +408,7 @@ export default function MatchDetails() {
 
                       {isExpanded && (
                         <TableRow>
-                          <TableCell className="bg-gray-50/60 px-5 py-4 dark:bg-white/[0.02]" colSpan={6}>
+                          <TableCell className="bg-gray-50/60 px-5 py-4 dark:bg-white/[0.02]" colSpan={5}>
                             {order.bookmakers.length === 0 ? (
                               <p className="text-sm text-gray-500 dark:text-gray-400">
                                 No bookmaker details available for this snapshot.
