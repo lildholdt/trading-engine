@@ -1,6 +1,6 @@
 using TradingEngine.Infrastructure.Dispatcher;
 
-namespace TradingEngine.Domain.Matches.PauseMatch;
+namespace TradingEngine.Domain.Matches.ResumeMatch;
 
 /// <summary>
 /// Command used to resume odds polling for a paused match actor.

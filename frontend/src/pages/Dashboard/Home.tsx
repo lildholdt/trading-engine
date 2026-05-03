@@ -1,5 +1,6 @@
 import { FormEvent, Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import {
@@ -10,7 +11,7 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { formatEuropeanDateTime } from "../../utils/dateTime";
-import { getAuthHeaders } from "../../utils/auth";
+import { getAuthHeaders, getAuthToken } from "../../utils/auth";
 
 type MatchItem = {
   id: string;
@@ -32,6 +33,74 @@ type BookmakerOdds = {
   away: number;
   draw: number;
   updatedAt: string;
+};
+
+type MatchUpsertedHubEvent = {
+  match: MatchItem;
+  changedAtUtc: string;
+};
+
+type MatchStopedHubEvent = {
+  id: string;
+  stoppedAtUtc: string;
+};
+
+const normalizeLiveMatch = (input: unknown): MatchItem | null => {
+  if (!input || typeof input !== "object") {
+    return null;
+  }
+
+  const raw = input as Record<string, unknown>;
+  const id = (raw.id ?? raw.Id) as string | undefined;
+  const home = (raw.home ?? raw.Home) as string | undefined;
+  const away = (raw.away ?? raw.Away) as string | undefined;
+  const series = (raw.series ?? raw.Series) as string | undefined;
+  const startTime = (raw.startTime ?? raw.StartTime) as string | undefined;
+  const isPaused = (raw.isPaused ?? raw.IsPaused) as boolean | undefined;
+  const oddsRaw = (raw.odds ?? raw.Odds) as unknown;
+
+  if (!id || !home || !away || !series || !startTime) {
+    return null;
+  }
+
+  const odds: BookmakerOdds[] = Array.isArray(oddsRaw)
+    ? oddsRaw
+        .map((item) => {
+          if (!item || typeof item !== "object") {
+            return null;
+          }
+
+          const rawOdds = item as Record<string, unknown>;
+          const name = (rawOdds.name ?? rawOdds.Name) as string | undefined;
+          const homeValue = Number(rawOdds.home ?? rawOdds.Home);
+          const awayValue = Number(rawOdds.away ?? rawOdds.Away);
+          const drawValue = Number(rawOdds.draw ?? rawOdds.Draw);
+          const updatedAt = (rawOdds.updatedAt ?? rawOdds.UpdatedAt) as string | undefined;
+
+          if (!name || Number.isNaN(homeValue) || Number.isNaN(awayValue) || Number.isNaN(drawValue) || !updatedAt) {
+            return null;
+          }
+
+          return {
+            name,
+            home: homeValue,
+            away: awayValue,
+            draw: drawValue,
+            updatedAt,
+          } satisfies BookmakerOdds;
+        })
+        .filter((item): item is BookmakerOdds => item !== null)
+    : [];
+
+  return {
+    id,
+    home,
+    away,
+    series,
+    startTime,
+    isPaused,
+    odds,
+  };
 };
 
 type MatchSortKey = "home" | "away" | "series" | "startTime" | "bookmakers";
@@ -175,6 +244,76 @@ export default function Home() {
       controller.abort();
     };
   }, [page, search, viewMode]);
+
+  useEffect(() => {
+    if (viewMode !== "live") {
+      return;
+    }
+
+    const hubUrl = API_BASE_URL ? `${API_BASE_URL}/hubs/trading` : "/hubs/trading";
+    const connection = new HubConnectionBuilder()
+      .withUrl(hubUrl, {
+        accessTokenFactory: () => getAuthToken() ?? "",
+      })
+      .withAutomaticReconnect()
+      .configureLogging(LogLevel.Warning)
+      .build();
+
+    const handleMatchUpserted = (payload: 
+    MatchUpsertedHubEvent | Record<string, unknown>) => {
+      const rawPayload = payload as Record<string, unknown>;
+      const normalizedMatch = normalizeLiveMatch(rawPayload.match ?? rawPayload.Match);
+      if (!normalizedMatch) {
+        return;
+      }
+
+      setMatches((previous) => {
+        const index = previous.findIndex((item) => item.id === normalizedMatch.id);
+        if (index === -1) {
+          return [...previous, normalizedMatch];
+        }
+
+        const next = [...previous];
+        next[index] = {
+          ...next[index],
+          ...normalizedMatch,
+        };
+        return next;
+      });
+    };
+
+    const handleMatchRemoved = (payload: MatchStopedHubEvent | Record<string, unknown>) => {
+      const rawPayload = payload as Record<string, unknown>;
+      const id = (rawPayload.id ?? rawPayload.Id) as string | undefined;
+      if (!id) {
+        return;
+      }
+
+      setMatches((previous) => previous.filter((item) => item.id !== id));
+      setExpandedMatchIds((previous) => {
+        if (!previous.has(id)) {
+          return previous;
+        }
+
+        const next = new Set(previous);
+        next.delete(id);
+        return next;
+      });
+    };
+
+    connection.on("MatchUpsertedHubEvent", handleMatchUpserted);
+    connection.on("MatchRemovedHubEvent", handleMatchRemoved);
+
+    void connection.start().catch((error) => {
+      console.error("Failed to connect to trading hub for live updates", error);
+    });
+
+    return () => {
+      connection.off("MatchUpsertedHubEvent", handleMatchUpserted);
+      connection.off("MatchRemovedHubEvent", handleMatchRemoved);
+      void connection.stop();
+    };
+  }, [viewMode]);
 
   const handleSearchSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

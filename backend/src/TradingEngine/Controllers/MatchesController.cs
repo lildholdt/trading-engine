@@ -7,6 +7,7 @@ using TradingEngine.Domain.Matches.GetMatchOdds;
 using TradingEngine.Domain.Matches.GetMatches;
 using TradingEngine.Domain.Matches.PauseMatch;
 using TradingEngine.Domain.Matches.Reset;
+using TradingEngine.Domain.Matches.ResumeMatch;
 using TradingEngine.Domain.Matches.StopMatch;
 using TradingEngine.Domain.Orders.GetOrders;
 using TradingEngine.Infrastructure.Dispatcher;

@@ -1,3 +1,4 @@
+using TradingEngine.Domain.Matches.ResumeMatch;
 using TradingEngine.Infrastructure.Dispatcher;
 
 namespace TradingEngine.Domain.Matches.PauseMatch;

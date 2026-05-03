@@ -12,6 +12,7 @@ using TradingEngine.Domain.Matches.GetMatchOdds;
 using TradingEngine.Domain.Matches.GetMatches;
 using TradingEngine.Domain.Matches.PauseMatch;
 using TradingEngine.Domain.Matches.Reset;
+using TradingEngine.Domain.Matches.ResumeMatch;
 using TradingEngine.Domain.Matches.StopMatch;
 using TradingEngine.Domain.Matches.UpdateOdds;
 using TradingEngine.Domain.Orders;
@@ -53,9 +54,13 @@ public static class Application
         builder.Services.AddSingleton<IEventHandler<RegistryItemCorrelatedEvent>,  MatchCreationHandler>();
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>, OrderPlacementHandler>();
         builder.Services.AddSingleton<InMemoryMatchReadRepository>();
+        builder.Services.AddSingleton<MatchLiveHubPublisherHandler>();
         builder.Services.AddSingleton<IEventHandler<MatchCreatedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
+        builder.Services.AddSingleton<IEventHandler<MatchCreatedEvent>>(sp => sp.GetRequiredService<MatchLiveHubPublisherHandler>());
         builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
+        builder.Services.AddSingleton<IEventHandler<OddsUpdatedEvent>>(sp => sp.GetRequiredService<MatchLiveHubPublisherHandler>());
         builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>>(sp => sp.GetRequiredService<InMemoryMatchReadRepository>());
+        builder.Services.AddSingleton<IEventHandler<MatchStoppedEvent>>(sp => sp.GetRequiredService<MatchLiveHubPublisherHandler>());
         
         // Register asynchronous command bus
         builder.Services.AddHostedService<CommandBusWorker>();

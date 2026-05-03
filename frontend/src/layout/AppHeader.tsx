@@ -14,27 +14,46 @@ const AppHeader: React.FC = () => {
   const navigate = useNavigate();
   const [systemRunning, setSystemRunning] = useState<boolean>(false);
   const [systemToggling, setSystemToggling] = useState(false);
+  const [backendConnected, setBackendConnected] = useState(false);
 
   const fetchSystemStatus = useCallback(async () => {
+    let connected = false;
+
     try {
       const endpoints = API_BASE_URL
         ? [`${API_BASE_URL}/api/system/status`, "/api/system/status"]
         : ["/api/system/status"];
+
       for (const endpoint of endpoints) {
-        const res = await fetch(endpoint, { headers: getAuthHeaders() });
-        if (res.ok) {
-          const data = (await res.json()) as { isRunning: boolean };
-          setSystemRunning(data.isRunning);
-          return;
+        try {
+          const res = await fetch(endpoint, { headers: getAuthHeaders() });
+          if (res.ok) {
+            const data = (await res.json()) as { isRunning: boolean };
+            setSystemRunning(data.isRunning);
+            connected = true;
+            break;
+          }
+        } catch {
+          // Try next endpoint candidate
         }
       }
     } catch {
       // silently ignore
+    } finally {
+      setBackendConnected(connected);
     }
   }, []);
 
   useEffect(() => {
     void fetchSystemStatus();
+
+    const intervalId = window.setInterval(() => {
+      void fetchSystemStatus();
+    }, 15000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
   }, [fetchSystemStatus]);
 
   const handleSystemToggle = async () => {
@@ -169,6 +188,21 @@ const AppHeader: React.FC = () => {
             isApplicationMenuOpen ? "flex" : "hidden"
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
+          <div
+            className={`hidden rounded-full border px-3 py-1.5 text-xs font-medium sm:inline-flex sm:items-center sm:gap-2 ${
+              backendConnected
+                ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300"
+                : "border-red-300 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+            }`}
+            title={backendConnected ? "Connected to backend" : "Disconnected from backend"}
+          >
+            <span
+              className={`h-2 w-2 rounded-full ${
+                backendConnected ? "bg-emerald-500" : "bg-red-500"
+              }`}
+            />
+            {backendConnected ? "Backend connected" : "Backend disconnected"}
+          </div>
           <div className="flex items-center gap-2 2xsm:gap-3">
             {/* <!-- System Start/Stop Toggle --> */}
             <button
