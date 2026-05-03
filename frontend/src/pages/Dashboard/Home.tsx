@@ -591,12 +591,14 @@ export default function Home() {
           <Table>
             <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
               <TableRow>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
-                >
-                  Details
-                </TableCell>
+                {viewMode === "live" && (
+                  <TableCell
+                    isHeader
+                    className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
+                  >
+                    Details
+                  </TableCell>
+                )}
                 <TableCell
                   isHeader
                   className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400"
@@ -681,7 +683,7 @@ export default function Home() {
                 <TableRow>
                   <TableCell
                     className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400"
-                    colSpan={viewMode === "live" ? 8 : 6}
+                    colSpan={viewMode === "live" ? 8 : 5}
                   >
                     Loading matches...
                   </TableCell>
@@ -700,32 +702,34 @@ export default function Home() {
                         }`}
                         onClick={() => navigate(`/matches/${match.id}`, { state: { match, viewMode } })}
                       >
-                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                          <button
-                            type="button"
-                            aria-label={isExpanded ? "Collapse details" : "Expand details"}
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              toggleExpandedRow(match.id);
-                            }}
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
-                          >
-                            <svg
-                              className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                              viewBox="0 0 20 20"
-                              fill="none"
-                              xmlns="http://www.w3.org/2000/svg"
+                        {viewMode === "live" && (
+                          <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                            <button
+                              type="button"
+                              aria-label={isExpanded ? "Collapse details" : "Expand details"}
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                toggleExpandedRow(match.id);
+                              }}
+                              className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-white/5"
                             >
-                              <path
-                                d="M5 8L10 13L15 8"
-                                stroke="currentColor"
-                                strokeWidth="1.8"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                          </button>
-                        </TableCell>
+                              <svg
+                                className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                                viewBox="0 0 20 20"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M5 8L10 13L15 8"
+                                  stroke="currentColor"
+                                  strokeWidth="1.8"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            </button>
+                          </TableCell>
+                        )}
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
                           {match.home}
                         </TableCell>
@@ -808,11 +812,11 @@ export default function Home() {
                         )}
                       </TableRow>
 
-                      {isExpanded && (
+                      {isExpanded && viewMode === "live" && (
                         <TableRow>
                           <TableCell
                             className="bg-gray-50/60 px-5 py-4 dark:bg-white/[0.02]"
-                            colSpan={viewMode === "live" ? 8 : 6}
+                            colSpan={8}
                           >
                             {match.odds.length === 0 ? (
                               <p className="text-sm text-gray-500 dark:text-gray-400">
