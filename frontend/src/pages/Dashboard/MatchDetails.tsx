@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
-import { formatEuropeanDateTime } from "../../utils/dateTime";
+import { formatDateTimeWithMonthName } from "../../utils/dateTime";
 import { getAuthHeaders } from "../../utils/auth";
 
 type MatchItem = {
@@ -61,8 +61,8 @@ export default function MatchDetails() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
-  const [chartOptions, setChartOptions] = useState<any>(null);
-  const [chartSeries, setChartSeries] = useState<any>(null);
+  const [oddsChartOptions, setOddsChartOptions] = useState<any>(null);
+  const [oddsChartSeries, setOddsChartSeries] = useState<any>(null);
 
   useEffect(() => {
     if (!id) {
@@ -188,6 +188,8 @@ export default function MatchDetails() {
 
   useEffect(() => {
     if (orders.length === 0) {
+      setOddsChartOptions(null);
+      setOddsChartSeries(null);
       return;
     }
 
@@ -196,19 +198,9 @@ export default function MatchDetails() {
       new Date(a.snapshotTime).getTime() - new Date(b.snapshotTime).getTime()
     );
 
-    // Create accumulated data
-    const timeLabels: string[] = [];
-    const accumulatedCounts: number[] = [];
-    let cumulative = 0;
+    const timeLabels = sortedOrders.map((order) => formatDateTimeWithMonthName(order.snapshotTime));
 
-    sortedOrders.forEach((order) => {
-      const time = formatEuropeanDateTime(order.snapshotTime);
-      timeLabels.push(time);
-      cumulative += 1;
-      accumulatedCounts.push(cumulative);
-    });
-
-    setChartOptions({
+    setOddsChartOptions({
       chart: {
         type: "line",
         toolbar: {
@@ -219,18 +211,10 @@ export default function MatchDetails() {
         curve: "straight",
         width: 2,
       },
-      markers: {
-        size: 5,
-        colors: "#3b82f6",
-        strokeWidth: 0,
-        hover: {
-          size: 7,
-        },
-      },
       dataLabels: {
         enabled: false,
       },
-      colors: ["#3b82f6"],
+      colors: ["#2563eb", "#0d9488", "#ea580c", "#1d4ed8", "#0f766e", "#c2410c"],
       xaxis: {
         type: "category",
         categories: timeLabels,
@@ -249,7 +233,7 @@ export default function MatchDetails() {
       },
       yaxis: {
         title: {
-          text: "Accumulated Orders",
+          text: "Odds",
         },
       },
       grid: {
@@ -260,16 +244,25 @@ export default function MatchDetails() {
       },
       tooltip: {
         theme: "light",
-        y: {
-          formatter: (value: number) => `${value} orders`,
-        },
+      },
+      legend: {
+        position: "top",
+        horizontalAlign: "left",
       },
     });
 
-    setChartSeries([
+    setOddsChartSeries([
       {
-        name: "Accumulated Orders",
-        data: accumulatedCounts,
+        name: "Home",
+        data: sortedOrders.map((order) => order.trueOddsAverageHome),
+      },
+      {
+        name: "Draw",
+        data: sortedOrders.map((order) => order.trueOddsAverageDraw),
+      },
+      {
+        name: "Away",
+        data: sortedOrders.map((order) => order.trueOddsAverageAway),
       },
     ]);
   }, [orders]);
@@ -308,7 +301,7 @@ export default function MatchDetails() {
           <div className="rounded-xl border border-gray-200 p-3 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400">Start Time</p>
             <p className="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">
-              {match?.startTime ? formatEuropeanDateTime(match.startTime) : "-"}
+              {match?.startTime ? formatDateTimeWithMonthName(match.startTime) : "-"}
             </p>
           </div>
           <div className="rounded-xl border border-gray-200 p-3 dark:border-gray-700">
@@ -327,12 +320,12 @@ export default function MatchDetails() {
           </div>
         )}
 
-        {chartOptions && chartSeries && (
+        {oddsChartOptions && oddsChartSeries ? (
           <div className="mb-5 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
-            <h3 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">Orders Timeline</h3>
-            <Chart options={chartOptions} series={chartSeries} type="line" height={300} />
+            <h3 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">Average odds</h3>
+            <Chart options={oddsChartOptions} series={oddsChartSeries} type="line" height={300} />
           </div>
-        )}
+        ) : null}
 
         <div className="max-w-full overflow-x-auto">
           <Table>
@@ -351,7 +344,7 @@ export default function MatchDetails() {
                   Bookmakers
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
-                  True Odds Avg (H/D/A)
+                  Average Odds (H/D/A)
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
                   Polymarket (H/D/A)
@@ -403,7 +396,7 @@ export default function MatchDetails() {
                           </button>
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                          {formatEuropeanDateTime(order.snapshotTime)}
+                          {formatDateTimeWithMonthName(order.snapshotTime)}
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {order.hoursBefore}
@@ -412,7 +405,7 @@ export default function MatchDetails() {
                           {order.bookmakers.length}
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                          {order.trueOddsAverageHome} / {order.trueOddsAverageDraw} / {order.trueOddsAverageAway}
+                          {order.trueOddsAverageHome.toFixed(3)} / {order.trueOddsAverageDraw.toFixed(3)} / {order.trueOddsAverageAway.toFixed(3)}
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {order.polymarketOutcomeHome} / {order.polymarketOutcomeDraw} / {order.polymarketOutcomeAway}
@@ -435,22 +428,22 @@ export default function MatchDetails() {
                                         Bookmaker
                                       </th>
                                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        Odds Home
+                                        Home
                                       </th>
                                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        Odds Draw
+                                        Draw
                                       </th>
                                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        Odds Away
+                                        Away
                                       </th>
                                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        True Home
+                                        Home (True)
                                       </th>
                                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        True Draw
+                                        Draw (True)
                                       </th>
                                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-                                        True Away
+                                        Away (True)
                                       </th>
                                     </tr>
                                   </thead>

@@ -27,7 +27,7 @@ public class OrderPlacementHandler(
         var item = registry.Get(@event.Match.Id);
         if (item == null)
         {
-            logger.LogError("Couldn't place order. No registry item found for id {SportEventId}", @event.Match.Id);
+            logger.LogError("Couldn't place order. No registry item found for id {SportMatchId}", @event.Match.Id);
             return;
         }
 
@@ -39,7 +39,7 @@ public class OrderPlacementHandler(
 
         if (item.PolymarketEvent.Id == null)
         {
-            logger.LogError("Couldn't place order. Polymarket event id is null id {SportEventId}", @event.Match.Id);
+            logger.LogError("Couldn't place order. Polymarket event id is null id {SportMatchId}", @event.Match.Id);
             return;
         }
         

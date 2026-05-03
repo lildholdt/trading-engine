@@ -67,7 +67,7 @@ public sealed class MatchActor
         _runningTasks.Add(pollingTask);
         _runningTasks.Add(mailboxTask);
         
-        _logger.LogInformation("Actor started for EventId: {EventId}", State.Id);
+        _logger.LogInformation("Actor started for MatchId: {MatchId}", State.Id);
     }
 
     private async Task ReadMessagesAsync(CancellationToken ct)
@@ -90,7 +90,7 @@ public sealed class MatchActor
         catch (OperationCanceledException)
         {
             // Gracefully handle cancellation
-            _logger.LogDebug("Message reading cancelled for eventId: {EventId}.", State.Id);
+            _logger.LogDebug("Message reading cancelled for matchId: {MatchId}.", State.Id);
         }
         catch (Exception ex)
         {
@@ -101,7 +101,7 @@ public sealed class MatchActor
     
     private async Task PollOddsAsync(CancellationToken ct)
     {
-        _logger.LogInformation("Starting odds polling for EventId: {EventId}", State.Id);
+        _logger.LogInformation("Starting odds polling for MatchId: {MatchId}", State.Id);
 
         while (!ct.IsCancellationRequested)
         {
@@ -137,7 +137,7 @@ public sealed class MatchActor
                     Bookmakers = odds
                 });
                 
-                _logger.LogDebug("Next odds polling for EventId: {EventId} in {Delay} milliseconds.", State.Id, delayMilliseconds);
+                _logger.LogDebug("Next odds polling for MatchId: {MatchId} in {Delay} milliseconds.", State.Id, delayMilliseconds);
             
                 // Use Task.Delay with cancellation support
                 await Task.Delay((int)delayMilliseconds, ct);
@@ -145,13 +145,13 @@ public sealed class MatchActor
             catch (OperationCanceledException)
             {
                 // Task.Delay was canceled, exit the loop gracefully
-                _logger.LogDebug("Polling task cancelled for EventId: {EventId}", State.Id);
+                _logger.LogDebug("Polling task cancelled for MatchId: {MatchId}", State.Id);
                 return;
             }
             catch (Exception ex)
             {
                 // Exception occured, log it and wait for next retry
-                _logger.LogError(ex, "Error occurred while polling odds for EventId: {EventId}", State.Id);
+                _logger.LogError(ex, "Error occurred while polling odds for MatchId: {MatchId}", State.Id);
                 await Task.Delay((int)delayMilliseconds, ct);
             }
         }
@@ -224,7 +224,7 @@ public sealed class MatchActor
 
         State.IsPaused = true;
         await _matchRepository.SaveAsync(State);
-        _logger.LogInformation("Actor paused for EventId: {EventId}", State.Id);
+        _logger.LogInformation("Actor paused for MatchId: {MatchId}", State.Id);
     }
 
     public async Task ResumeAsync()
@@ -234,7 +234,7 @@ public sealed class MatchActor
 
         State.IsPaused = false;
         await _matchRepository.SaveAsync(State);
-        _logger.LogInformation("Actor resumed for EventId: {EventId}", State.Id);
+        _logger.LogInformation("Actor resumed for MatchId: {MatchId}", State.Id);
     }
 
     public LiveMatchReadModel GetLiveReadModel()
@@ -276,6 +276,6 @@ public sealed class MatchActor
             StoppedAtUtc = DateTime.UtcNow
         });
         
-        _logger.LogInformation("Actor stopped for EventId: {EventId}", State.Id);
+        _logger.LogInformation("Actor stopped for MatchId: {MatchId}", State.Id);
     }
 }

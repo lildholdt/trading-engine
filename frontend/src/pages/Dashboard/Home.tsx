@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "../../components/ui/table";
-import { formatEuropeanDateTime } from "../../utils/dateTime";
+import { formatDateTimeWithMonthName } from "../../utils/dateTime";
 import { getAuthHeaders, getAuthToken } from "../../utils/auth";
 
 type MatchItem = {
@@ -147,7 +147,7 @@ function MatchActionIcon({ name }: { name: MatchActionIconName }) {
 
   return (
     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M6.22 7.28a.75.75 0 0 1 1.06 0L12 12l4.72-4.72a.75.75 0 1 1 1.06 1.06L13.06 13l4.72 4.72a.75.75 0 1 1-1.06 1.06L12 14.06l-4.72 4.72a.75.75 0 1 1-1.06-1.06L10.94 13 6.22 8.34a.75.75 0 0 1 0-1.06Z" />
+      <rect x="6" y="6" width="12" height="12" rx="1.5" />
     </svg>
   );
 }
@@ -690,7 +690,6 @@ export default function Home() {
               ) : (
                 sortedMatches.map((match) => {
                   const isExpanded = expandedMatchIds.has(match.id);
-                  const isPaused = Boolean(match.isPaused);
 
                   return (
                     <Fragment key={match.id}>
@@ -731,29 +730,19 @@ export default function Home() {
                           </TableCell>
                         )}
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
-                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}>
                           {match.home}
-                          </span>
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm">
-                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
                           {match.away}
-                          </span>
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm">
-                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-700 dark:text-gray-300"}>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-700 dark:text-gray-300">
                           {match.series}
-                          </span>
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm">
-                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-500 dark:text-gray-400"}>
-                          {formatEuropeanDateTime(match.startTime)}
-                          </span>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          {formatDateTimeWithMonthName(match.startTime)}
                         </TableCell>
-                        <TableCell className="px-5 py-3 text-start text-theme-sm">
-                          <span className={isPaused ? "text-gray-400 dark:text-gray-500" : "text-gray-500 dark:text-gray-400"}>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {match.odds?.length ?? 0}
-                          </span>
                         </TableCell>
                         {viewMode === "live" && (
                           <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
@@ -873,7 +862,7 @@ export default function Home() {
                                           {oddsItem.away}
                                         </td>
                                         <td className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
-                                          {formatEuropeanDateTime(oddsItem.updatedAt)}
+                                          {formatDateTimeWithMonthName(oddsItem.updatedAt)}
                                         </td>
                                       </tr>
                                     ))}
