@@ -37,6 +37,7 @@ type OrderBookmaker = {
 type OrderItem = {
   id: string;
   snapshotTime: string;
+  isOrderPlaced: boolean;
   hoursBefore: number;
   bookmakers: OrderBookmaker[];
   trueOddsAverageHome: number;
@@ -67,6 +68,9 @@ export default function MatchDetails() {
   const [drawChartSeries, setDrawChartSeries] = useState<any>(null);
   const [awayChartOptions, setAwayChartOptions] = useState<any>(null);
   const [awayChartSeries, setAwayChartSeries] = useState<any>(null);
+
+  const placedOrdersCount = orders.filter((order) => order.isOrderPlaced).length;
+  const oddsUpdatesCount = orders.length;
 
   useEffect(() => {
     if (!id) {
@@ -342,12 +346,12 @@ export default function MatchDetails() {
             </p>
           </div>
           <div className="rounded-xl border border-gray-200 p-3 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Match Id</p>
-            <p className="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100 break-all">{id ?? "-"}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Orders</p>
+            <p className="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">{placedOrdersCount}</p>
           </div>
           <div className="rounded-xl border border-gray-200 p-3 dark:border-gray-700">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Orders</p>
-            <p className="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">{orders.length}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Odds Updates</p>
+            <p className="mt-1 text-sm font-medium text-gray-800 dark:text-gray-100">{oddsUpdatesCount}</p>
           </div>
         </div>
 
@@ -395,18 +399,21 @@ export default function MatchDetails() {
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
                   Polymarket (H/D/A)
                 </TableCell>
+                <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
+                  Order Placed
+                </TableCell>
               </TableRow>
             </TableHeader>
             <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
               {loading ? (
                 <TableRow>
-                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={5}>
+                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
                     Loading orders...
                   </TableCell>
                 </TableRow>
               ) : orders.length === 0 ? (
                 <TableRow>
-                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={5}>
+                  <TableCell className="px-5 py-6 text-sm text-gray-500 dark:text-gray-400" colSpan={6}>
                     No orders available for this match.
                   </TableCell>
                 </TableRow>
@@ -417,7 +424,13 @@ export default function MatchDetails() {
 
                   return (
                     <Fragment key={orderKey}>
-                      <TableRow className="hover:bg-gray-50 dark:hover:bg-white/[0.02]">
+                      <TableRow
+                        className={`hover:bg-gray-50 dark:hover:bg-white/[0.02] ${
+                          order.isOrderPlaced
+                            ? "bg-emerald-50 dark:bg-emerald-900/20"
+                            : ""
+                        }`}
+                      >
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           <button
                             type="button"
@@ -453,18 +466,30 @@ export default function MatchDetails() {
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
                           {order.polymarketOutcomeHome} / {order.polymarketOutcomeDraw} / {order.polymarketOutcomeAway}
                         </TableCell>
+                        <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
+                          {order.isOrderPlaced ? "Yes" : "No"}
+                        </TableCell>
                       </TableRow>
 
                       {isExpanded && (
                         <TableRow>
-                          <TableCell className="bg-gray-50/60 px-5 py-4 dark:bg-white/[0.02]" colSpan={5}>
+                          <TableCell className="px-5 py-4" colSpan={6}>
                             {order.bookmakers.length === 0 ? (
                               <p className="text-sm text-gray-500 dark:text-gray-400">
                                 No bookmaker details available for this snapshot.
                               </p>
                             ) : (
                               <div className="overflow-x-auto">
-                                <table className="min-w-full">
+                                <table className="min-w-full table-fixed">
+                                  <colgroup>
+                                    <col style={{ width: "14.2857%" }} />
+                                    <col style={{ width: "14.2857%" }} />
+                                    <col style={{ width: "14.2857%" }} />
+                                    <col style={{ width: "14.2857%" }} />
+                                    <col style={{ width: "14.2857%" }} />
+                                    <col style={{ width: "14.2857%" }} />
+                                    <col style={{ width: "14.2857%" }} />
+                                  </colgroup>
                                   <thead>
                                     <tr>
                                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">

@@ -64,12 +64,18 @@ public class OrderPlacementHandler(
         var polymarketOutcomeHome = Math.Round(1 / homeMarket!.Outcome.Price, 2);
         var polymarketOutcomeAway = Math.Round(1 / awayMarket!.Outcome.Price, 2);
         var polymarketOutcomeDraw = Math.Round(1 / drawMarket!.Outcome.Price, 2);
+
+        var isOrderPlaced = @event.Match.Odds.Any(record =>
+            averageHome > polymarketOutcomeHome ||
+            averageDraw > polymarketOutcomeDraw ||
+            averageAway > polymarketOutcomeAway);
         
         var snapshotTime = DateTime.UtcNow;
         var order = new OrderReadModel
         {
             Id = @event.Match.Id,
             SnapshotTime = snapshotTime,
+            IsOrderPlaced = isOrderPlaced,
             HoursBefore = (int)(item.StartTime - snapshotTime).TotalHours,
             Bookmakers = @event.Match.Odds.Select(record => new OrderReadModel.Bookmaker
             {
