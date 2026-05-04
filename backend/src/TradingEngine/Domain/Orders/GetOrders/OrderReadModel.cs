@@ -4,7 +4,9 @@ public record OrderReadModel
 {
     public required string Id { get; init; }
     public required DateTime SnapshotTime { get; init; }
-    public required bool IsOrderPlaced { get; init; }
+    public required bool IsOrderPlacedHome { get; init; }
+    public required bool IsOrderPlacedDraw { get; init; }
+    public required bool IsOrderPlacedAway { get; init; }
     public required int HoursBefore { get; init; }
     public required IReadOnlyCollection<Bookmaker> Bookmakers { get; init; }
     public required decimal TrueOddsAverageHome { get; init; }

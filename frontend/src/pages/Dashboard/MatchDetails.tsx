@@ -37,7 +37,9 @@ type OrderBookmaker = {
 type OrderItem = {
   id: string;
   snapshotTime: string;
-  isOrderPlaced: boolean;
+  isOrderPlacedHome: boolean;
+  isOrderPlacedDraw: boolean;
+  isOrderPlacedAway: boolean;
   hoursBefore: number;
   bookmakers: OrderBookmaker[];
   trueOddsAverageHome: number;
@@ -69,7 +71,9 @@ export default function MatchDetails() {
   const [awayChartOptions, setAwayChartOptions] = useState<any>(null);
   const [awayChartSeries, setAwayChartSeries] = useState<any>(null);
 
-  const placedOrdersCount = orders.filter((order) => order.isOrderPlaced).length;
+  const placedOrdersCount = orders.filter(
+    (order) => order.isOrderPlacedHome || order.isOrderPlacedDraw || order.isOrderPlacedAway
+  ).length;
   const oddsUpdatesCount = orders.length;
 
   useEffect(() => {
@@ -400,7 +404,7 @@ export default function MatchDetails() {
                   Polymarket (H/D/A)
                 </TableCell>
                 <TableCell isHeader className="px-5 py-3 text-start text-theme-xs font-medium text-gray-500 dark:text-gray-400">
-                  Order Placed
+                  Order Placed (H/D/A)
                 </TableCell>
               </TableRow>
             </TableHeader>
@@ -426,7 +430,7 @@ export default function MatchDetails() {
                     <Fragment key={orderKey}>
                       <TableRow
                         className={`hover:bg-gray-50 dark:hover:bg-white/[0.02] ${
-                          order.isOrderPlaced
+                          order.isOrderPlacedHome || order.isOrderPlacedDraw || order.isOrderPlacedAway
                             ? "bg-emerald-50 dark:bg-emerald-900/20"
                             : ""
                         }`}
@@ -467,7 +471,11 @@ export default function MatchDetails() {
                           {order.polymarketOutcomeHome} / {order.polymarketOutcomeDraw} / {order.polymarketOutcomeAway}
                         </TableCell>
                         <TableCell className="px-5 py-3 text-start text-theme-sm text-gray-500 dark:text-gray-400">
-                          {order.isOrderPlaced ? "Yes" : "No"}
+                          {(order.isOrderPlacedHome ? "Yes" : "No")}
+                          {" / "}
+                          {(order.isOrderPlacedDraw ? "Yes" : "No")}
+                          {" / "}
+                          {(order.isOrderPlacedAway ? "Yes" : "No")}
                         </TableCell>
                       </TableRow>
 
@@ -480,16 +488,7 @@ export default function MatchDetails() {
                               </p>
                             ) : (
                               <div className="overflow-x-auto">
-                                <table className="min-w-full table-fixed">
-                                  <colgroup>
-                                    <col style={{ width: "14.2857%" }} />
-                                    <col style={{ width: "14.2857%" }} />
-                                    <col style={{ width: "14.2857%" }} />
-                                    <col style={{ width: "14.2857%" }} />
-                                    <col style={{ width: "14.2857%" }} />
-                                    <col style={{ width: "14.2857%" }} />
-                                    <col style={{ width: "14.2857%" }} />
-                                  </colgroup>
+                                <table className="min-w-full">
                                   <thead>
                                     <tr>
                                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
