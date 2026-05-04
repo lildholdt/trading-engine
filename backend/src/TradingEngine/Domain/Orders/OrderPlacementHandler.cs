@@ -54,13 +54,16 @@ public class OrderPlacementHandler(
         var awayMarket = markets?.FirstOrDefault(x => x.GroupItemTitle == item.AwayTeam);
         var drawMarket = markets?.FirstOrDefault(x => x.GroupItemTitle!.Contains("Draw"));
         
-        var homeTokenId = homeMarket?.Outcome.ClobTokenId;
-        var awayTokenId = awayMarket?.Outcome.ClobTokenId;
-        var drawTokenId = drawMarket?.Outcome.ClobTokenId;
+        if (homeMarket == null || awayMarket == null || drawMarket == null)
+            return;
         
-        var polymarketOutcomeHome = homeMarket?.Outcome.Price;
-        var polymarketOutcomeAway = awayMarket?.Outcome.Price;
-        var polymarketOutcomeDraw = drawMarket?.Outcome.Price;
+        var homeTokenId = homeMarket.Outcome.ClobTokenId;
+        var awayTokenId = awayMarket.Outcome.ClobTokenId;
+        var drawTokenId = drawMarket.Outcome.ClobTokenId;
+        
+        var polymarketOutcomeHome = Math.Round(1 / homeMarket!.Outcome.Price, 2);
+        var polymarketOutcomeAway = Math.Round(1 / awayMarket!.Outcome.Price, 2);
+        var polymarketOutcomeDraw = Math.Round(1 / drawMarket!.Outcome.Price, 2);
         
         var snapshotTime = DateTime.UtcNow;
         var order = new OrderReadModel
@@ -81,9 +84,9 @@ public class OrderPlacementHandler(
             TrueOddsAverageHome = averageHome,
             TrueOddsAverageDraw = averageDraw,
             TrueOddsAverageAway = averageAway,
-            PolymarketOutcomeHome = polymarketOutcomeHome ?? 0,
-            PolymarketOutcomeDraw = polymarketOutcomeDraw ?? 0,
-            PolymarketOutcomeAway = polymarketOutcomeAway ?? 0,
+            PolymarketOutcomeHome = polymarketOutcomeHome,
+            PolymarketOutcomeDraw = polymarketOutcomeDraw,
+            PolymarketOutcomeAway = polymarketOutcomeAway,
         };
 
         ordersRepository.SaveOrder(order);
