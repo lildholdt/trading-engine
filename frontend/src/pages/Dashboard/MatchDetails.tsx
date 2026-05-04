@@ -61,8 +61,12 @@ export default function MatchDetails() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedOrderIds, setExpandedOrderIds] = useState<Set<string>>(new Set());
-  const [oddsChartOptions, setOddsChartOptions] = useState<any>(null);
-  const [oddsChartSeries, setOddsChartSeries] = useState<any>(null);
+  const [homeChartOptions, setHomeChartOptions] = useState<any>(null);
+  const [homeChartSeries, setHomeChartSeries] = useState<any>(null);
+  const [drawChartOptions, setDrawChartOptions] = useState<any>(null);
+  const [drawChartSeries, setDrawChartSeries] = useState<any>(null);
+  const [awayChartOptions, setAwayChartOptions] = useState<any>(null);
+  const [awayChartSeries, setAwayChartSeries] = useState<any>(null);
 
   useEffect(() => {
     if (!id) {
@@ -188,8 +192,12 @@ export default function MatchDetails() {
 
   useEffect(() => {
     if (orders.length === 0) {
-      setOddsChartOptions(null);
-      setOddsChartSeries(null);
+      setHomeChartOptions(null);
+      setHomeChartSeries(null);
+      setDrawChartOptions(null);
+      setDrawChartSeries(null);
+      setAwayChartOptions(null);
+      setAwayChartSeries(null);
       return;
     }
 
@@ -200,7 +208,7 @@ export default function MatchDetails() {
 
     const timeLabels = sortedOrders.map((order) => formatDateTimeWithMonthName(order.snapshotTime));
 
-    setOddsChartOptions({
+    const baseChartOptions = {
       chart: {
         type: "line",
         toolbar: {
@@ -214,7 +222,7 @@ export default function MatchDetails() {
       dataLabels: {
         enabled: false,
       },
-      colors: ["#2563eb", "#0d9488", "#ea580c", "#1d4ed8", "#0f766e", "#c2410c"],
+      colors: ["#2563eb", "#dc2626"],
       xaxis: {
         type: "category",
         categories: timeLabels,
@@ -225,7 +233,7 @@ export default function MatchDetails() {
           show: false,
         },
         labels: {
-          show: true,
+          show: false,
           style: {
             fontSize: "12px",
           },
@@ -246,23 +254,52 @@ export default function MatchDetails() {
         theme: "light",
       },
       legend: {
-        position: "top",
-        horizontalAlign: "left",
+        position: "bottom",
       },
-    });
+    };
 
-    setOddsChartSeries([
+    // Home chart
+    setHomeChartOptions({
+      ...baseChartOptions,
+    });
+    setHomeChartSeries([
       {
-        name: "Home",
+        name: "Bookmakers",
         data: sortedOrders.map((order) => order.trueOddsAverageHome),
       },
       {
-        name: "Draw",
+        name: "Polymarket",
+        data: sortedOrders.map((order) => order.polymarketOutcomeHome),
+      },
+    ]);
+
+    // Draw chart
+    setDrawChartOptions({
+      ...baseChartOptions,
+    });
+    setDrawChartSeries([
+      {
+        name: "Bookmakers",
         data: sortedOrders.map((order) => order.trueOddsAverageDraw),
       },
       {
-        name: "Away",
+        name: "Polymarket",
+        data: sortedOrders.map((order) => order.polymarketOutcomeDraw),
+      },
+    ]);
+
+    // Away chart
+    setAwayChartOptions({
+      ...baseChartOptions,
+    });
+    setAwayChartSeries([
+      {
+        name: "Bookmakers",
         data: sortedOrders.map((order) => order.trueOddsAverageAway),
+      },
+      {
+        name: "Polymarket",
+        data: sortedOrders.map((order) => order.polymarketOutcomeAway),
       },
     ]);
   }, [orders]);
@@ -320,10 +357,22 @@ export default function MatchDetails() {
           </div>
         )}
 
-        {oddsChartOptions && oddsChartSeries ? (
-          <div className="mb-5 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
-            <h3 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">Average odds</h3>
-            <Chart options={oddsChartOptions} series={oddsChartSeries} type="line" height={300} />
+        {homeChartOptions && homeChartSeries && drawChartOptions && drawChartSeries && awayChartOptions && awayChartSeries ? (
+          <div className="mb-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
+              <h3 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">Home Odds</h3>
+              <Chart options={homeChartOptions} series={homeChartSeries} type="line" height={300} />
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
+              <h3 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">Draw Odds</h3>
+              <Chart options={drawChartOptions} series={drawChartSeries} type="line" height={300} />
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-white/[0.02]">
+              <h3 className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300">Away Odds</h3>
+              <Chart options={awayChartOptions} series={awayChartSeries} type="line" height={300} />
+            </div>
           </div>
         ) : null}
 
