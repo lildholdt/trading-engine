@@ -248,9 +248,6 @@ export default function MatchDetails() {
         },
       },
       yaxis: {
-        title: {
-          text: "Odds",
-        },
       },
       grid: {
         show: true,
